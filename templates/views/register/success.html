@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    {{template "_header" .}}
+    <body class="bg-gradient-primary">
+
+
+        <nav class="navbar main-nav fixed-top navbar-expand-lg large">
+            <div class="container">
+                <!-- <a class="navbar-brand" href="homepage.html"><img src="/assets/pub_assets/images/logo.png" alt="logo"></a> -->
+                <a href="/" style="color:#007bff">Joran Investama</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                </div>
+            </div>
+          </nav>
+
+        <div class="container">
+            <!-- Outer Row -->
+            <div class="row justify-content-center pt-5">
+                <div class="col-xl-8 col-lg-10 col-md-12 pb-0">
+                    <div class="card o-hidden border-0 shadow-lg my-5">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="p-4">
+                                        <div class="text-center">
+                                            <h1 class="h4 text-gray-900 mb-4">Register Berhasil</h1>
+                                            <hr />
+                                        </div>
+                                        
+                                        <div class="text-center">Silahkan verifikasi akun dengan mengikuti arahan yang dikirim ke email anda.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer-main pt-2 pb-2 fixed-bottom">
+            <div class="container">
+              <div class="row">
+                  <div class="col-lg-12 text-center">
+                      <div class="copyright">
+                          <p>copyright @2021 PT. Risambessy Konsultindo Mandiri
+                      </div>
+                  </div>
+              </div>
+            </div>
+      </footer>
+    
+    </body>
+    {{template "_baseScript" .}}
+    <script src="/script/register.js?t={{.data.timenow}}"></script>
+</html>

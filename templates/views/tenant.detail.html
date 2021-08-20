@@ -1,0 +1,172 @@
+{{define "_content"}}
+<div class="container-fluid">
+    <input type="hidden" id="recordId" value="{{.data.recordId}}" />
+    <div class="row">
+        <div class="col-md-12 mb-2">
+            <div class="card">
+                <div class="card-header bg-primary pt-3 pb-2">
+                    <h6 class="text-white">Detail Tenant</h6>
+                </div>
+                <div class="card-body pt-3">
+                    <form id="form-details">
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Nama</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text input-group-text pl-0 pr-1"
+                                            style="background: none; border: none;">:</span>
+                                    </div>
+                                    <input type="text" readonly disabled class="form-control-plaintext text-dark"
+                                        name="name" value="-">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Alamat</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text input-group-text pl-0 pr-1"
+                                            style="background: none; border: none;">:</span>
+                                    </div>
+                                    <input type="text" readonly disabled class="form-control-plaintext text-dark"
+                                        name="address" value="-">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Hp</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text input-group-text pl-0 pr-1"
+                                            style="background: none; border: none;">:</span>
+                                    </div>
+                                    <input type="text" readonly disabled class="form-control-plaintext text-dark"
+                                        name="phone" value="-">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Keterangan</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <textarea readonly disabled class="form-control-plaintext text-dark" rows="4"
+                                    name="description" style="resize: auto;">-</textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary pt-3 pb-2">
+                    <h6 class="text-white">Pengaturan</h6>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="row">
+                        <div class="col-md-4 p-2">
+                            <div class="card border">
+                                <div class="card-header">
+                                    Daftar Karyawan
+                                </div>
+                                <div class="card-body p-3">
+                                    <ul class="list-group">
+                                        <li class="list-group-item p-1">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <span class="badge badge-secondary btn-circle p-2 mr-2 ml-1"
+                                                    style="font-size: 15px;">WW</span>
+                                                <div class="info-card-text flex-1">
+                                                    <span class="fs-xl text-truncate text-truncate-lg text-primary">
+                                                        Putra Ompusunggu
+                                                    </span>
+                                                    <br />
+                                                    <span class="text-truncate text-truncate-sm"
+                                                        style="font-size: 14px;">Hp: 081340810046</span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row pl-5 pt-1 pb-1">
+                                                <button class="btn btn-primary btn-xs ml-1">Tambah</button>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item p-1">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <span class="badge badge-secondary btn-circle p-2 mr-2 ml-1"
+                                                    style="font-size: 15px;">GG</span>
+                                                <div class="info-card-text flex-1">
+                                                    <span class="fs-xl text-truncate text-truncate-lg text-primary">
+                                                        Prapta Yohanes Ompusunggu
+                                                    </span>
+                                                    <br />
+                                                    <span class="text-truncate text-truncate-sm"
+                                                        style="font-size: 14px;">Hp: 081340810046</span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row pl-5 pt-1 pb-1">
+                                                <button class="btn btn-primary btn-xs ml-1">Tambah</button>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 p-2">
+                            <div class="card m-auto border">
+                                <div class="card-header">
+                                    Karyawan <span class="tenant-name">-</span>
+                                </div>
+                                <div class="card-body p-3">
+
+                                    <ul class="list-group">
+                                        <li class="list-group-item p-1">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <span class="badge badge-secondary btn-circle p-2 mr-2 ml-1"
+                                                    style="font-size: 15px;">WW</span>
+                                                <div class="info-card-text flex-1">
+                                                    <span class="fs-xl text-truncate text-truncate-lg text-primary">
+                                                        Putra Ompusunggu
+                                                    </span>
+                                                    <br />
+                                                    <span class="text-truncate text-truncate-sm"
+                                                        style="font-size: 14px;">Hp: 081340810046</span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row pl-5 pt-1 pb-1">
+                                                <button class="btn btn-danger btn-xs ml-1">Keluarkan</button>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item p-1">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <span class="badge badge-secondary btn-circle p-2 mr-2 ml-1"
+                                                    style="font-size: 15px;">GG</span>
+                                                <div class="info-card-text flex-1">
+                                                    <span class="fs-xl text-truncate text-truncate-lg text-primary">
+                                                        Prapta Yohanes Ompusunggu
+                                                    </span>
+                                                    <div class="mt-0">
+                                                        <span class="text-truncate text-truncate-sm"
+                                                            style="font-size: 14px;">Hp: 081340810046</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row pl-5 pt-1 pb-1">
+                                                <button class="btn btn-danger btn-xs ml-1">Keluarkan</button>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "_baseScript" .}}
+<script src="/script/tenant.detail.js?t={{.data.timenow}}"></script>
+{{end}}

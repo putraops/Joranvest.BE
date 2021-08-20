@@ -1,0 +1,67 @@
+{{define "_content"}}
+<div class="container-fluid">
+    <input type="hidden" id="recordId" value="{{.data.recordId}}" />
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header pt-3 pb-2">
+                    <h6 class="text-dark">Detail Tenant</h6>
+                </div>
+                <div class="card-body pt-3 pb-0">
+                    <form id="form-details">
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Nama</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text input-group-text pl-0 pr-1"
+                                            style="background: none; border: none;">:</span>
+                                    </div>
+                                    <input type="text" readonly disabled class="form-control-plaintext text-dark"
+                                        name="name" value="-">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Alamat</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text input-group-text pl-0 pr-1"
+                                            style="background: none; border: none;">:</span>
+                                    </div>
+                                    <input type="text" readonly disabled class="form-control-plaintext text-dark"
+                                        name="address" value="-">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Hp</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text input-group-text pl-0 pr-1"
+                                            style="background: none; border: none;">:</span>
+                                    </div>
+                                    <input type="text" readonly disabled class="form-control-plaintext text-dark"
+                                        name="phone" value="-">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label class="col-lg-2 col-md-3 col-4 col-form-label text-dark">Keterangan</label>
+                            <div class="col-lg-10 col-md-9 col-8">
+                                <textarea readonly disabled class="form-control-plaintext text-dark" rows="4"
+                                name="description" style="resize: auto;">-</textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "_baseScript" .}}
+<script src="/script/tenant.detail.js?t={{.data.timenow}}"></script>
+{{end}}

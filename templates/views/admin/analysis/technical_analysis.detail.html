@@ -1,0 +1,168 @@
+{{define "_content"}}
+
+<div class="container-fluid text-dark">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pb-2">
+          <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="/admin/technical_analysis">{{.data.subnav}}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Detail</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card o-hidden border-0 shadow-lg">
+                <div class="card-body p-0">
+                    <!-- Nested Row within Card Body -->
+                    <div class="row">
+                        <div class="col-xl-8 col-lg-10 col-md-12">
+                            <div class="p-4">
+                                <div class="text-center">
+                                    <h1 class="h4 text-gray-900 mb-4">Form {{.data.subheader}}</h1>
+                                </div>
+                                <hr />
+                                <div class="alert alert-warning no-radius p-2" role="alert">
+                                    <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh kosong.</span>
+                                </div>
+                                <form id="form-technical-analysis">
+                                    <input type="hidden" name="id" id="recordId" value={{.data.id}}>
+                                    <div class="form-group mb-1">
+                                        <label class="mb-1 input-title">Nama Emiten <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="emiten_id" name="emiten_id" required>
+                                        </select>                                       
+                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Emiten tidak boleh kosong.</small>
+                                    </div>
+                                    <div class="form-group mb-1">
+                                        <label class="mb-1 input-title">Signal <span class="text-danger">*</span></label>
+                                        <select class="form-control" name="signal" data-field="signal" id="signal" required>
+                                            <option value="Netral">Netral</option>
+                                            <option value="Uptrend">Uptrend</option>
+                                            <option value="Downtrend">Downtrend</option>
+                                            <option value="Sideway">Sideway</option>
+                                        </select>
+                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Signal tidak boleh kosong.</small>
+                                    </div>
+                                    <div class="form-group mb-1">
+                                        <label class="mb-1 input-title">Bandarmology <span class="text-danger">*</span></label>
+                                        <select class="form-control" name="bandarmology_status" data-field="bandarmology_status" id="bandarmology_status" required>
+                                            <option value="Bagus">Bagus</option>
+                                            <option value="Netral">Netral</option>
+                                            <option value="Jelek">Jelek</option>
+                                        </select>
+                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Bandarmology tidak boleh kosong.</small>
+                                    </div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-lg-6 col-md-6 mb-md-2 mb-sm-2 mb-xs-2">
+                                            <div class="card">
+                                                <div class="card-body p-2">
+                                                    <div class="form-group mb-0">
+                                                        <label class="input-title">Area Beli <span class="text-danger">*</span></label>
+                                                    </div>
+                                                    <div class="form-row mb-0">
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-right numeric" name="start_buy" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                        </div>
+                                                        <div class="col-1 text-center">
+                                                          <p class="mt-1">-</p>
+                                                        </div>
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-right numeric" name="end_buy" data-inputmask="'alias': 'currency'" im-insert="true">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 mb-md-2 mb-sm-2 mb-xs-2">
+                                            <div class="card">
+                                                <div class="card-body p-2">
+                                                    <div class="form-group mb-0">
+                                                        <label class="input-title">Area Jual <span class="text-danger">*</span></label>
+                                                    </div>
+                                                    <div class="form-row mb-0">
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-right numeric" name="start_sell" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                        </div>
+                                                        <div class="col-1 text-center">
+                                                          <p class="mt-1">-</p>
+                                                        </div>
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-right numeric" name="end_sell" data-inputmask="'alias': 'currency'" im-insert="true">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 mb-md-2 mb-sm-2 mb-xs-2">
+                                            <div class="card">
+                                                <div class="card-body p-2">
+                                                    <div class="form-group mb-0">
+                                                        <label class="input-title">Area Cut Loss <span class="text-danger">*</span></label>
+                                                    </div>
+                                                    <div class="form-row mb-1">
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-right numeric" name="start_cut" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                        </div>
+                                                        <div class="col-1 text-center">
+                                                          <p class="mt-1">-</p>
+                                                        </div>
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-right numeric" name="end_cut" data-inputmask="'alias': 'currency'" im-insert="true">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 mb-md-2 mb-sm-2 mb-xs-2">
+                                            <div class="card">
+                                                <div class="card-body p-2">
+                                                    <div class="form-group mb-0">
+                                                        <label class="input-title">Risk Reward Ratio <span class="text-danger">*</span></label>
+                                                    </div>
+                                                    <div class="form-row mb-1">
+                                                        <div class="col">
+                                                            <input type="text" class="form-control text-center numeric" name="start_ratio" data-inputmask="'alias': 'currency'" im-insert="true" required="" maxlength="3">
+                                                            </div>
+                                                        <div class="col-1 text-center">
+                                                            <p class="mt-1">:</p>
+                                                        </div>
+                                                        <div class="col">
+                                                          <input type="text" class="form-control text-center numeric" name="end_ratio" data-inputmask="'alias': 'currency'" im-insert="true" required="" maxlength="3">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-1">
+                                        <label class="mb-md-1 input-title">Timeframe <span class="text-danger">*</span></label>
+                                        <select class="form-control" name="timeframe" data-field="timeframe" id="timeframe" required>
+                                            <option value="One Day Trade">One Day Trade</option>
+                                            <option value="Swing">Swing</option>
+                                        </select>
+                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Timeframe tidak boleh kosong.</small>
+                                    </div>
+
+                                    <div class="form-group mb-1">
+                                        <label class="mb-1 input-title">Reason to Buy <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" name="reason_to_buy" required=""></textarea>
+                                    </div>
+                                </form>
+                                <button class="btn btn-primary btn-block mt-3" id="btn-save">
+                                    Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "_baseScript" .}}
+<script src="/script/admin/analysis/technical_analysis.detail.js?t={{.data.timenow}}"></script>
+{{end}}

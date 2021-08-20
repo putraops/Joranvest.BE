@@ -1,0 +1,84 @@
+{{define "_nav"}}
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/admin/dashboard">
+        <!-- <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup> {{.name}}</div> -->
+        <div class="sidebar-brand-text mx-3">Joranvest</div>
+    </a>
+
+
+    <hr class="sidebar-divider my-0">
+
+    <li class="nav-item active">
+        <a class="nav-link" href="/admin/dashboard">
+            <i class="fas fa-fw fa-home"></i>
+            <span>Dashboard</span></a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="/admin/emiten">
+            <i class="fas fa-fw fa-sticky-note"></i>
+            <span>Emiten</span></a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="/admin/membership">
+            <i class="fas fa-fw fa-user-tag"></i>
+            <span>Membership</span></a>
+    </li>
+    
+    <hr class="sidebar-divider mb-0">
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseAnalisa" aria-expanded="true" aria-controls="collapseAnalisa">
+            <i class="fas fa-fw fa-signal"></i>
+            <span>Analisa</span>
+        </a>
+        <div id="collapseAnalisa" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/admin/technical_analysis"><span>Analisa Teknikal</span></a>
+                <a class="collapse-item" href="/admin/fundamental_analysis"><span>Analisa Fundamental</span></a>
+            </div>
+        </div>
+    </li>
+
+    
+    <li class="nav-item active">
+        <a class="nav-link" href="/admin/tag">
+            <i class="fas fa-fw fa-tags"></i>
+            <span>Tag</span></a>
+    </li>
+    <!-- <hr class="sidebar-divider"> -->
+    <!-- Divider -->
+
+    <hr class="sidebar-divider">
+    <div class="sidebar-heading">
+        Management
+    </div>
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>System Management</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/admin/application_user"><span>Application User</span></a>
+                <a class="collapse-item" href="/admin/membership"><span>Role</span></a>
+                <a class="collapse-item" href="/admin/membership"><span>Role Member</span></a>
+            </div>
+        </div>
+    </li>
+
+    <section id="entitySetupMenu" class="d-none">
+        <div class="sidebar-heading">
+            Setup
+        </div>
+        <li class="nav-item">
+            <a class="nav-link" href="entity">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Entity</span></a>
+        </li>
+    </section>
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+</ul>
+{{end}}

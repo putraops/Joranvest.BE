@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    {{template "_header" .}}
+    <body class="bg-gradient-primary">
+
+
+        <nav class="navbar main-nav fixed-top navbar-expand-lg large">
+            <div class="container">
+                <!-- <a class="navbar-brand" href="homepage.html"><img src="/assets/pub_assets/images/logo.png" alt="logo"></a> -->
+                <a href="/" style="color:#007bff">Joran Investama</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                </div>
+            </div>
+          </nav>
+
+        <div class="container">
+            <!-- Outer Row -->
+            <div class="row justify-content-center pt-5">
+                <div class="col-xl-5 col-lg-6 col-md-8 pb-0">
+                    <div class="card o-hidden border-0 shadow-lg my-5">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="p-4">
+                                        <div class="text-center">
+                                            <h1 class="h4 text-gray-900 mb-4">Register</h1>
+                                            <hr />
+                                        </div>
+                                        {{if (ne .err "")}}
+                                            <div class="alert alert-danger" role="alert">
+                                                <strong>Peringatan!</strong> {{.err}}
+                                              </div>
+                                        {{end}}
+                                        <form id="form-basic" class="needs-validation" novalidate>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="">Nama Depan</label>
+                                                    <input type="text" class="form-control" name="first_name" required>
+                                                </div>
+                                                <div class="form-group col-md-6">
+                                                    <label for="">Nama Belakang</label>
+                                                    <input type="text" class="form-control" name="last_name" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="">Email</label>
+                                                <input type="text" class="form-control" name="email">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">Password</label>
+                                                <input type="password" class="form-control" name="password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">Ulangi Password</label>
+                                                <input type="password" class="form-control" id="retype-password">
+                                            </div>
+                                            <input type="button" id="btn-register" value="Daftar" class="btn btn-primary btn-user btn-block pt-2 pb-2" style="font-size: 12pt;"  />
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer-main pt-2 pb-2 fixed-bottom">
+            <div class="container">
+              <div class="row">
+                  <div class="col-lg-12 text-center">
+                      <div class="copyright">
+                          <p>Copyright @2021 PT. Risambessy Konsultindo Mandiri
+                      </div>
+                  </div>
+              </div>
+            </div>
+      </footer>
+    
+    </body>
+    {{template "_baseScript" .}}
+    <script src="/script/register.js?t={{.data.timenow}}"></script>
+</html>

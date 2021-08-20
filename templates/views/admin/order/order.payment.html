@@ -1,0 +1,289 @@
+{{define "_content"}}
+
+<style>
+    .nav-link.active {
+        background-color: #4e73df !important;
+        color: white !important;
+        border-color: #4e73df #4e73df #4e73df !important;
+    }
+
+    .nav-tabs {
+        border-bottom: 1px solid #4e73df;
+    }
+</style>
+
+<div class="modal text-dark" id="modal-payment" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title font-weight-bold">Pembayaran</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-dark">
+                <form id="form-payment" class="needs-validation" novalidate>
+                    <div class=row>
+                        <div class="col-md-12 text-right">
+                            <div class="text-dark font-weight-bold h2 pull-right mb-0" style="font-size: 2rem">Sisa Bayar</div>
+                            <div class="font-weight-bold text-danger pull-right" style="font-size: 3rem">
+                                <span>Rp</span> <span class="money-decimal" data-field="insufficient_payment" data-objecttype="label">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <div class="form-group row mb-1">
+                                <label class="col-4 col-form-label font-weight-bold text-right"
+                                    style="font-size: 11pt;">Nominal Bayar</label>
+                                <div class="col-8">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Rp</span>
+                                        </div>
+                                        <input type="text" class="form-control numeric text-right"
+                                            name="total_payment" data-inputmask="'alias': 'currency'"
+                                            required="" value="0" im-insert="true">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- <div class="col-md-12 text-right">
+                                <span class="text-dark font-weight-bold h2 pull-right mb-0" style="font-size: 2rem">Sisa Bayar</span>
+                                <span class="font-weight-bold text-primary  pull-right" style="font-size: 3rem">
+                                    <span>Rp</span> <span class="money-decimal" data-field="total_price" data-objecttype="label">0,00</span> 
+                                </span>
+                            </div> -->
+
+                            <!-- <div class="form-group row mb-1">
+                                <label class="col-4 col-form-label font-weight-bold text-right"
+                                    style="font-size: 11pt;">Kembalian</label>
+                                <div class="col-8">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Rp</span>
+                                        </div>
+                                        <input type="text" class="form-control numeric text-right"
+                                            name="total_payment" data-inputmask="'alias': 'currency'"
+                                            required="" value="0" im-insert="true">
+                                    </div>
+                                </div>
+                            </div> -->
+                            <!-- <div class="form-group row mb-1">
+                                <label class="col-4 col-form-label font-weight-bold text-right"
+                                    style="font-size: 11pt;">Kembalian</label>
+                                <div class="col-8">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Rp</span>
+                                        </div>
+                                        <input type="text" id="input-change" class="form-control numeric-money text-right" readonly=""
+                                            data-inputmask="'alias': 'currency'"
+                                            required="" value="0" im-insert="true">
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary no-radius pr-4 pl-4" id="btn-payment">Bayar</button>
+                <button type="button" class="btn btn-danger no-radius pr-4 pl-4" data-dismiss="modal">Batal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal text-dark" id="modal-change" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title font-weight-bold">Kembalian</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-dark">
+                <div class=row>
+                    <div class="col-md-12 text-center">
+                        <span class="font-weight-bold text-success" style="font-size: 2em">Pembayaran Berhasil</span>
+                        <hr />
+                    </div>
+                    <div class="col-md-12 text-right mt-2">
+                        <div class="text-dark font-weight-bold h2 pull-right mb-0" style="font-size: 1.5rem">Kembalian</div>
+                        <div class="font-weight-bold text-primary pull-right" style="font-size: 3.5rem">
+                            <span>Rp</span> <span id="txt-change"></span> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer text-center">
+                <button type="button" class="btn btn-success btn-block no-radius mt-0 btn-finish">Selesaikan Pesanan</button>
+                <button type="button" class="btn btn-primary btn-block mt-0 no-radius btn-toList">Kembali ke Daftar Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid text-dark">
+    <input type="text" class="d-none" id="recordId" value="{{.data.id}}" />
+    <div class="row">
+        <div class="col-12">
+            <div class="card no-radius">
+                <div class="card-header bg-primary  p-3 font-weight-bold 
+                d-flex flex-row align-items-center justify-content-between no-radius">
+                    <h6 class="text-white font-weight-bold mb-0">Pesanan</h6>
+                </div>
+                <div class="card-body pt-2 pl-3 pr-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row mb-2">
+                                <div class="col-md-12" id="section-order-number">
+                                    <div class="font-weight-bold" style="font-size: 10pt;">No Pesanan: </div>
+                                    <div class="badge badge-danger no-radius" id="order-number">JL/ORD/03/0001</div>
+                                </div>
+
+                                <div class="col-md-12 mt-0" style="font-size: 10pt;">
+                                    <div class="row" id="section-detailPelanggan">
+                                        <div class="col-xl-6 col-lg-6 col-md-8 col-sm-8 
+                                        offset-xl-6 offset-lg-6 offset-md-4 offset-sm-4 text-right">
+                                            <strong> Pelanggan: </strong>
+                                        </div>
+                                        <div class="col-12 text-right">
+                                            <span class="font-weight-bold" id="lbl-customerName"
+                                                style="font-size: 10pt;">Nama
+                                                Pelanggan</span><br />
+                                            <span id="lbl-custmerNoHp">No Hp</span> <br />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card no-radius mt-1 d-none" id="section-kiloan" style="border: 0px white solid;">
+                                <div class="card-header p-0 bg-white font-weight-bold d-flex flex-row align-items-center 
+                                    justify-content-between">
+                                    <span class="badge badge-primary no-radius pt-2 pr-4 pb-2 pl-4"
+                                        style="font-size: 11pt;">Kiloan</span>
+                                </div>
+                                <div class="card-body p-0 pt-1" style="margin-top: -5px;">
+                                    <hr class="mt-0 mb-1" style="border-top: 3px solid #4e73df" />
+                                    <form id="form-kiloan" class="needs-validation" novalidate>
+                                        <div class="list-group no-radius" id="list-cartKiloan">
+                                            <div class="list-group-item justify-content-between lh-condensed pre-content"
+                                                style="height: 50px;">
+                                                <div class="vertical-center w-100 text-center">
+                                                    <span class="font-weight-normal text-dark">Tidak ada produk
+                                                        tersedia</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card no-radius mt-1 d-none" id="section-satuan" style="border: 0px white solid;">
+                                <div class="card-header p-0 bg-white font-weight-bold d-flex flex-row align-items-center 
+                                    justify-content-between">
+                                    <span class="badge badge-primary no-radius pt-2 pr-4 pb-2 pl-4"
+                                        style="font-size: 11pt;">Satuan</span>
+                                </div>
+                                <div class="card-body p-0 pt-1" style="margin-top: -5px;">
+                                    <hr class="mt-0 mb-1" style="border-top: 3px solid #4e73df" />
+                                    <form id="form-satuan" class="needs-validation" novalidate>
+                                        <div class="list-group no-radius" id="list-cartSatuan">
+                                            <div class="list-group-item justify-content-between lh-condensed pre-content"
+                                                style="height: 50px;">
+                                                <div class="vertical-center w-100 text-center">
+                                                    <span class="font-weight-normal text-dark">Tidak ada produk
+                                                        tersedia</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="card no-radius mt-1" style="border: 0px white solid;">
+                                <div class="card-header p-0 bg-white font-weight-bold d-flex flex-row align-items-center 
+                                justify-content-between">
+                                    <span class="badge badge-primary no-radius pt-2 pr-4 pb-2 pl-4"
+                                        style="font-size: 11pt;">Informasi</span>
+                                </div>
+                                <div class="card-body p-0 pt-1" style="margin-top: -5px;">
+                                    <hr class="mt-0 mb-1" style="border-top: 3px solid #4e73df" />
+                                    <form id="form-description" class="needs-validation" novalidate>
+                                        <div class=row>
+                                            <div class="col-md-12 mt-0">
+                                                <div class="row" style="font-size: 11pt;">
+                                                    <label class="col-4 col-form-label font-weight-bold text-left pl-3">Total Barang :</label>
+                                                    <div class="col-8 text-right">
+                                                        <label class="col-12 col-form-label font-weight-normal" data-field="total_item" data-objecttype="label"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12 mt-0">
+                                                <div class="row" style="font-size: 11pt;">
+                                                    <label class="col-4 col-form-label font-weight-bold text-left pl-3"
+                                                        style="font-size: 11pt;">Keterangan :</label>
+                                                    <div class="col-8 text-right">
+                                                        <label class="col-12 col-form-label font-weight-normal" data-field="description" data-objecttype="label"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card no-radius mt-1" style="border: 0px white solid;">
+                                <div class="card-header p-0 bg-white font-weight-bold d-flex flex-row align-items-center 
+                                justify-content-between">
+                                    <span class="badge badge-primary no-radius pt-2 pr-4 pb-2 pl-4"
+                                        style="font-size: 11pt;">Pembayaran</span>
+                                </div>
+                                <div class="card-body p-0 pt-1" style="margin-top: -5px;">
+                                    <hr class="mt-0 mb-1" style="border-top: 3px solid #4e73df" />
+                                    <form id="form-payment-detail" class="needs-validation" novalidate>
+                                        <div class="col-md-12 mt-0 pl-1">
+                                            <div class="form-group row mb-0">
+                                                <label class="col-4 col-form-label font-weight-bold pb-0 text-left"
+                                                    style="font-size: 11pt;">Total Harga :</label>
+                                                <label class="col-8 mt-2 mb-0 text-right">
+                                                    <span>Rp</span>
+                                                    <span class="money" data-field="total_price" data-objecttype="label"></span>
+                                                </label>
+                                            </div>
+                                            <div class="form-group row mb-0">
+                                                <label class="col-4 col-form-label font-weight-bold pb-0 text-left"
+                                                    style="font-size: 11pt;" id="lbl-total-payment">Uang Muka :</label>
+                                                <label class="col-8 mt-2 mb-0 text-right">
+                                                    <span>Rp</span>
+                                                    <span class="money" data-field="total_payment" data-objecttype="label"></span>
+                                                </label>
+                                            </div>
+                                            <div class="form-group row mb-0">
+                                                <label class="col-4 col-form-label font-weight-bold pb-0 text-left"
+                                                    style="font-size: 11pt;">Sisa Bayar :</label>
+                                                <label class="col-8 mt-2 mb-0 text-right">
+                                                    <span>Rp</span>
+                                                    <span class="money" data-field="insufficient_payment" data-objecttype="label"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-block mt-2" id="btn-showPaymentModal">Bayar</button>
+                            <button type="button" class="btn btn-success btn-block mt-2 d-none btn-finish">Selesai</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "_baseScript" .}}
+<script src="/script/order.payment.js?t={{.data.timenow}}"></script>
+{{end}}

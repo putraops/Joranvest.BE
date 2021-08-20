@@ -1,0 +1,66 @@
+{{define "_nav"}}
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/dashboard">
+        <!-- <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup> {{.name}}</div> -->
+        <div class="sidebar-brand-text mx-3">Smart Laundry</div>
+    </a>
+
+
+    <hr class="sidebar-divider my-0">
+
+    <li class="nav-item active">
+        <a class="nav-link" href="/dashboard">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span></a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="/order">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Order</span></a>
+    </li>
+    <li class="nav-item d-none" id="tenantMenu">
+        <a class="nav-link" href="/tenant">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Tenant</span></a>
+    </li>
+    <li class="nav-item" id="productMenu">
+        <a class="nav-link" href="/product">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Produk</span></a>
+    </li>
+    <li class="nav-item d-none" id="employeeMenu">
+        <a class="nav-link" href="/employee">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Karyawan</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/customer">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Pelanggan</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/category">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Category</span></a>
+    </li>
+    <!-- <hr class="sidebar-divider"> -->
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <section id="entitySetupMenu" class="d-none">
+        <div class="sidebar-heading">
+            Setup
+        </div>
+        <li class="nav-item">
+            <a class="nav-link" href="entity">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Entity</span></a>
+        </li>
+    </section>
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+</ul>
+{{end}}

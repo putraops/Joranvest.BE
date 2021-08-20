@@ -1,0 +1,33 @@
+{{define "_content"}}
+<div class="container-fluid text-dark">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <!-- <button type="button" class="btn btn-primary btn-sm" id="btn-addNew"
+                        style="min-width: 150px;">Tambah Baru</button> -->
+                    <div class="mt-4">
+                        <span class="font-weight-bold text-primary h5 mb-0">{{.data.subheader}}</span>
+                        <hr class="mt-2 mb-3" />
+                        <table id="dtBasic" class="display nowrap w-100" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Fullname</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "_baseScript" .}}
+<script src="/script/admin/application_user/application_user.index.js?t={{.data.timenow}}"></script>
+{{end}}

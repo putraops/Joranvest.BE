@@ -1,0 +1,231 @@
+{{define "_content"}}
+
+<style>
+    .spinner {
+        height: 50px;
+        width: 50px;
+        margin: auto;
+        display: flex;
+        position: absolute;
+        -webkit-animation: rotation .6s infinite linear;
+        -moz-animation: rotation .6s infinite linear;
+        -o-animation: rotation .6s infinite linear;
+        animation: rotation .6s infinite linear;
+        border-left: 6px solid rgba(0, 174, 239, .15);
+        border-right: 6px solid rgba(0, 174, 239, .15);
+        border-bottom: 6px solid rgba(0, 174, 239, .15);
+        border-top: 6px solid rgba(0, 174, 239, .8);
+        border-radius: 100%;
+    }
+
+    @-webkit-keyframes rotation {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+
+        to {
+            -webkit-transform: rotate(359deg);
+        }
+    }
+
+    @-moz-keyframes rotation {
+        from {
+            -moz-transform: rotate(0deg);
+        }
+
+        to {
+            -moz-transform: rotate(359deg);
+        }
+    }
+
+    @-o-keyframes rotation {
+        from {
+            -o-transform: rotate(0deg);
+        }
+
+        to {
+            -o-transform: rotate(359deg);
+        }
+    }
+
+    @keyframes rotation {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(359deg);
+        }
+    }
+
+    #overlay {
+        position: absolute;
+        display: flex;
+        top: 0;
+        bottom: 0;
+
+        left: 0;
+        right: 0;
+        /* 
+        left: 0;
+        right: 0;
+        bottom: 0; */
+        /* background-color: rgba(0, 0, 0, 0.5); */
+        z-index: 2;
+        cursor: pointer;
+    }
+</style>
+
+
+<div class="modal fade" id="modal-addNew" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah {{.data.title}} Baru</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-dark">
+                <div class="alert alert-warning no-radius p-2" role="alert">
+                    <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh
+                        kosong.</span>
+                </div>
+                <form id="form-basic" class="needs-validation" novalidate>
+                    <input type="text" class="d-none" name="id" id="recordId" />
+                    <div class="form-group mb-2">
+                        <label class="mb-1">Nama <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" placeholder="Nama" required>
+                        <div class="invalid-feedback fw-700">Nama tidak boleh kosong</div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="mb-1">Tipe <span class="text-danger">*</span></label>
+                        <div class="frame-wrap">
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" class="custom-control-input" id="satuanRadio" name="is_unit"
+                                    value="1" checked="">
+                                <label class="custom-control-label" for="satuanRadio"
+                                    style="cursor: pointer;">Satuan</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" class="custom-control-input" id="kiloanRadio" value="0"
+                                    style="cursor: pointer;" name="is_unit">
+                                <label class="custom-control-label" for="kiloanRadio"
+                                    style="cursor: pointer;">Kiloan</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="mb-1">Kategori</label>
+                        <select class="form-control" id="categoryId" name="category_id" required>
+                            <!-- <option>Tampilkan Semua</option>
+                            <option>Pakaian</option> -->
+                        </select>
+                        <div class="invalid-feedback fw-700">Kategori tidak boleh kosong</div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="mb-1">Harga / <span id="label-kategori-price">satuan</span> <span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="price" data-field="price" data-text="price"
+                            class="form-control fw-700 numeric" data-inputmask="'alias': 'currency'" im-insert="true"
+                            required>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="mb-1">Keterangan</label>
+                        <input type="text" class="form-control" name="description" placeholder="Keterangan">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-save">Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid text-dark">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <!-- Card Body -->
+                <div class="card-body">
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-addNew"
+                        style="min-width: 150px;">Tambah</button>
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4 order-md-1 mb-2">
+                            <div class="card no-radius">
+                                <div class="card-header pl-2">
+                                    <h6 class="font-weight-bold text-primary mb-1">Filter</h6>
+                                </div>
+                                <div class="card-body p-2">
+                                    <form id="form-filter">
+                                        <div class="form-group mb-2">
+                                            <label class="mb-1">Kategori</label>
+                                            <select class="form-control" id="categoryIdFilter"
+                                                name="category_id"></select>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label>Tipe</label>
+                                            <select class="form-control" id="filter-type" name="product_type">
+                                                <option value="1">Satuan</option>
+                                                <option value="0">Kiloan</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                    <button type="button" class="btn btn-primary btn-block"
+                                        id="btn-filter">Tampilkan</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-9 col-md-8 md- order-md-2 mb-2">
+                            <ul class="list-group no-radius" id="list-products">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "_baseScript" .}}
+
+<div class="w-100 d-none">
+    <div id="overlay">
+        <div class="w-100 d-flex justify-content-center align-items-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="basic" class="d-none">
+    <li class="list-group-item d-flex justify-content-between lh-condensed p-3">
+        <div class="w-80">
+            <h6 class="my-0 font-weight-bold text-dark">Product name</h6>
+            <small class="text-muted">Lorem Ipsum is simply dummy text of the printing and
+                typesetting industry. Lorem Ipsum has been the industry's standard dummy
+                text ever since the 1500s.</small>
+            <div>
+                <span class="text-muted"><span class="badge badge-primary no-radius">Rp
+                        5.000</span>
+            </div>
+        </div>
+        <div>
+            <div class="text-right mb-1">
+                <button type="button" class="btn btn-warning btn-circle btn-sm mb-1" title="Ubah">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-circle btn-sm mb-1" title="Hapus">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </li>
+</div>
+
+<script src="/script/product.index.js?t={{.data.timenow}}"></script>
+{{end}}

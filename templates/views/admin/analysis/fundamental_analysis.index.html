@@ -1,0 +1,47 @@
+{{define "_content"}}
+
+<div class="container-fluid text-dark">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pb-2">
+          <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{.data.subnav}}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Daftar</h6>
+                </div>
+                <div class="card-body">
+                    <a type="button" href="/admin/fundamental_analysis/detail" class="btn btn-primary btn-sm" id="btn-addNew"
+                        style="min-width: 150px;">Tambah Baru</a>
+                    <div class="mt-4">
+                        <hr class="mt-2 mb-3" />
+                        <table id="dtBasic" class="display nowrap w-100" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Nama Emiten</th>
+                                    <th>Kode</th>
+                                    <th>Analisis</th>
+                                    <th>Current Price</th>
+                                    <th>Normal Price</th>
+                                    <th>Margin of Safety</th>
+                                    <th>Tanggal Riset</th>
+                                    <th>Data Riset</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "_baseScript" .}}
+<script src="/script/admin/analysis/fundamental_analysis.index.js?t={{.data.timenow}}"></script>
+{{end}}

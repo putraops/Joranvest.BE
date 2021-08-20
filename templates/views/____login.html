@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {{template "_header" .}}
+</head>
+
+<style>
+	.bd-example {
+    position: relative;
+    padding: 1rem;
+    margin: 1rem -15px 0;
+    border: solid #f8f9fa;
+    border-width: .2rem 0 0;
+}
+</style>
+<body class="body-wrapper">
+
+
+<nav class="navbar main-nav fixed-top navbar-expand-lg large">
+  <div class="container">
+      <!-- <a class="navbar-brand" href="homepage.html"><img src="/assets/pub_assets/images/logo.png" alt="logo"></a> -->
+	  <a href="/" style="color:#007bff">Joran Investama</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="ti-menu text-white"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+      </div>
+  </div>
+</nav>
+
+
+<section class="section bg-shape">
+	<div class="container">
+
+
+		<div class="bd-example">
+			<form>
+			  <div class="form-group">
+				<label for="exampleInputEmail1">Email address</label>
+				<input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+				<small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+			  </div>
+			  <div class="form-group">
+				<label for="exampleInputPassword1">Password</label>
+				<input type="password" class="form-control" id="exampleInputPassword1">
+			  </div>
+			  <div class="form-group form-check">
+				<input type="checkbox" class="form-check-input" id="exampleCheck1">
+				<label class="form-check-label" for="exampleCheck1">Check me out</label>
+			  </div>
+			  <button type="submit" class="btn btn-primary">Submit</button>
+			</form>
+			</div>
+
+		 <!-- <div class="row" style="padding-top: 50px;">
+			{{if (ne .err "")}}
+			<div class="alert alert-danger" role="alert">
+				<strong>Peringatan!</strong> {{.err}}
+			</div>
+			{{end}}
+			<form class="user" method="POST" action="/login">
+				<div class="form-group">
+					<input type="text" class="form-control"
+						aria-describedby="emailHelp" name="credential"
+						placeholder="Username atau Password...">
+				</div>
+				<div class="form-group">
+					<input type="password" class="form-control"
+						placeholder="Password" name="password">
+				</div>
+				<button type="submit" class="btn btn-primary btn-user btn-block pt-2 pb-2" style="font-size: 12pt;">
+					Login
+				</button>
+			</form>
+		</div> -->
+	</div>
+</section>
+
+<footer class="footer-main pt-2 pb-2 fixed-bottom">
+  	<div class="container">
+		<div class="row">
+			<div class="col-lg-12 text-center">
+				<div class="copyright">
+					<p>copyright @2021 PT. Risambessy Konsultindo Mandiri
+				</div>
+			</div>
+		</div>
+  	</div>
+</footer>
+
+
+  <!-- JAVASCRIPTS -->
+  
+ 
+{{template "_baseScript" .}}
+</body>
+
+</html>

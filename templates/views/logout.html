@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    {{template "_header" .}}
+    <form class="user d-none" method="POST" id="logout">
+        <button type="submit" class="btn btn-primary btn-user btn-block pt-2 pb-2" style="font-size: 12pt;" id="btn-logout">
+            Logout
+        </button>
+    </form>
+    {{template "_baseScript" .}}
+
+    <script>
+        $("#btn-logout").click();
+    </script>>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    {{template "_header" .}}
+    <body class="bg-gradient-primary">
+
+
+        <nav class="navbar main-nav fixed-top navbar-expand-lg large">
+            <div class="container">
+                <!-- <a class="navbar-brand" href="homepage.html"><img src="/assets/pub_assets/images/logo.png" alt="logo"></a> -->
+                <a href="/" style="color:#007bff">Joran Investama</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                </div>
+            </div>
+          </nav>
+
+        <div class="container">
+            <!-- Outer Row -->
+            <div class="row justify-content-center pt-5">
+                <div class="col-xl-4 col-lg-8 col-md-8 pb-0">
+                    <div class="card o-hidden border-0 shadow-lg my-5">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="pt-5 pr-4 pl-4 pb-4">
+                                        <div class="text-center">
+                                            <h1 class="h4 text-gray-900 mb-4">Login</h1>
+                                        </div>
+                                        {{if (ne .err "")}}
+                                            <div class="alert alert-danger" role="alert">
+                                                <strong>Peringatan!</strong> {{.err}}
+                                              </div>
+                                        {{end}}
+                                        <form class="user" method="POST" id="login-form">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" aria-describedby="emailHelp" id="text-email" name="email" placeholder="Email">
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="password" class="form-control" id="txt-password"
+                                                    placeholder="Password" name="password">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-user btn-block pt-2 pb-2" style="font-size: 12pt;">
+                                                Login
+                                            </button>
+                                        </form>
+                                        <div class="text-center mt-3">
+                                            <div>Belum punya akun? <a href="/register" class="font-weight-bold">Daftar</a></div>
+                                            <div><a href="" class="font-weight-bold">Lupa Password?</a></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+    
+            </div>
+    
+        </div>
+        
+        <footer class="footer-main pt-2 pb-2 fixed-bottom">
+            <div class="container">
+              <div class="row">
+                  <div class="col-lg-12 text-center">
+                      <div class="copyright">
+                          <p>Copyright @2021 PT. Risambessy Konsultindo Mandiri
+                      </div>
+                  </div>
+              </div>
+            </div>
+      </footer>
+    
+    </body>
+    {{template "_baseScript" .}}
+
+    <script>
+        $(document).ready(function () {
+        $("#text-password").val("");
+        $("#text-email").val("");
+        });
+    </script>
+</html>

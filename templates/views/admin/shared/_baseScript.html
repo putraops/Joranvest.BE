@@ -1,0 +1,57 @@
+{{define "_baseScript"}}
+<script src="/assets/sbadmin/jquery.js"></script>
+<script src="/assets/core.js"></script>
+<!-- Bootstrap core JavaScript-->
+<script src="/assets/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Core plugin JavaScript-->
+<script src="/assets/sbadmin/vendor/jquery-easing/jquery.easing.min.js"></script>
+<!-- Custom scripts for all pages-->
+<script src="/assets/sbadmin/js/sb-admin-2.min.js"></script>
+<script src="/assets/datatables/DataTables-1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="/assets/datatables/DataTables-1.10.24/js/dataTables.responsive.min.js"></script>
+
+<script src="/assets/plugins/Inputmask-5.x/js/jquery.inputmask.js"></script>
+<script src="/assets/plugins/serializeToJSON/jquery.serializeToJSON.min.js"></script>
+<script src="/assets/plugins/handlebars/handlebars-4.1.1.js"></script>
+<script src="/assets/plugins/notifications/sweetalert2/sweetalert2.bundle.js"></script>
+<script src="/assets/plugins/notifications/toastr/toastr.js"></script>
+<script src="/assets/plugins/select2/js/select2.min.js"></script>
+<script src="/assets/plugins/moment/moment.min.js"></script>
+
+<script type="text/javascript">
+    // var token = {{.data}};
+
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", $('meta[name=x-token]').attr("content"));
+        }
+    });
+
+    $(".numeric-money").inputmask({
+        digits: 2,
+        greedy: true,
+        definitions: {
+            '*': {
+                validator: "[0-9]"
+            }
+        },
+        rightAlign: false
+    });
+    $(".numeric").inputmask({
+        digits: 0,
+        greedy: true,
+        definitions: {
+            '*': {
+                validator: "[0-9]"
+            }
+        },
+        rightAlign: false
+    });
+</script>
+<!-- Page level plugins -->
+<!-- <script src="assets/sbadmin/vendor/chart.js/Chart.min.js"></script> -->
+
+<!-- Page level custom scripts -->
+<!-- <script src="assets/sbadmin/js/demo/chart-area-demo.js"></script> -->
+<!-- <script src="assets/sbadmin/js/demo/chart-pie-demo.js"></script> -->
+{{end}}
