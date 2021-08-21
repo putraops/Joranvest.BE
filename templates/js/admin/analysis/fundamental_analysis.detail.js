@@ -181,11 +181,32 @@
             $("input[name=research_date]").val(moment(r.data.research_date.Time).format('YYYY-MM-DD'));
             $(".input-date").datepicker('setDate', moment(r.data.research_date.Time).format('YYYY-MM-DD'));    
             
-            var newOption = new Option(r.data.emiten.emiten_name + " [" + r.data.emiten.emiten_code + "]", r.data.emiten_id, false, false);
+            var newOption = new Option(r.data.emiten.emiten_name + " [" + r.data.emiten.emiten_code + "]", r.data.emiten_id, true, true);
             $('#emiten_id').append(newOption).trigger('change');
-            // $('#signal').val(r.data.signal).trigger('change');
-            // $('#bandarmology_status').val(r.data.bandarmology_status).trigger('change');
-            // $('#timeframe').val(r.data.timeframe).trigger('change');
+
+            calculateMarginOfSafety();
+            getFundamentalTagByFundamentalAnalysisId(r.data.id);
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
+    var getFundamentalTagByFundamentalAnalysisId = function (fundamental_analysis_id) {
+      $.ajax({
+        url: $.helper.baseApiPath("/fundamental_analysis_tag/getAll?fundamental_analysis_id=" + fundamental_analysis_id),
+        type: 'GET',
+        success: function (r) {
+          console.log("getFundamentalTagByFundamentalAnalysisId", r);
+          if (r.status) {
+            if (r.data.length > 0) {
+              $.each(r.data, function( index, value ) {
+                var newOption = new Option(value.tag_name, value.id, true, true);
+                $('#tagLookup').append(newOption).trigger('change');
+              });
+            }
           }
         },
         error: function (r) {

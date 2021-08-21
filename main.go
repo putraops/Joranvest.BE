@@ -24,29 +24,32 @@ var (
 	ctx *gin.Context
 	db  *gorm.DB = config.SetupDatabaseConnection()
 
-	applicationUserRepository     repository.ApplicationUserRepository     = repository.NewApplicationUserRepository(db)
-	membershipRepository          repository.MembershipRepository          = repository.NewMembershipRepository(db)
-	emitenRepository              repository.EmitenRepository              = repository.NewEmitenRepository(db)
-	tagRepository                 repository.TagRepository                 = repository.NewTagRepository(db)
-	technicalAnalysisRepository   repository.TechnicalAnalysisRepository   = repository.NewTechnicalAnalysisRepository(db)
-	fundamentalAnalysisRepository repository.FundamentalAnalysisRepository = repository.NewFundamentalAnalysisRepository(db)
+	applicationUserRepository        repository.ApplicationUserRepository        = repository.NewApplicationUserRepository(db)
+	membershipRepository             repository.MembershipRepository             = repository.NewMembershipRepository(db)
+	emitenRepository                 repository.EmitenRepository                 = repository.NewEmitenRepository(db)
+	tagRepository                    repository.TagRepository                    = repository.NewTagRepository(db)
+	technicalAnalysisRepository      repository.TechnicalAnalysisRepository      = repository.NewTechnicalAnalysisRepository(db)
+	fundamentalAnalysisRepository    repository.FundamentalAnalysisRepository    = repository.NewFundamentalAnalysisRepository(db)
+	fundamentalAnalysisTagRepository repository.FundamentalAnalysisTagRepository = repository.NewFundamentalAnalysisTagRepository(db)
 
-	authService                service.AuthService                = service.NewAuthService(applicationUserRepository)
-	jwtService                 service.JWTService                 = service.NewJWTService()
-	applicationUserService     service.ApplicationUserService     = service.NewApplicationUserService(applicationUserRepository)
-	membershipService          service.MembershipService          = service.NewMembershipService(membershipRepository)
-	emitenService              service.EmitenService              = service.NewEmitenService(emitenRepository)
-	tagService                 service.TagService                 = service.NewTagService(tagRepository)
-	technicalAnalysisService   service.TechnicalAnalysisService   = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
-	fundamentalAnalysisService service.FundamentalAnalysisService = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
+	authService                   service.AuthService                   = service.NewAuthService(applicationUserRepository)
+	jwtService                    service.JWTService                    = service.NewJWTService()
+	applicationUserService        service.ApplicationUserService        = service.NewApplicationUserService(applicationUserRepository)
+	membershipService             service.MembershipService             = service.NewMembershipService(membershipRepository)
+	emitenService                 service.EmitenService                 = service.NewEmitenService(emitenRepository)
+	tagService                    service.TagService                    = service.NewTagService(tagRepository)
+	technicalAnalysisService      service.TechnicalAnalysisService      = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
+	fundamentalAnalysisService    service.FundamentalAnalysisService    = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
+	fundamentalAnalysisTagService service.FundamentalAnalysisTagService = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
 
-	authController                controllers.AuthController                = controllers.NewAuthController(authService, jwtService)
-	membershipController          controllers.MembershipController          = controllers.NewMembershipController(membershipService, jwtService)
-	emitenController              controllers.EmitenController              = controllers.NewEmitenController(emitenService, jwtService)
-	tagController                 controllers.TagController                 = controllers.NewTagController(tagService, jwtService)
-	applicationUserController     controllers.ApplicationUserController     = controllers.NewApplicationUserController(applicationUserService, jwtService)
-	technicalAnalysisController   controllers.TechnicalAnalysisController   = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
-	fundamentalAnalysisController controllers.FundamentalAnalysisController = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
+	authController                   controllers.AuthController                   = controllers.NewAuthController(authService, jwtService)
+	membershipController             controllers.MembershipController             = controllers.NewMembershipController(membershipService, jwtService)
+	emitenController                 controllers.EmitenController                 = controllers.NewEmitenController(emitenService, jwtService)
+	tagController                    controllers.TagController                    = controllers.NewTagController(tagService, jwtService)
+	applicationUserController        controllers.ApplicationUserController        = controllers.NewApplicationUserController(applicationUserService, jwtService)
+	technicalAnalysisController      controllers.TechnicalAnalysisController      = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
+	fundamentalAnalysisController    controllers.FundamentalAnalysisController    = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
+	fundamentalAnalysisTagController controllers.FundamentalAnalysisTagController = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
 )
 
 func createMyRender(view_path string) multitemplate.Renderer {
@@ -546,6 +549,12 @@ func main() {
 		fundamentalAnalysisApiRoutes.POST("/save", fundamentalAnalysisController.Save)
 		fundamentalAnalysisApiRoutes.GET("/getById/:id", fundamentalAnalysisController.GetById)
 		fundamentalAnalysisApiRoutes.DELETE("/deleteById/:id", fundamentalAnalysisController.DeleteById)
+	}
+
+	fundamentalAnalysisTagApiRoutes := r.Group("api/fundamental_analysis_tag")
+	{
+		fundamentalAnalysisTagApiRoutes.GET("/getById/:id", fundamentalAnalysisTagController.GetById)
+		fundamentalAnalysisTagApiRoutes.GET("/getAll", fundamentalAnalysisTagController.GetAll)
 	}
 
 	r.Run(":10000")
