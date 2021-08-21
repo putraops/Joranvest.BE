@@ -27,6 +27,7 @@ var (
 	membershipRepository             repository.MembershipRepository             = repository.NewMembershipRepository(db)
 	filemasterRepository             repository.FilemasterRepository             = repository.NewFilemasterRepository(db)
 	emitenRepository                 repository.EmitenRepository                 = repository.NewEmitenRepository(db)
+	emitenCategoryRepository         repository.EmitenCategoryRepository         = repository.NewEmitenCategoryRepository(db)
 	sectorRepository                 repository.SectorRepository                 = repository.NewSectorRepository(db)
 	tagRepository                    repository.TagRepository                    = repository.NewTagRepository(db)
 	technicalAnalysisRepository      repository.TechnicalAnalysisRepository      = repository.NewTechnicalAnalysisRepository(db)
@@ -39,6 +40,7 @@ var (
 	membershipService             service.MembershipService             = service.NewMembershipService(membershipRepository)
 	filemasterService             service.FilemasterService             = service.NewFilemasterService(filemasterRepository)
 	emitenService                 service.EmitenService                 = service.NewEmitenService(emitenRepository)
+	emitenCategoryService         service.EmitenCategoryService         = service.NewEmitenCategoryService(emitenCategoryRepository)
 	sectorService                 service.SectorService                 = service.NewSectorService(sectorRepository)
 	tagService                    service.TagService                    = service.NewTagService(tagRepository)
 	technicalAnalysisService      service.TechnicalAnalysisService      = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
@@ -49,6 +51,7 @@ var (
 	membershipController             controllers.MembershipController             = controllers.NewMembershipController(membershipService, jwtService)
 	filemasterController             controllers.FilemasterController             = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                 controllers.EmitenController                 = controllers.NewEmitenController(emitenService, jwtService)
+	emitenCategoryController         controllers.EmitenCategoryController         = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
 	sectorController                 controllers.SectorController                 = controllers.NewSectorController(sectorService, jwtService)
 	tagController                    controllers.TagController                    = controllers.NewTagController(tagService, jwtService)
 	applicationUserController        controllers.ApplicationUserController        = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -85,6 +88,11 @@ func createMyRender(view_path string) multitemplate.Renderer {
 
 	r.AddFromFiles("dashboard",
 		view_path+"_base.html", view_path+"admin/dashboard.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+
+	r.AddFromFiles("emiten_category",
+		view_path+"_base.html", view_path+"admin/emiten_category/emiten_category.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 
@@ -362,6 +370,17 @@ func main() {
 			)
 		})
 
+		adminRoutes.GET("/emiten_category", func(c *gin.Context) {
+			data := Setup(c, "Emiten Category", "Emiten Category", "Emiten Category", "Emiten Category", "Emiten Category")
+			c.HTML(
+				http.StatusOK,
+				"emiten_category",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+
 		adminRoutes.GET("/sector", func(c *gin.Context) {
 			data := Setup(c, "Sector", "Sector", "Sector", "Sector", "Sector")
 			c.HTML(
@@ -516,6 +535,15 @@ func main() {
 		emitenApiRoutes.POST("/save", emitenController.Save)
 		emitenApiRoutes.GET("/getById/:id", emitenController.GetById)
 		emitenApiRoutes.DELETE("/deleteById/:id", emitenController.DeleteById)
+	}
+
+	emitenCategoryApiRoutes := r.Group("api/emiten_category")
+	{
+		emitenCategoryApiRoutes.POST("/getDatatables", emitenCategoryController.GetDatatables)
+		emitenCategoryApiRoutes.GET("/lookup", emitenCategoryController.Lookup)
+		emitenCategoryApiRoutes.POST("/save", emitenCategoryController.Save)
+		emitenCategoryApiRoutes.GET("/getById/:id", emitenCategoryController.GetById)
+		emitenCategoryApiRoutes.DELETE("/deleteById/:id", emitenCategoryController.DeleteById)
 	}
 
 	tagApiRoutes := r.Group("api/tag")
