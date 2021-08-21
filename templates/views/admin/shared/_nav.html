@@ -13,20 +13,20 @@
             <i class="fas fa-fw fa-home"></i>
             <span>Dashboard</span></a>
     </li>
-    <li class="nav-item active">
-        <a class="nav-link" href="/admin/sector">
-            <i class="fas fa-fw fa-tag"></i>
-            <span>Sector</span></a>
-    </li>
-    <li class="nav-item active">
-        <a class="nav-link" href="/admin/emiten">
-            <i class="fas fa-fw fa-sticky-note"></i>
-            <span>Emiten</span></a>
-    </li>
-    <li class="nav-item active">
-        <a class="nav-link" href="/admin/membership">
-            <i class="fas fa-fw fa-user-tag"></i>
-            <span>Membership</span></a>
+   
+    <hr class="sidebar-divider mb-0">
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseEmiten" aria-expanded="true" aria-controls="collapseEmiten">
+            <i class="fas fa-fw fa-bars"></i>
+            <span>Emiten</span>
+        </a>
+        <div id="collapseEmiten" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/admin/emiten"><span>Emiten</span></a>
+                <a class="collapse-item" href="/admin/sector"><span>Sector</span></a>
+                <a class="collapse-item" href="/admin/emiten_category"><span>Category</span></a>
+            </div>
+        </div>
     </li>
     
     <hr class="sidebar-divider mb-0">
@@ -52,6 +52,13 @@
     <!-- <hr class="sidebar-divider"> -->
     <!-- Divider -->
 
+    
+
+    <li class="nav-item active">
+        <a class="nav-link" href="/admin/membership">
+            <i class="fas fa-fw fa-user-tag"></i>
+            <span>Membership</span></a>
+    </li>
     <hr class="sidebar-divider">
     <div class="sidebar-heading">
         Management
