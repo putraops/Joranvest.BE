@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +27,7 @@ var (
 	membershipRepository             repository.MembershipRepository             = repository.NewMembershipRepository(db)
 	filemasterRepository             repository.FilemasterRepository             = repository.NewFilemasterRepository(db)
 	emitenRepository                 repository.EmitenRepository                 = repository.NewEmitenRepository(db)
+	sectorRepository                 repository.SectorRepository                 = repository.NewSectorRepository(db)
 	tagRepository                    repository.TagRepository                    = repository.NewTagRepository(db)
 	technicalAnalysisRepository      repository.TechnicalAnalysisRepository      = repository.NewTechnicalAnalysisRepository(db)
 	fundamentalAnalysisRepository    repository.FundamentalAnalysisRepository    = repository.NewFundamentalAnalysisRepository(db)
@@ -41,6 +39,7 @@ var (
 	membershipService             service.MembershipService             = service.NewMembershipService(membershipRepository)
 	filemasterService             service.FilemasterService             = service.NewFilemasterService(filemasterRepository)
 	emitenService                 service.EmitenService                 = service.NewEmitenService(emitenRepository)
+	sectorService                 service.SectorService                 = service.NewSectorService(sectorRepository)
 	tagService                    service.TagService                    = service.NewTagService(tagRepository)
 	technicalAnalysisService      service.TechnicalAnalysisService      = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
 	fundamentalAnalysisService    service.FundamentalAnalysisService    = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
@@ -50,6 +49,7 @@ var (
 	membershipController             controllers.MembershipController             = controllers.NewMembershipController(membershipService, jwtService)
 	filemasterController             controllers.FilemasterController             = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                 controllers.EmitenController                 = controllers.NewEmitenController(emitenService, jwtService)
+	sectorController                 controllers.SectorController                 = controllers.NewSectorController(sectorService, jwtService)
 	tagController                    controllers.TagController                    = controllers.NewTagController(tagService, jwtService)
 	applicationUserController        controllers.ApplicationUserController        = controllers.NewApplicationUserController(applicationUserService, jwtService)
 	technicalAnalysisController      controllers.TechnicalAnalysisController      = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
@@ -90,6 +90,11 @@ func createMyRender(view_path string) multitemplate.Renderer {
 
 	r.AddFromFiles("emiten",
 		view_path+"_base.html", view_path+"admin/emiten/emiten.index.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+
+	r.AddFromFiles("sector",
+		view_path+"_base.html", view_path+"admin/sector/sector.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 
@@ -357,6 +362,17 @@ func main() {
 			)
 		})
 
+		adminRoutes.GET("/sector", func(c *gin.Context) {
+			data := Setup(c, "Sector", "Sector", "Sector", "Sector", "Sector")
+			c.HTML(
+				http.StatusOK,
+				"sector",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+
 		adminRoutes.GET("/tag", func(c *gin.Context) {
 			data := Setup(c, "Tag", "", "", "", "")
 			c.HTML(
@@ -493,42 +509,6 @@ func main() {
 		authRoutes.GET("/logout", authController.Logout)
 	}
 
-	r.POST("/upload", func(c *gin.Context) {
-		file, err := c.FormFile("file")
-		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-			return
-		}
-
-		filename := filepath.Base(file.Filename)
-		// out, err := os.Create("public/" + filename)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// defer out.Close()
-		// _, err = io.Copy(out, file)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		folderUpload := "images/"
-		_, errStat := os.Stat(folderUpload)
-		if os.IsNotExist(errStat) {
-			errDir := os.MkdirAll(folderUpload, 0755)
-			if errDir != nil {
-				log.Fatal(errStat)
-			}
-		}
-
-		path := folderUpload + filename
-		if err := c.SaveUploadedFile(file, path); err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
-			return
-		}
-
-		c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
-	})
-
 	emitenApiRoutes := r.Group("api/emiten")
 	{
 		emitenApiRoutes.POST("/getDatatables", emitenController.GetDatatables)
@@ -545,6 +525,15 @@ func main() {
 		tagApiRoutes.POST("/save", tagController.Save)
 		tagApiRoutes.GET("/getById/:id", tagController.GetById)
 		tagApiRoutes.DELETE("/deleteById/:id", tagController.DeleteById)
+	}
+
+	sectorApiRoutes := r.Group("api/sector")
+	{
+		sectorApiRoutes.POST("/getDatatables", sectorController.GetDatatables)
+		sectorApiRoutes.GET("/lookup", sectorController.Lookup)
+		sectorApiRoutes.POST("/save", sectorController.Save)
+		sectorApiRoutes.GET("/getById/:id", sectorController.GetById)
+		sectorApiRoutes.DELETE("/deleteById/:id", sectorController.DeleteById)
 	}
 
 	membershipApiRoutes := r.Group("api/membership")
