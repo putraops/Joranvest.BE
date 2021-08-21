@@ -82,6 +82,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.Article{},
 		&models.ArticleTag{},
 		&models.Membership{},
+		&models.Filemaster{},
 
 		&models.TechnicalAnalysis{},
 		&models.FundamentalAnalysis{},
@@ -97,6 +98,9 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_emiten = entity_view_models.EntityEmitenView{}
 	viewList[vw_emiten.TableName()] = vw_emiten.Migration()
+
+	var vw_filemaster = entity_view_models.EntityFilemasterView{}
+	viewList[vw_filemaster.TableName()] = vw_filemaster.Migration()
 
 	var vw_tag = entity_view_models.EntityTagView{}
 	viewList[vw_tag.TableName()] = vw_tag.Migration()
