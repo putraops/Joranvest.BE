@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"joranvest/commons"
 	"joranvest/dto"
@@ -54,22 +55,36 @@ func (c *fundamentalAnalysisController) Save(context *gin.Context) {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
 	} else {
+		fmt.Println("not error")
 		authHeader := context.GetHeader("Authorization")
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
 		var newRecord = models.FundamentalAnalysis{}
 		newRecord.FundamentalAnalysisTag = []models.FundamentalAnalysisTag{}
 
-		var temp []string
+		var arrtempTagId []string
 		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
-		json.Unmarshal([]byte(recordDto.Tag), &temp)
+		json.Unmarshal([]byte(recordDto.Tag), &arrtempTagId)
 		json.Unmarshal([]byte(recordDto.Tag), &newRecord.FundamentalAnalysisTag)
 		newRecord.EntityId = userIdentity.EntityId
 
 		//-- Mapping Tag Id in array into array of struct of FundamentalAnalysisTag
-		for i := 0; i < len(temp); i++ {
-			newRecord.FundamentalAnalysisTag[i].TagId = temp[i]
+		for i := 0; i < len(arrtempTagId); i++ {
+			newRecord.FundamentalAnalysisTag[i].TagId = arrtempTagId[i]
 		}
+
+		// myDateString := "2018-01-20 00:00:00"
+		//var temp = time.Time{}
+		fmt.Println("not error")
+		fmt.Println(recordDto.ResearchDate)
+		fmt.Println(recordDto.ResearchDate.String())
+		tempDate, err := time.Parse("2006-01-02 15:04:05 +0000 UTC", recordDto.ResearchDate.String())
+		if err != nil {
+			panic(err)
+		}
+		newRecord.ResearchDate.Time = tempDate
+		newRecord.ResearchDate.Valid = true
+		// record.ResearchDate = "2021-08-20 17:31:54.911026"
 
 		if recordDto.Id == "" {
 			newRecord.CreatedBy = userIdentity.UserId

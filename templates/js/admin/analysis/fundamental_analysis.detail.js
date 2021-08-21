@@ -5,6 +5,11 @@
   var $recordId = $("#recordId");
 
   var pageFunction = function () {
+    $(".input-date").datepicker({
+      format: 'yyyy-mm-dd',
+      autoHide: true
+    });
+
     var initEmitenLookup = function () {
       var url = $.helper.baseApiPath("/emiten/lookup");
       $("#emiten_id").select2({
@@ -121,6 +126,7 @@
       var record = $form.serializeToJSON();
       var tags = $("#tagLookup").val();
       record.tag = JSON.stringify(tags);
+      record.research_date += "T00:00:00Z";
 
       $.ajax({
         url: $.helper.baseApiPath("/fundamental_analysis/save"),
@@ -172,6 +178,8 @@
               return r.data[this.name];
             });
             $("textarea[name=research_data]").val(r.data.research_data);
+            $("input[name=research_date]").val(moment(r.data.research_date.Time).format('YYYY-MM-DD'));
+            $(".input-date").datepicker('setDate', moment(r.data.research_date.Time).format('YYYY-MM-DD'));    
             
             var newOption = new Option(r.data.emiten.emiten_name + " [" + r.data.emiten.emiten_code + "]", r.data.emiten_id, false, false);
             $('#emiten_id').append(newOption).trigger('change');

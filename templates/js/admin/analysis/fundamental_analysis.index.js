@@ -169,7 +169,7 @@
             render: function (data, type, row) {
               var html = "";
               if (type === 'display') {
-                html  = "<div class='text-wrap width-200'>" + moment(row.research_date.Time).format('MMM DD, YYYY'); + "</div>";
+                html  = "<div class='text-wrap width-200'>" + moment(row.research_date.Time).format('MMM DD, YYYY') + "</div>";
               }
               return html;
             }

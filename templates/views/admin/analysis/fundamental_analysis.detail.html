@@ -13,7 +13,7 @@
         color: #940303;
     }
     .normal-price {
-        color: #1d1d1d;
+        color: #878787;
     }
 </style>
 <div class="container-fluid text-dark">
@@ -68,12 +68,20 @@
                                         </div>
                                     </div>
 
+                                    <div class="input-group">
+                                        <input type="text" class="form-control input-date" name="research_date" placeholder="Pick a date" autocomplete="off">
+                                        <div class="input-group-append">
+                                          <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger" disabled="">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                          </button>
+                                        </div>
+                                      </div>
 
                                     <div class="form-group mb-1">
                                         <label class="mb-md-1 input-title">Tag <span class="text-danger">*</span></label>
                                         <select class="form-control" id="tagLookup" required="" multiple="multiple" >
                                         </select>
-                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Timeframe tidak boleh kosong.</small>
+                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Tag tidak boleh kosong.</small>
                                     </div>
 
                                     <div class="form-group mb-1">

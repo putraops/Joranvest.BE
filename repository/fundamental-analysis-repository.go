@@ -119,7 +119,6 @@ func (db *fundamentalAnalysisConnection) Insert(record models.FundamentalAnalysi
 
 	record.Id = uuid.New().String()
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	for i := 0; i < len(record.FundamentalAnalysisTag); i++ {
 		record.FundamentalAnalysisTag[i].Id = uuid.New().String()
