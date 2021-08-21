@@ -6,7 +6,7 @@ import (
 )
 
 type EntityTagView struct {
-	models.Membership
+	models.Tag
 }
 
 func (EntityTagView) TableName() string {
