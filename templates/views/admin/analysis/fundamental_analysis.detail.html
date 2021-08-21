@@ -15,6 +15,9 @@
     .normal-price {
         color: #878787;
     }
+    .dropzone {
+        min-height: 0 !important;
+    }
 </style>
 <div class="container-fluid text-dark">
     <nav aria-label="breadcrumb">
@@ -28,70 +31,95 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card o-hidden border-0 shadow-lg">
-                <div class="card-body p-0">
-                    <!-- Nested Row within Card Body -->
+                <div class="card-header py-3">
+                    <h5 class="m-0 font-weight-bold text-primary text-center">Form {{.data.subheader}}</h5>
+                </div>
+                <div class="card-body">
                     <div class="row">
-                        <div class="col-xl-8 col-lg-10 col-md-12">
-                            <div class="p-4">
-                                <div class="text-center">
-                                    <h1 class="h4 text-gray-900 mb-4">Form {{.data.subheader}}</h1>
+                        <div class="col-xl-8 col-lg-10 col-md-12 mb-2">
+                            <div class="alert alert-warning no-radius p-2" role="alert">
+                                <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh kosong.</span>
+                            </div>
+                            <form id="form-analysis">
+                                <input type="hidden" name="id" id="recordId" value={{.data.id}}>
+                                <div class="form-group mb-1">
+                                    <label class="mb-1 input-title">Nama Emiten <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="emiten_id" name="emiten_id" required>
+                                    </select>                                       
+                                    <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Emiten tidak boleh kosong.</small>
                                 </div>
-                                <hr />
-                                <div class="alert alert-warning no-radius p-2" role="alert">
-                                    <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh kosong.</span>
-                                </div>
-                                <form id="form-technical-analysis">
-                                    <input type="hidden" name="id" id="recordId" value={{.data.id}}>
-                                    <div class="form-group mb-1">
-                                        <label class="mb-1 input-title">Nama Emiten <span class="text-danger">*</span></label>
-                                        <select class="form-control" id="emiten_id" name="emiten_id" required>
-                                        </select>                                       
-                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Emiten tidak boleh kosong.</small>
+                                
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6">
+                                        <label class="mb-1 input-title">Harga Saat Ini <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control text-right calculation numeric" name="current_price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
                                     </div>
                                     
-                                    <div class="row">
-                                        <div class="col-lg-4 col-md-6">
-                                            <label class="mb-1 input-title">Harga Saat Ini <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control text-right calculation numeric" name="current_price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
-                                        </div>
-                                        
-                                        <div class="col-lg-4 col-md-6">
-                                            <label class="mb-1 input-title">Harga Wajar <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control text-right calculation numeric" name="normal_price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
-                                        </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <label class="mb-1 input-title">Harga Wajar <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control text-right calculation numeric" name="normal_price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
                                     </div>
-                                    <div class="row">
-                                        <div class="col-lg-3 col-md-5 mb-1">
-                                            <label class="mb-1 input-title">Margin of Safety <span class="text-danger">*</span></label>
-                                            <p class="normal-price mb-0" id="lbl-marginOfSafety" style="margin-top: -15px;">-</p>
-                                            <input type="hidden" class="form-control text-right numeric-money" name="margin_of_safety" data-inputmask="'alias': 'currency'" im-insert="true" required="">
-                                        </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-5 mb-1">
+                                        <label class="mb-1 input-title">Margin of Safety <span class="text-danger">*</span></label>
+                                        <p class="normal-price mb-0" id="lbl-marginOfSafety" style="margin-top: -15px;">-</p>
+                                        <input type="hidden" class="form-control text-right numeric-money" name="margin_of_safety" data-inputmask="'alias': 'currency'" im-insert="true" required="">
                                     </div>
+                                </div>
 
-                                    <div class="input-group">
-                                        <input type="text" class="form-control input-date bg-white cursor-pointer" name="research_date" placeholder="Pick a date" autocomplete="off" readonly="">
-                                        <div class="input-group-append">
-                                          <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger" disabled="">
-                                            <i class="fa fa-calendar" aria-hidden="true"></i>
-                                          </button>
+                                <div class="input-group">
+                                    <input type="text" class="form-control input-date bg-white cursor-pointer" name="research_date" placeholder="Pick a date" autocomplete="off" readonly="">
+                                    <div class="input-group-append">
+                                      <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger" disabled="">
+                                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                <div class="form-group mb-1">
+                                    <label class="mb-md-1 input-title">Tag <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="tagLookup" required="" multiple="multiple" >
+                                    </select>
+                                    <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Tag tidak boleh kosong.</small>
+                                </div>
+
+                                <div class="form-group mb-1">
+                                    <label class="mb-1 input-title">Data Riset <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" name="research_data" required=""></textarea>
+                                </div>
+                            </form>
+                            <button class="btn btn-primary btn-block mt-3" id="btn-save">
+                                Simpan
+                            </button>
+                        </div>
+                        <div class="col-xl-4 col-lg-2 col-md-12 d-none" id="section-attachments">
+                            <div class="card shadow">
+                                <div class="card-header">
+                                    <h6 class="m-0 font-weight-bold">Attachments</h6>
+                                </div>
+                                <div class="card-body pb-2">
+                                    <div id="my-dropzone" action="#" class="dropzone pt-3 pb-0">
+                                        <div class="dz-default dz-message mb-0 mt-0">
+                                            <div class="dz-icon">
+                                                <i class="demo-pli-upload-to-cloud icon-5x" aria-hidden="true"></i>
+                                            </div>
+                                            <div>
+                                                <span class="dz-text">Browse files to upload</span>
+                                                <p class="text-sm text-muted">or click to pick manually</p>
+                                            </div>
                                         </div>
-                                      </div>
-
-                                    <div class="form-group mb-1">
-                                        <label class="mb-md-1 input-title">Tag <span class="text-danger">*</span></label>
-                                        <select class="form-control" id="tagLookup" required="" multiple="multiple" >
-                                        </select>
-                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Tag tidak boleh kosong.</small>
+                                        <div class="fallback">
+                                            <input id="file" name="file" type="file" multiple="">
+                                        </div>
                                     </div>
-
-                                    <div class="form-group mb-1">
-                                        <label class="mb-1 input-title">Data Riset <span class="text-danger">*</span></label>
-                                        <textarea class="form-control" name="research_data" required=""></textarea>
-                                    </div>
-                                </form>
-                                <button class="btn btn-primary btn-block mt-3" id="btn-save">
-                                    Simpan
-                                </button>
+                                </div>
+                                <div class="card-header pt-0 pb-2" id="section-files" style="font-size: 12px;">
+                                    <p class="font-weight-bold mb-0">
+                                        <i class="demo-psi-paperclip icon-fw" aria-hidden="true"></i> <span class="font-weight-bold">Total Attachments </span>
+                                        <span>(<label id="total_attachment">0</label>)</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

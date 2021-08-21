@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"joranvest/helper"
 	"joranvest/models"
@@ -43,8 +46,16 @@ func (c *filemasterController) GetAll(context *gin.Context) {
 }
 
 func (c *filemasterController) Insert(context *gin.Context) {
+	id := context.Param("id")
+
 	result := helper.Response{}
 	var record models.Filemaster
+
+	file, err1 := context.FormFile("file")
+	if err1 != nil {
+		context.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err1.Error()))
+		return
+	}
 
 	err := context.Bind(&record)
 	if err != nil {
@@ -54,8 +65,30 @@ func (c *filemasterController) Insert(context *gin.Context) {
 		authHeader := context.GetHeader("Authorization")
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
+		folderUpload := "images/"
+		filename := filepath.Base(file.Filename)
+		//-- Create folder if not exist
+		_, errStat := os.Stat(folderUpload)
+		if os.IsNotExist(errStat) {
+			errDir := os.MkdirAll(folderUpload, 0755)
+			if errDir != nil {
+				log.Fatal(errStat)
+			}
+		}
+
+		path := folderUpload + filename
+		if err := context.SaveUploadedFile(file, path); err != nil {
+			context.String(http.StatusBadRequest, fmt.Sprintf("Upload File Error: %s", err.Error()))
+			return
+		}
+
+		record.RecordId = id
 		record.EntityId = userIdentity.EntityId
 		record.CreatedBy = userIdentity.UserId
+		record.Filepath = path
+		record.Filename = filename
+		record.Extension = filepath.Ext(file.Filename)
+		record.Size = fmt.Sprint(file.Size)
 		result = c.filemasterService.Insert(record)
 
 		if result.Status {

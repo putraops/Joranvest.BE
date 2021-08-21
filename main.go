@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -26,6 +28,7 @@ var (
 
 	applicationUserRepository        repository.ApplicationUserRepository        = repository.NewApplicationUserRepository(db)
 	membershipRepository             repository.MembershipRepository             = repository.NewMembershipRepository(db)
+	filemasterRepository             repository.FilemasterRepository             = repository.NewFilemasterRepository(db)
 	emitenRepository                 repository.EmitenRepository                 = repository.NewEmitenRepository(db)
 	tagRepository                    repository.TagRepository                    = repository.NewTagRepository(db)
 	technicalAnalysisRepository      repository.TechnicalAnalysisRepository      = repository.NewTechnicalAnalysisRepository(db)
@@ -36,6 +39,7 @@ var (
 	jwtService                    service.JWTService                    = service.NewJWTService()
 	applicationUserService        service.ApplicationUserService        = service.NewApplicationUserService(applicationUserRepository)
 	membershipService             service.MembershipService             = service.NewMembershipService(membershipRepository)
+	filemasterService             service.FilemasterService             = service.NewFilemasterService(filemasterRepository)
 	emitenService                 service.EmitenService                 = service.NewEmitenService(emitenRepository)
 	tagService                    service.TagService                    = service.NewTagService(tagRepository)
 	technicalAnalysisService      service.TechnicalAnalysisService      = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
@@ -44,6 +48,7 @@ var (
 
 	authController                   controllers.AuthController                   = controllers.NewAuthController(authService, jwtService)
 	membershipController             controllers.MembershipController             = controllers.NewMembershipController(membershipService, jwtService)
+	filemasterController             controllers.FilemasterController             = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                 controllers.EmitenController                 = controllers.NewEmitenController(emitenService, jwtService)
 	tagController                    controllers.TagController                    = controllers.NewTagController(tagService, jwtService)
 	applicationUserController        controllers.ApplicationUserController        = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -317,22 +322,6 @@ func main() {
 		c.Redirect(http.StatusMovedPermanently, "/")
 	})
 
-	r.POST("/upload", func(c *gin.Context) {
-		file, err := c.FormFile("file")
-		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-			return
-		}
-
-		filename := filepath.Base(file.Filename)
-		if err := c.SaveUploadedFile(file, filename); err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
-			return
-		}
-
-		c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
-	})
-
 	adminRoutes := r.Group("admin")
 	{
 		adminRoutes.GET("/dashboard", func(c *gin.Context) {
@@ -504,6 +493,42 @@ func main() {
 		authRoutes.GET("/logout", authController.Logout)
 	}
 
+	r.POST("/upload", func(c *gin.Context) {
+		file, err := c.FormFile("file")
+		if err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+			return
+		}
+
+		filename := filepath.Base(file.Filename)
+		// out, err := os.Create("public/" + filename)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// defer out.Close()
+		// _, err = io.Copy(out, file)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+
+		folderUpload := "images/"
+		_, errStat := os.Stat(folderUpload)
+		if os.IsNotExist(errStat) {
+			errDir := os.MkdirAll(folderUpload, 0755)
+			if errDir != nil {
+				log.Fatal(errStat)
+			}
+		}
+
+		path := folderUpload + filename
+		if err := c.SaveUploadedFile(file, path); err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+			return
+		}
+
+		c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
+	})
+
 	emitenApiRoutes := r.Group("api/emiten")
 	{
 		emitenApiRoutes.POST("/getDatatables", emitenController.GetDatatables)
@@ -528,6 +553,13 @@ func main() {
 		membershipApiRoutes.POST("/save", membershipController.Save)
 		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)
 		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
+	}
+
+	filemasterApiRoutes := r.Group("api/filemaster")
+	{
+		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
+		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
+		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)
 	}
 
 	applicationUserApiRoutes := r.Group("api/application_user")

@@ -1,6 +1,6 @@
 (function ($) {
   'use strict';
-  var $form = $('#form-technical-analysis');
+  var $form = $('#form-analysis');
   var $btnSave = $("#btn-save");
   var $recordId = $("#recordId");
 
@@ -9,6 +9,135 @@
       format: 'yyyy-mm-dd',
       autoHide: true
     });
+
+    Dropzone.autoDiscover = false;
+    var myDropzone = new Dropzone("div#my-dropzone", { 
+      paramName: "file", 
+      maxFilesize: 2, 
+      headers:
+      {
+        "Authorization": $('meta[name=x-token]').attr("content")
+      },
+      accept: function(file, done) {
+        if (!file.type.match('\.pdf')
+                    // && !file.type.match('\.doc')
+                    // && !file.type.match('\.xls')
+                    // && !file.type.match('\.docx')
+                    // && !file.type.match('\.xlsx')
+                    // && !(file.type == 'application/vnd.ms-excel')
+                    // && !(file.type == 'application/msword')
+                    // && !(allowedFileFormat.includes(fileExtension))
+                    ) {
+                    // swal("Only allow pdf, doc, xls, msg, jpeg, png and gif file", {
+                    //     icon: "warning",
+                    // });
+    
+                    
+                    Swal.fire('Hanya file .pdf yang diizinkan.', "", 'error');
+                    myDropzone.removeAllFiles();
+                    return;
+                }
+                if ($recordId.val() == '' || $recordId.val() == undefined) {
+                    myDropzone.removeAllFiles();
+                    alert('Please save activity, and try again');
+                    done('Please save activity, and try again');
+                }
+        else { done(); }
+      },
+      init: function () {
+        var checkFile = false;
+        this.on("error", function (file, response) {
+            console.log("error upload : ", response)
+            //loadAttachment();
+            this.removeAllFiles();
+        });
+        this.on("processing", function (file) {
+            this.options.url = $.helper.baseApiPath("/filemaster/upload/") + $recordId.val();
+        });
+      }
+    });
+    myDropzone.on("complete", function(file) {
+      loadAttachments();
+      myDropzone.removeFile(file);
+    });
+
+    var loadAttachments = function () {
+      $.ajax({
+        url: $.helper.baseApiPath("/filemaster/getAll?record_id=" + $recordId.val()),
+        type: 'GET',
+        success: function (r) {
+          console.log("loadAttachments", r);
+          if (r.status) {
+            if (r.data != null && r.data.length > 0) {
+              $("#total_attachment  ").text(r.data.length);
+              $.each(r.data, function( index, value ) {
+                var html = "";
+                if ((value.extension).toUpperCase() == ".PDF") {
+                  html += `<img src="/assets/gallery/icon/iconPDF.png" title="` + value.filename + `" class="mr-1" style="width: 30px;"/>`;
+                }
+                $("#section-files").append(html);
+              });
+            }
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
+   
+    // Dropzone.autoDiscover = false;
+    // var myDropzone = new Dropzone("div#my-dropzone", { // Make the whole body a dropzone
+    //     thumbnailWidth: 50,
+    //     thumbnailHeight: 50,
+    //     parallelUploads: 20,
+    //     // autoQueue: true, // Make sure the files aren't queued until manually added,
+    //     autoProcessQueue: false,
+    //     // headers:
+    //     // {
+    //     //     "Authorization": 'Bearer ' + $('meta[name=x-token]').attr('content'),
+    //     //     "Server-Type": 'Axa.ASP.NET Web API'
+    //     // },
+    //     accept: function (file, done) {
+    //       alert();
+    //       if (file.name == "justinbieber.jpg") {
+    //         done("Naha, you don't.");
+    //       }
+    //       else { done(); }
+    //       // console.log(file);
+    //       // console.log(done);
+    //       //   // let allowedFileFormat = ["msg", "jpeg", "jpg", "png", "gif", "xls", "xlsx", "doc", "docx", "pdf"];
+    //       //   let allowedFileFormat = ["pdf"];
+    //       //   let fileExtension = file.name.split('.').pop();
+    //       //   //console.log("fileExtension ", fileExtension);
+    //       //   if (!file.type.match('\.pdf')
+    //       //       && !file.type.match('\.doc')
+    //       //       && !file.type.match('\.xls')
+    //       //       && !file.type.match('\.docx')
+    //       //       && !file.type.match('\.xlsx')
+    //       //       && !(file.type == 'application/vnd.ms-excel')
+    //       //       && !(file.type == 'application/msword')
+    //       //       && !(allowedFileFormat.includes(fileExtension))) {
+    //       //       // swal("Only allow pdf, doc, xls, msg, jpeg, png and gif file", {
+    //       //       //     icon: "warning",
+    //       //       // });
+
+                
+    //       //       Swal.fire('Hanya file .pdf yang diizinkan.', "", 'error');
+    //       //       myDropzone.removeAllFiles();
+    //       //       return;
+    //       //   }
+    //       //   if ($recordId.val() == '' || $recordId.val() == undefined) {
+    //       //       myDropzone.removeAllFiles();
+    //       //       alert('Please save activity, and try again');
+    //       //       done('Please save activity, and try again');
+    //       //   }
+    //       //   done();
+    //     },
+    // });
+
+   
 
     var initEmitenLookup = function () {
       var url = $.helper.baseApiPath("/emiten/lookup");
@@ -91,7 +220,9 @@
 
     var loadDetail = function () {
       if ($recordId.val() != "") {
+        $("#section-attachments").removeClass("d-none");
         getById($recordId.val());
+        loadAttachments();
       }
     }
 
@@ -135,10 +266,11 @@
         success: function (r) {
           console.log(r);
           if (r.status) {
-            var $message = "Berhasil menambah Analisa Teknikal";
+            var $message = "Berhasil menambah Analisa Teknikal. Silahkan tambah attachment jika diperlukan.";
             if (record.id != "") $message = "Berhasil mengubah Analisa Teknikal";
             Swal.fire('Berhasil!', $message, 'success');
             
+            $("#section-attachments").removeClass("d-none");
             $recordId.val(r.data.id)
             history.pushState('', 'ID', location.hash.split('?')[0] + '?id=' + r.data.id);
           } else {
@@ -165,7 +297,6 @@
         }
       });
     }
-
     
     var getById = function (id) {
       $.ajax({
@@ -201,7 +332,7 @@
         success: function (r) {
           console.log("getFundamentalTagByFundamentalAnalysisId", r);
           if (r.status) {
-            if (r.data.length > 0) {
+            if (r.data != null && r.data.length > 0) {
               $.each(r.data, function( index, value ) {
                 var newOption = new Option(value.tag_name, value.id, true, true);
                 $('#tagLookup').append(newOption).trigger('change');
@@ -248,36 +379,6 @@
         $("#lbl-marginOfSafety").removeClass("expensive");
         $("#lbl-marginOfSafety").addClass("normal-price");
       }
-    }
-
-    var deleteById = function (id, name) {
-      Swal.fire({
-        title: 'Apakah yakin ingin menghapus ' + name + '?',
-        text: "",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya',
-        cancelButtonText: 'Tidak'
-      }).then((result) => {
-        if (result.value) {
-          $.ajax({
-            url: $.helper.baseApiPath("/emiten/deleteById/" + id),
-            type: 'DELETE',
-            success: function (r) {
-              console.log(r);
-              if (r.status) {
-                $dt.ajax.reload();
-                Swal.fire('Berhasil!', name + ' berhasil dihapus', 'success');
-              }
-            },
-            error: function (r) {
-              toastr.error(r.responseText, "Warning");
-            }
-          });
-        }
-      });
     }
 
     return {
