@@ -90,7 +90,7 @@
           },
           {
             data: "user_create",
-            name: "user_create",
+            name: "u1.first_name",
             orderable: true,
             searchable: true,
             class: "text-left",
