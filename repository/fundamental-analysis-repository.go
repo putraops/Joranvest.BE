@@ -134,9 +134,11 @@ func (db *fundamentalAnalysisConnection) Insert(record models.FundamentalAnalysi
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
 
-	if err := tx.Create(&record.FundamentalAnalysisTag).Error; err != nil {
-		tx.Rollback()
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	if len(record.FundamentalAnalysisTag) > 0 {
+		if err := tx.Create(&record.FundamentalAnalysisTag).Error; err != nil {
+			tx.Rollback()
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
 	}
 
 	tx.Commit()
@@ -145,6 +147,7 @@ func (db *fundamentalAnalysisConnection) Insert(record models.FundamentalAnalysi
 }
 
 func (db *fundamentalAnalysisConnection) Update(record models.FundamentalAnalysis) helper.Response {
+	tx := db.connection.Begin()
 	var oldRecord models.FundamentalAnalysis
 	db.connection.First(&oldRecord, "id = ?", record.Id)
 	if record.Id == "" {
@@ -152,16 +155,40 @@ func (db *fundamentalAnalysisConnection) Update(record models.FundamentalAnalysi
 		return res
 	}
 
+	//-- Delete Fundamental Analysis Tag
+	var tags models.FundamentalAnalysisTag
+	if err := tx.Where("fundamental_analysis_id = ?", record.Id).Delete(&tags).Error; err != nil {
+		tx.Rollback()
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	for i := 0; i < len(record.FundamentalAnalysisTag); i++ {
+		fmt.Println(record.FundamentalAnalysisTag[i].TagId)
+		record.FundamentalAnalysisTag[i].Id = uuid.New().String()
+		record.FundamentalAnalysisTag[i].OwnerId = record.OwnerId
+		record.FundamentalAnalysisTag[i].EntityId = record.EntityId
+		record.FundamentalAnalysisTag[i].CreatedBy = record.CreatedBy
+		record.FundamentalAnalysisTag[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		record.FundamentalAnalysisTag[i].FundamentalAnalysisId = record.Id
+	}
+	if len(record.FundamentalAnalysisTag) > 0 {
+		if err := tx.Save(&record.FundamentalAnalysisTag).Error; err != nil {
+			tx.Rollback()
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+	}
+
 	record.IsActive = oldRecord.IsActive
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	res := db.connection.Save(&record)
+	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
 	}
 
+	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
 	return helper.ServerResponse(true, "Ok", "", record)
 }

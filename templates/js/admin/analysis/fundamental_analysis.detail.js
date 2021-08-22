@@ -259,6 +259,8 @@
       record.tag = JSON.stringify(tags);
       record.research_date += "T00:00:00Z";
 
+      console.log(record);
+
       $.ajax({
         url: $.helper.baseApiPath("/fundamental_analysis/save"),
         type: 'POST',
@@ -334,7 +336,7 @@
           if (r.status) {
             if (r.data != null && r.data.length > 0) {
               $.each(r.data, function( index, value ) {
-                var newOption = new Option(value.tag_name, value.id, true, true);
+                var newOption = new Option(value.tag_name, value.tag_id, true, true);
                 $('#tagLookup').append(newOption).trigger('change');
               });
             }
