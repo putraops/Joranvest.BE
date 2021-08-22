@@ -192,7 +192,7 @@ func (db *emitenConnection) Update(record models.Emiten) helper.Response {
 
 func (db *emitenConnection) GetById(recordId string) helper.Response {
 	var record models.Emiten
-	db.connection.First(&record, "id = ?", recordId)
+	db.connection.Preload("Sector").Preload("EmitenCategory").First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

@@ -32,12 +32,18 @@
                             <label class="mb-1">Kode Emiten <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="emiten_code" required>
                         </div>
-                        <div class="form-group mb-2">
-                            <label class="mb-1">Harga <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control price numeric-money"
-                                name="current_price" data-inputmask="'alias': 'currency'"
-                                required="" value="0" im-insert="true">
-                        </div>
+                        <div class="form-group mb-1">
+                            <label class="mb-1 input-title">Kategori <span class="text-danger">*</span></label>
+                            <select class="form-control" id="emiten_category_id" name="emiten_category_id" required>
+                            </select>                                       
+                            <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Kategori tidak boleh kosong.</small>
+                        </div>    
+                        <div class="form-group mb-1">
+                            <label class="mb-1 input-title">Sektor <span class="text-danger">*</span></label>
+                            <select class="form-control" id="sector_id" name="sector_id" required>
+                            </select>                                       
+                            <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Sektor tidak boleh kosong.</small>
+                        </div>     
                         <div class="form-group mb-2">
                             <label class="mb-1">Keterangan</label>
                             <input type="text" class="form-control" name="description">
@@ -45,9 +51,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="btn-save">Save
-                        changes</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="btn-save">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -70,7 +75,8 @@
                                 <tr>
                                     <th>Nama Emiten</th>
                                     <th>Kode</th>
-                                    <th>Harga</th>
+                                    <th>Kategori</th>
+                                    <th>Sektor</th>
                                     <th>Keterangan</th>
                                     <th>Action</th>
                                 </tr>

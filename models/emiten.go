@@ -21,6 +21,12 @@ type Emiten struct {
 	EmitenCode   string  `gorm:"type:varchar(10)" json:"emiten_code"`
 	CurrentPrice float64 `gorm:"type:decimal(18,2)" json:"current_price"`
 	Description  string  `gorm:"type:text" json:"description"`
+
+	SectorId         string `gorm:"type:varchar(50);" json:"sector_id"`
+	EmitenCategoryId string `gorm:"type:varchar(50);" json:"emiten_category_id"`
+
+	Sector         Sector         `gorm:"foreignkey:SectorId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"sector"`
+	EmitenCategory EmitenCategory `gorm:"foreignkey:EmitenCategoryId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"emiten_category"`
 }
 
 func (Emiten) TableName() string {

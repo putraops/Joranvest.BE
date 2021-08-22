@@ -16,6 +16,86 @@
       allowClear: true,
     });
 
+    var initSectorLookup = function () {
+      var url = $.helper.baseApiPath("/sector/lookup");
+      $("#sector_id").select2({
+        ajax: {
+          url: url,
+          dataType: 'json',
+          delay: 250,
+          type: "GET",
+          contentType: "application/json",
+          data: function (params) {
+            var field = JSON.stringify(["name"]);
+            var req = {
+              q: params.term, // search term
+              page: params.page,
+              field: field
+            };
+
+            return req;
+          },
+          processResults: function (r) {
+            return r.data;
+          },
+        },
+        escapeMarkup: function (markup) {
+          return markup;
+        },
+        templateResult: function (data) {
+          var _description = data.description == undefined ? "-" : data.description;
+          var html = `<div class="" style="font-size: 10pt; ">
+                        <span class="fw-700">` + data.text + `</span>
+                      </div>`;
+          return html;
+        },
+        cache: true,
+        placeholder: "Pilih Sector",
+        minimumInputLength: 0,
+        allowClear: true,
+      });
+    }
+
+    var initEmitenCategoryLookup = function () {
+      var url = $.helper.baseApiPath("/emiten_category/lookup");
+      $("#emiten_category_id").select2({
+        ajax: {
+          url: url,
+          dataType: 'json',
+          delay: 250,
+          type: "GET",
+          contentType: "application/json",
+          data: function (params) {
+            var field = JSON.stringify(["name"]);
+            var req = {
+              q: params.term, // search term
+              page: params.page,
+              field: field
+            };
+
+            return req;
+          },
+          processResults: function (r) {
+            return r.data;
+          },
+        },
+        escapeMarkup: function (markup) {
+          return markup;
+        },
+        templateResult: function (data) {
+          var html = `<div class="" style="font-size: 10pt; ">
+                        <span class="fw-700">` + data.text + `</span>
+                      </div>`;
+          return html;
+        },
+        cache: true,
+        placeholder: "Pilih Kategori",
+        minimumInputLength: 0,
+        allowClear: true,
+      });
+    }
+
+    // dropdownParent: $modalForm,
     $btnFilter.on("click", function () {
       loadDatatables();
     });
@@ -101,6 +181,7 @@
             searchable: true,
             class: "text-left",
             render: function (data, type, row) {
+              console.log(row);
               var html = "";
               if (type === 'display') {
                 html = `<span class="font-weight-bold" style="font-size: 10pt;">` + data + `</span>`;
@@ -108,25 +189,31 @@
               return html;
             }
           },
-          
           {
-            data: "current_price",
-            name: "current_price",
-            orderable: true,
-            searchable: true,
+            data: "emiten_category_name",
+            name: "c.name",
+            orderable: false,
+            searchable: false,
             class: "text-left",
             render: function (data, type, row) {
               var html = "";
-              if (type === 'display') {
-                return thousandSeparatorInteger(data)
+              if (type == 'display') {
+                if ((row.emiten_category_name).toUpperCase() == "SYARIAH") {
+                  html += `<span class="badge badge-info">` + row.emiten_category_name + `</span>`;
+                } else {
+                  html += `<span class="badge badge-warning">` + row.emiten_category_name + `</span>`;
+                }
               }
               return html;
             }
           },
-          
+          {
+            data: "sector_name",
+            name: "s.name"
+          },
           {
             data: "description",
-            name: "description"
+            name: "r.description"
           },
           {
             data: "id",
@@ -137,8 +224,8 @@
             render: function (data, type, row) {
               var html = "";
               if (type == 'display') {
-                html += `<button type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 editRow" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Ubah</button>`;
-                html += `<button type="button" class="btn btn-danger btn-xs font-weight-bold d-sm-inline-block shadow-md deleteRow mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Hapus</button>`;
+                html += `<button type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 editRow" data-id="` + data + `" data-name="` + row.emiten_name + `" style="min-width: 50px;">Ubah</button>`;
+                html += `<button type="button" class="btn btn-danger btn-xs font-weight-bold d-sm-inline-block shadow-md deleteRow mr-1" data-id="` + data + `" data-name="` + row.emiten_name + `" style="min-width: 50px;">Hapus</button>`;
               }
               return html;
             }
@@ -230,10 +317,16 @@
         url: $.helper.baseApiPath("/emiten/getById/" + id),
         type: 'GET',
         success: function (r) {
+          console.log(r);
           if (r.status) {
             $form.find('input').val(function () {
               return r.data[this.name];
             });
+            
+            var newOption = new Option(r.data.sector.name, r.data.sector_id, true, true);
+            $('#sector_id').append(newOption).trigger('change');
+            var newOption = new Option(r.data.emiten_category.name, r.data.emiten_category_id, true, true);
+            $('#emiten_category_id').append(newOption).trigger('change');
             $modalForm.modal("show");
           }
         },
@@ -275,8 +368,12 @@
 
     $btnAddNew.on("click", function () {
       $('#recordId').val(null).trigger('change');
+      
       $form.trigger("reset");
       $form.removeClass('was-validated');
+      
+      $('#emiten_category_id').val(null).trigger('change');
+      $('#sector_id').val(null).trigger('change');
       $modalForm.modal("show");
     });
     
@@ -284,6 +381,8 @@
     return {
       init: function () {
         loadDatatables();
+        initSectorLookup();
+        initEmitenCategoryLookup();
       }
     }
   }();
