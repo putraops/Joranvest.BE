@@ -6,7 +6,7 @@ import (
 )
 
 type EntityWebinarCategoryView struct {
-	models.EmitenCategory
+	models.WebinarCategory
 	ParentName string `json:"parent_name"`
 }
 

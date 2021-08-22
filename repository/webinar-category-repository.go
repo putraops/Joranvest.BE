@@ -192,6 +192,10 @@ func (db *webinarCategoryConnection) GetAll(filter map[string]interface{}) []mod
 func (db *webinarCategoryConnection) Insert(record models.WebinarCategory) helper.Response {
 	tx := db.connection.Begin()
 
+	fmt.Println(record.ParentId)
+	fmt.Println(record.ParentId)
+	fmt.Println(record.ParentId)
+	fmt.Println(record.ParentId)
 	record.Id = uuid.New().String()
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
@@ -228,8 +232,8 @@ func (db *webinarCategoryConnection) Update(record models.WebinarCategory) helpe
 }
 
 func (db *webinarCategoryConnection) GetById(recordId string) helper.Response {
-	var record models.WebinarCategory
-	db.connection.Preload("WebinarCategory").First(&record, "id = ?", recordId)
+	var record entity_view_models.EntityWebinarCategoryView
+	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

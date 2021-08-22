@@ -24,8 +24,12 @@
                     </div>
                     <form id="form-basic" class="needs-validation" novalidate>
                         <input type="text" name="id" id="recordId" class="d-none" />
+                        <input type="text" name="parent_id" id="parent_id" class="d-none" />
+                        <div class="form-group mb-2 d-none" id="section-category">
+                            <label class="mb-1">Webinar Category</label>: <span class="font-weight-bold" id="parent_name">-</span>
+                        </div>
                         <div class="form-group mb-2">
-                            <label class="mb-1">Webinar Category<span class="text-danger">*</span></label>
+                            <label class="mb-1">Category<span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
                         </div>
                     </form>
@@ -49,7 +53,8 @@
                         style="min-width: 150px;">Tambah Baru</button>
                     <div class="mt-4">
                         <hr class="mt-2 mb-3" />
-                        <div id="page-user-content" class="panel-body" style="min-height:300px">
+                        <span id="no-data">Tidak ada data</span>
+                        <div id="section-tree" class="panel-body d-none" style="min-height:300px">
                             <div id="category-tree"></div>
                         </div>
                     </div>

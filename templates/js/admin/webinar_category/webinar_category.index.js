@@ -20,19 +20,21 @@
               themes: {
                   "responsive": true
               },
-              check_callback: false,
+              check_callback: true,
               data: function (obj, callback) {
                   $.ajax({
                       type: "GET",
                       dataType: 'json',
                       url: $.helper.baseApiPath("/webinar_category/getTree"),
                       success: function (data) {
-                        console.log(data);
-                        callback.call(this, data);
+                        if (data != null) {
+                          $("#no-data").addClass("d-none");
+                          $("#section-tree").removeClass("d-none");
+                          callback.call(this, data);
+                        }
                       }
                   });
               }
-
           },
           "types": {
               "default": {
@@ -47,23 +49,6 @@
           },
           state: { "key": "id" },
           plugins: ["dnd", "state", "types", "contextmenu"]
-
-
-      });
-
-      $tree.bind("move_node.jstree rename_node.jstree", function (e, data) {
-          if (e.type == "move_node") {
-              // $.get($.helper.resolveApi("~/core/BusinessUnit/order"),
-              //     {
-              //         recordId: data.node.id,
-              //         parentTargetId: data.parent,
-              //         newOrder: data.old_position < data.position ? data.position + 1 : data.position
-              //     }, function (data) {
-              //         if (data.status.success) {
-              //             //$tree.jstree(true).refresh();
-              //         }
-              //     });
-          }
       });
   }
 
@@ -75,77 +60,25 @@
             label: "Create",
             icon: "fa fa-plus-square-o",
             action: function (n) {
-              alert();
-                // $.helper.form.clear($form),
-                //     $.helper.form.fill($form, {
-                //         parent_unit: node.id,
-                //         parent_unit_name: node.text
-                //     });
-                // $businessUnitFormModal.modal('show');
+              if (node.parent == "#") {
+                openModal(true, node.id);
+              } else {
+                toastr.error("Tidak diizinkan menambahkan lebih dari 1 level kategori.", 'Error!');
+              }
             }
         },
         Edit: {
             label: "Edit",
             icon: "fa fa-pencil-square-o",
             action: function () {
-
-                // $businessUnitFormModal.niftyOverlay('show'), $businessUnitFormModal.modal('show'),
-                //     $.helper.form.clear($form),
-                //     $.get($.helper.resolveApi('~core/BusinessUnit/' + node.id + '/detail'), function (r) {
-                //         if (r.status.success) {
-                //             $.helper.form.fill($form, r.data);
-                //         }
-                //         $businessUnitFormModal.niftyOverlay('hide');
-                //     }).fail(function (r) {
-                //         $.helper.noty.error(r.status, r.statusText);
-                //         $businessUnitFormModal.niftyOverlay('hide');
-                //     });
+              openModal(false, node.id);
             }
         },
         Delete: {
             label: "Delete",
             icon: "fa fa-trash-o",
             action: function () {
-
-                var b = bootbox.confirm({
-                    message: "<p class='text-semibold text-main'>Are you sure ?</p><p>You won't be able to revert this!</p>",
-                    buttons: {
-                        confirm: {
-                            className: "btn-danger",
-                            label: "Confirm"
-                        }
-                    },
-                    callback: function (result) {
-                        if (result) {
-
-                            $.ajax({
-                                type: "POST",
-                                dataType: 'json',
-                                contentType: 'application/json',
-                                url: $.helper.resolveApi("~/core/BusinessUnit/delete"),
-                                data: JSON.stringify([node.id]),
-                                success: function (r) {
-                                    if (r.status.success) {
-                                        $.helper.noty.success("Successfully", "Data has been deleted");
-                                        $tree.jstree("refresh");
-                                    } else {
-                                        $.helper.noty.error("Information", r.status.message);
-                                    }
-                                    b.modal('hide');
-                                },
-                                error: function (r) {
-                                    $.helper.noty.error(r.status, r.statusText);
-                                    b.modal('hide');
-                                }
-                            });
-
-                            return false;
-                        }
-                    },
-                    animateIn: 'bounceIn',
-                    animateOut: 'bounceOut'
-                });
-
+                deleteById(node.id);
             }
         }
     };
@@ -160,15 +93,15 @@
       var isvalidate = $form[0].checkValidity();
       if (isvalidate) {
         var record = $form.serializeToJSON();
-        console.log(record);
         $.ajax({
           url: $.helper.baseApiPath("/webinar_category/save"),
           type: 'POST',
           data: record,
           success: function (r) {
-            console.log(r);
             if (r.status) {
-              loadTree();
+              $("#no-data").addClass("d-none");
+              $("#section-tree").removeClass("d-none");
+              $tree.jstree("refresh");
               $form.trigger("reset");
               $modalForm.modal("hide");
 
@@ -177,7 +110,6 @@
               Swal.fire('Berhasil!', $message, 'success');
             } else {
               $.each(r.errors, function (index, value) {
-                console.log("else: ", value);
                 if (value.includes(`unique constraint "uk_name"`) || value.includes("kunci ganda")) {
                   toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar Webinar Category.", 'Peringatan!');
                 } else {
@@ -190,7 +122,6 @@
             var obj = JSON.parse(r.responseText);
             $.each(obj.errors, function (index, value) {
               if (value.includes("unique index 'uk_name_entity'") || value.includes("kunci ganda")) {
-                console.log("error", value);
                 toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar Webinar Category.", 'Peringatan!');
               } else {
                 toastr.error(value, 'Error!');
@@ -204,17 +135,29 @@
         $form.addClass('was-validated');
       }
     }
-
     
-    var getById = function (id) {
+    var getById = function (is_new, id) {
       $.ajax({
         url: $.helper.baseApiPath("/webinar_category/getById/" + id),
         type: 'GET',
         success: function (r) {
           if (r.status) {
-            $form.find('input').val(function () {
-              return r.data[this.name];
-            });
+            if (!is_new) {
+              $form.find('input').val(function () {
+                return r.data[this.name];
+              });             
+            } else {
+              $("#parent_id").val(r.data.id);
+            }
+
+            if (r.data.parent_id == null) {
+              $("#section-category").addClass("d-none");
+              $("#parent_name").text("");
+            } else {
+              $("#section-category").removeClass("d-none");
+              $("#parent_name").text(r.data.parent_name);
+            }
+
             $modalForm.modal("show");
           }
         },
@@ -224,9 +167,9 @@
       });
     }
 
-    var deleteById = function (id, name) {
+    var deleteById = function (id) {
       Swal.fire({
-        title: 'Apakah yakin ingin menghapus ' + name + '?',
+        title: 'Apakah yakin ingin menghapus category?',
         text: "",
         icon: 'warning',
         showCancelButton: true,
@@ -240,10 +183,9 @@
             url: $.helper.baseApiPath("/webinar_category/deleteById/" + id),
             type: 'DELETE',
             success: function (r) {
-              console.log(r);
               if (r.status) {
-                $dt.ajax.reload();
-                Swal.fire('Berhasil!', name + ' berhasil dihapus', 'success');
+                $tree.jstree("refresh");
+                Swal.fire('Berhasil!', 'Category berhasil dihapus', 'success');
               }
             },
             error: function (r) {
@@ -255,11 +197,25 @@
     }
 
     $btnAddNew.on("click", function () {
-      $('#recordId').val(null).trigger('change');
-      $form.trigger("reset");
-      $form.removeClass('was-validated');
-      $modalForm.modal("show");
+      openModal();
     });
+
+    var openModal = function (is_new, node_id) {
+      if (is_new) {
+        $('#recordId').val(null).trigger('change');
+        $form.trigger("reset");
+        $form.removeClass('was-validated');
+      }
+
+      if (node_id == undefined) {
+        $("#parent_id").val("");
+        $("#section-category").addClass("d-none");
+        $("#parent_name").text("-");
+        $modalForm.modal("show");
+      } else {
+        getById(is_new, node_id);
+      }
+    }
     
 
     return {
