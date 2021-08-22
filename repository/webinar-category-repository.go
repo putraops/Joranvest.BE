@@ -19,6 +19,7 @@ type WebinarCategoryRepository interface {
 	Lookup(req map[string]interface{}) []models.WebinarCategory
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.WebinarCategory
+	GetTree() []commons.JStreeResponse
 	Insert(t models.WebinarCategory) helper.Response
 	Update(record models.WebinarCategory) helper.Response
 	GetById(recordId string) helper.Response
@@ -137,6 +138,43 @@ func (db *webinarCategoryConnection) GetDatatables(request commons.DataTableRequ
 		res.RecordsTotal = 0
 		res.RecordsFiltered = 0
 		res.DataRow = []entity_view_models.EntityWebinarCategoryView{}
+	}
+	return res
+}
+
+func (db *webinarCategoryConnection) GetTree() []commons.JStreeResponse {
+	var res []commons.JStreeResponse
+	var records []models.WebinarCategory
+	db.connection.Where("parent_id = ?", "").Find(&records)
+
+	if len(records) > 0 {
+		for _, s := range records {
+			var item commons.JStreeResponse
+			item.Id = s.Id
+			item.Text = s.Name
+			item.Description = s.Description
+			item.JStreeState.Opened = true
+			item.JStreeState.Disabled = false
+			item.JStreeState.Selected = true
+
+			var childrenModel []models.WebinarCategory
+			db.connection.Where("parent_id = ?", item.Id).Find(&childrenModel)
+			if len(childrenModel) > 0 {
+				var children []commons.JStreeResponse
+				for _, c := range childrenModel {
+					var child commons.JStreeResponse
+					child.Id = c.Id
+					child.Text = c.Name
+					child.Description = c.Description
+					child.JStreeState.Opened = true
+					child.JStreeState.Disabled = false
+					child.JStreeState.Selected = true
+					children = append(children, child)
+				}
+				item.Children = children
+			}
+			res = append(res, item)
+		}
 	}
 	return res
 }

@@ -17,6 +17,7 @@ import (
 type WebinarCategoryController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
+	GetTree(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -56,6 +57,11 @@ func (c *webinarCategoryController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.webinarCategoryService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *webinarCategoryController) GetTree(context *gin.Context) {
+	var result = c.webinarCategoryService.GetTree()
 	context.JSON(http.StatusOK, result)
 }
 
