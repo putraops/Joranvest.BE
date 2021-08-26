@@ -92,6 +92,9 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.FundamentalAnalysis{},
 		&models.FundamentalAnalysisTag{},
 
+		&models.ApplicationMenuCategory{},
+		&models.ApplicationMenu{},
+
 		&models.Order{},
 	)
 
@@ -126,6 +129,12 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_fundamental_analysis_tag = entity_view_models.EntityFundamentalAnalysisTagView{}
 	viewList[vw_fundamental_analysis_tag.TableName()] = vw_fundamental_analysis_tag.Migration()
+
+	var vw_application_menu_category = entity_view_models.EntityApplicationMenuCategoryView{}
+	viewList[vw_application_menu_category.TableName()] = vw_application_menu_category.Migration()
+
+	var vw_application_menu = entity_view_models.EntityApplicationMenuView{}
+	viewList[vw_application_menu.TableName()] = vw_application_menu.Migration()
 
 	if len(viewList) > 0 {
 		for _, detail := range viewList {
