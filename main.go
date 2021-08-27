@@ -23,44 +23,47 @@ var (
 	ctx *gin.Context
 	db  *gorm.DB = config.SetupDatabaseConnection()
 
-	applicationUserRepository        repository.ApplicationUserRepository        = repository.NewApplicationUserRepository(db)
-	membershipRepository             repository.MembershipRepository             = repository.NewMembershipRepository(db)
-	filemasterRepository             repository.FilemasterRepository             = repository.NewFilemasterRepository(db)
-	emitenRepository                 repository.EmitenRepository                 = repository.NewEmitenRepository(db)
-	emitenCategoryRepository         repository.EmitenCategoryRepository         = repository.NewEmitenCategoryRepository(db)
-	webinarCategoryRepository        repository.WebinarCategoryRepository        = repository.NewWebinarCategoryRepository(db)
-	sectorRepository                 repository.SectorRepository                 = repository.NewSectorRepository(db)
-	tagRepository                    repository.TagRepository                    = repository.NewTagRepository(db)
-	technicalAnalysisRepository      repository.TechnicalAnalysisRepository      = repository.NewTechnicalAnalysisRepository(db)
-	fundamentalAnalysisRepository    repository.FundamentalAnalysisRepository    = repository.NewFundamentalAnalysisRepository(db)
-	fundamentalAnalysisTagRepository repository.FundamentalAnalysisTagRepository = repository.NewFundamentalAnalysisTagRepository(db)
+	applicationUserRepository         repository.ApplicationUserRepository         = repository.NewApplicationUserRepository(db)
+	applicationMenuCategoryRepository repository.ApplicationMenuCategoryRepository = repository.NewApplicationMenuCategoryRepository(db)
+	membershipRepository              repository.MembershipRepository              = repository.NewMembershipRepository(db)
+	filemasterRepository              repository.FilemasterRepository              = repository.NewFilemasterRepository(db)
+	emitenRepository                  repository.EmitenRepository                  = repository.NewEmitenRepository(db)
+	emitenCategoryRepository          repository.EmitenCategoryRepository          = repository.NewEmitenCategoryRepository(db)
+	webinarCategoryRepository         repository.WebinarCategoryRepository         = repository.NewWebinarCategoryRepository(db)
+	sectorRepository                  repository.SectorRepository                  = repository.NewSectorRepository(db)
+	tagRepository                     repository.TagRepository                     = repository.NewTagRepository(db)
+	technicalAnalysisRepository       repository.TechnicalAnalysisRepository       = repository.NewTechnicalAnalysisRepository(db)
+	fundamentalAnalysisRepository     repository.FundamentalAnalysisRepository     = repository.NewFundamentalAnalysisRepository(db)
+	fundamentalAnalysisTagRepository  repository.FundamentalAnalysisTagRepository  = repository.NewFundamentalAnalysisTagRepository(db)
 
-	authService                   service.AuthService                   = service.NewAuthService(applicationUserRepository)
-	jwtService                    service.JWTService                    = service.NewJWTService()
-	applicationUserService        service.ApplicationUserService        = service.NewApplicationUserService(applicationUserRepository)
-	membershipService             service.MembershipService             = service.NewMembershipService(membershipRepository)
-	filemasterService             service.FilemasterService             = service.NewFilemasterService(filemasterRepository)
-	emitenService                 service.EmitenService                 = service.NewEmitenService(emitenRepository)
-	emitenCategoryService         service.EmitenCategoryService         = service.NewEmitenCategoryService(emitenCategoryRepository)
-	webinarCategoryService        service.WebinarCategoryService        = service.NewWebinarCategoryService(webinarCategoryRepository)
-	sectorService                 service.SectorService                 = service.NewSectorService(sectorRepository)
-	tagService                    service.TagService                    = service.NewTagService(tagRepository)
-	technicalAnalysisService      service.TechnicalAnalysisService      = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
-	fundamentalAnalysisService    service.FundamentalAnalysisService    = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
-	fundamentalAnalysisTagService service.FundamentalAnalysisTagService = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
+	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
+	jwtService                     service.JWTService                     = service.NewJWTService()
+	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository)
+	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
+	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
+	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository)
+	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
+	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
+	webinarCategoryService         service.WebinarCategoryService         = service.NewWebinarCategoryService(webinarCategoryRepository)
+	sectorService                  service.SectorService                  = service.NewSectorService(sectorRepository)
+	tagService                     service.TagService                     = service.NewTagService(tagRepository)
+	technicalAnalysisService       service.TechnicalAnalysisService       = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
+	fundamentalAnalysisService     service.FundamentalAnalysisService     = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
+	fundamentalAnalysisTagService  service.FundamentalAnalysisTagService  = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
 
-	authController                   controllers.AuthController                   = controllers.NewAuthController(authService, jwtService)
-	membershipController             controllers.MembershipController             = controllers.NewMembershipController(membershipService, jwtService)
-	filemasterController             controllers.FilemasterController             = controllers.NewFilemasterController(filemasterService, jwtService)
-	emitenController                 controllers.EmitenController                 = controllers.NewEmitenController(emitenService, jwtService)
-	emitenCategoryController         controllers.EmitenCategoryController         = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
-	webinarCategoryController        controllers.WebinarCategoryController        = controllers.NewWebinarCategoryController(webinarCategoryService, jwtService)
-	sectorController                 controllers.SectorController                 = controllers.NewSectorController(sectorService, jwtService)
-	tagController                    controllers.TagController                    = controllers.NewTagController(tagService, jwtService)
-	applicationUserController        controllers.ApplicationUserController        = controllers.NewApplicationUserController(applicationUserService, jwtService)
-	technicalAnalysisController      controllers.TechnicalAnalysisController      = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
-	fundamentalAnalysisController    controllers.FundamentalAnalysisController    = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
-	fundamentalAnalysisTagController controllers.FundamentalAnalysisTagController = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
+	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
+	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
+	applicationMenuCategoryController controllers.ApplicationMenuCategoryController = controllers.NewApplicationMenuCategoryController(applicationMenuCategoryService, jwtService)
+	membershipController              controllers.MembershipController              = controllers.NewMembershipController(membershipService, jwtService)
+	filemasterController              controllers.FilemasterController              = controllers.NewFilemasterController(filemasterService, jwtService)
+	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
+	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
+	webinarCategoryController         controllers.WebinarCategoryController         = controllers.NewWebinarCategoryController(webinarCategoryService, jwtService)
+	sectorController                  controllers.SectorController                  = controllers.NewSectorController(sectorService, jwtService)
+	tagController                     controllers.TagController                     = controllers.NewTagController(tagService, jwtService)
+	technicalAnalysisController       controllers.TechnicalAnalysisController       = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
+	fundamentalAnalysisController     controllers.FundamentalAnalysisController     = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
+	fundamentalAnalysisTagController  controllers.FundamentalAnalysisTagController  = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
 )
 
 func createMyRender(view_path string) multitemplate.Renderer {
@@ -101,6 +104,11 @@ func createMyRender(view_path string) multitemplate.Renderer {
 
 	r.AddFromFiles("webinar_category",
 		view_path+"_base.html", view_path+"admin/webinar_category/webinar_category.index.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+
+	r.AddFromFiles("application_menu",
+		view_path+"_base.html", view_path+"admin/application_menu/application_menu.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 
@@ -356,6 +364,17 @@ func main() {
 			)
 		})
 
+		adminRoutes.GET("/application_menu", func(c *gin.Context) {
+			data := Setup(c, "Application Menu", "Application Menu", "Application Menu", "Application Menu", "Application Menu")
+			c.HTML(
+				http.StatusOK,
+				"application_menu",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+
 		adminRoutes.GET("/membership", func(c *gin.Context) {
 			data := Setup(c, "Membership", "", "", "", "")
 			c.HTML(
@@ -554,6 +573,15 @@ func main() {
 		emitenApiRoutes.POST("/save", emitenController.Save)
 		emitenApiRoutes.GET("/getById/:id", emitenController.GetById)
 		emitenApiRoutes.DELETE("/deleteById/:id", emitenController.DeleteById)
+	}
+
+	applicationMenuCategoryApiRoutes := r.Group("api/application_menu_category")
+	{
+		applicationMenuCategoryApiRoutes.POST("/getDatatables", applicationMenuCategoryController.GetDatatables)
+		applicationMenuCategoryApiRoutes.GET("/lookup", applicationMenuCategoryController.Lookup)
+		applicationMenuCategoryApiRoutes.POST("/save", applicationMenuCategoryController.Save)
+		applicationMenuCategoryApiRoutes.GET("/getById/:id", applicationMenuCategoryController.GetById)
+		applicationMenuCategoryApiRoutes.DELETE("/deleteById/:id", applicationMenuCategoryController.DeleteById)
 	}
 
 	emitenCategoryApiRoutes := r.Group("api/emiten_category")
