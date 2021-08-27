@@ -100,6 +100,12 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	viewList := make(map[string]map[string]string)
 
+	var vw_role = entity_view_models.EntityRoleView{}
+	viewList[vw_role.TableName()] = vw_role.Migration()
+
+	var vw_role_member = entity_view_models.EntityRoleMemberView{}
+	viewList[vw_role_member.TableName()] = vw_role_member.Migration()
+
 	var vw_order = entity_view_models.EntityMembershipView{}
 	viewList[vw_order.TableName()] = vw_order.Migration()
 
