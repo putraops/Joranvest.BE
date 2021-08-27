@@ -25,6 +25,7 @@ var (
 
 	applicationUserRepository         repository.ApplicationUserRepository         = repository.NewApplicationUserRepository(db)
 	applicationMenuCategoryRepository repository.ApplicationMenuCategoryRepository = repository.NewApplicationMenuCategoryRepository(db)
+	applicationMenuRepository         repository.ApplicationMenuRepository         = repository.NewApplicationMenuRepository(db)
 	membershipRepository              repository.MembershipRepository              = repository.NewMembershipRepository(db)
 	filemasterRepository              repository.FilemasterRepository              = repository.NewFilemasterRepository(db)
 	emitenRepository                  repository.EmitenRepository                  = repository.NewEmitenRepository(db)
@@ -40,6 +41,7 @@ var (
 	jwtService                     service.JWTService                     = service.NewJWTService()
 	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository)
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
+	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
 	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository)
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
@@ -54,6 +56,7 @@ var (
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
 	applicationMenuCategoryController controllers.ApplicationMenuCategoryController = controllers.NewApplicationMenuCategoryController(applicationMenuCategoryService, jwtService)
+	applicationMenuController         controllers.ApplicationMenuController         = controllers.NewApplicationMenuController(applicationMenuService, jwtService)
 	membershipController              controllers.MembershipController              = controllers.NewMembershipController(membershipService, jwtService)
 	filemasterController              controllers.FilemasterController              = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
@@ -109,6 +112,10 @@ func createMyRender(view_path string) multitemplate.Renderer {
 
 	r.AddFromFiles("application_menu",
 		view_path+"_base.html", view_path+"admin/application_menu/application_menu.index.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+	r.AddFromFiles("application_menu_detail",
+		view_path+"_base.html", view_path+"admin/application_menu/application_menu.detail.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 
@@ -375,6 +382,21 @@ func main() {
 			)
 		})
 
+		adminRoutes.GET("/application_menu/detail", func(c *gin.Context) {
+			data := Setup(c, "Application Menu", "Application Menu", "Application Menu", "Application Menu", "Application Menu")
+			qry := c.Request.URL.Query()
+			if _, found := qry["id"]; found {
+				data["id"] = fmt.Sprint(qry["id"][0])
+			}
+			c.HTML(
+				http.StatusOK,
+				"application_menu_detail",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+
 		adminRoutes.GET("/membership", func(c *gin.Context) {
 			data := Setup(c, "Membership", "", "", "", "")
 			c.HTML(
@@ -582,6 +604,15 @@ func main() {
 		applicationMenuCategoryApiRoutes.POST("/save", applicationMenuCategoryController.Save)
 		applicationMenuCategoryApiRoutes.GET("/getById/:id", applicationMenuCategoryController.GetById)
 		applicationMenuCategoryApiRoutes.DELETE("/deleteById/:id", applicationMenuCategoryController.DeleteById)
+	}
+
+	applicationMenuApiRoutes := r.Group("api/application_menu")
+	{
+		applicationMenuApiRoutes.GET("/getTree", applicationMenuController.GetTree)
+		applicationMenuApiRoutes.GET("/lookup", applicationMenuController.Lookup)
+		applicationMenuApiRoutes.POST("/save", applicationMenuController.Save)
+		applicationMenuApiRoutes.GET("/getById/:id", applicationMenuController.GetById)
+		applicationMenuApiRoutes.DELETE("/deleteById/:id", applicationMenuController.DeleteById)
 	}
 
 	emitenCategoryApiRoutes := r.Group("api/emiten_category")
