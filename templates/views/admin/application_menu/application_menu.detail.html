@@ -5,7 +5,7 @@
         <ol class="breadcrumb pb-2">
         <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
         <li class="breadcrumb-item"><a href="/admin/application_menu">Application Menu Category</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Detail</li>
+        <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-detail">-</li>
         </ol>
     </nav>  
 
@@ -24,15 +24,35 @@
                         <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh kosong.</span>
                     </div>
                     <form id="form-basic" class="needs-validation" novalidate>
+                        <input type="text" name="application_menu_category_id" class="d-none" id="recordId" value={{.data.id}}>
                         <input type="text" name="id" id="recordId" class="d-none" />
                         <input type="text" name="parent_id" id="parent_id" class="d-none" />
                         <div class="form-group mb-2 d-none" id="section-category">
-                            <label class="mb-1">Application Menu</label>: <span class="font-weight-bold" id="parent_name">-</span>
+                            <label class="mb-1">Parent</label>: <span class="font-weight-bold" id="parent_name">-</span>
                         </div>
                         <div class="form-group mb-2">
-                            <label class="mb-1">Application Menu<span class="text-danger">*</span></label>
-                            <input type="text" name="application_menu_category_id" id="recordId" value={{.data.id}}>
+                            <label class="mb-1">Menu <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1">Icon <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="icon_class" required>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1">Action Url</label>
+                                    <div class="input-group">
+                                      <div class="input-group-prepend">
+                                        <div class="input-group-text">/admin/</div>
+                                      </div>
+                                      <input type="text" class="form-control" name="action_url">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -47,13 +67,15 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Daftar</h6>
-                </div>
                 <div class="card-body">
                     <button type="button" class="btn btn-primary btn-sm" id="btn-addNew"
                         style="min-width: 150px;">Tambah Baru</button>
                     <div class="mt-4">
+                        <input type="text" id="applicationMenuCategoryId" class="d-none" value={{.data.id}}>
+                        <div class="spinner-border spinner-border-sm" id="spinner-menu-category-name" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <span id="menu-category-name" class="d-none">-</span>
                         <hr class="mt-2 mb-3" />
                         <span id="no-data">Tidak ada data</span>
                         <div id="section-tree" class="panel-body d-none" style="min-height:300px">
