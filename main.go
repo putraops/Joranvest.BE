@@ -36,6 +36,7 @@ var (
 	technicalAnalysisRepository       repository.TechnicalAnalysisRepository       = repository.NewTechnicalAnalysisRepository(db)
 	fundamentalAnalysisRepository     repository.FundamentalAnalysisRepository     = repository.NewFundamentalAnalysisRepository(db)
 	fundamentalAnalysisTagRepository  repository.FundamentalAnalysisTagRepository  = repository.NewFundamentalAnalysisTagRepository(db)
+	roleRepository                    repository.RoleRepository                    = repository.NewRoleRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
@@ -52,6 +53,7 @@ var (
 	technicalAnalysisService       service.TechnicalAnalysisService       = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
 	fundamentalAnalysisService     service.FundamentalAnalysisService     = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
 	fundamentalAnalysisTagService  service.FundamentalAnalysisTagService  = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
+	roleService                    service.RoleService                    = service.NewRoleService(roleRepository)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -67,6 +69,7 @@ var (
 	technicalAnalysisController       controllers.TechnicalAnalysisController       = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
 	fundamentalAnalysisController     controllers.FundamentalAnalysisController     = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
 	fundamentalAnalysisTagController  controllers.FundamentalAnalysisTagController  = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
+	roleController                    controllers.RoleController                    = controllers.NewRoleController(roleService, jwtService)
 )
 
 func createMyRender(view_path string) multitemplate.Renderer {
@@ -159,6 +162,11 @@ func createMyRender(view_path string) multitemplate.Renderer {
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	r.AddFromFiles("fundamental_analysis_detail",
 		view_path+"_base.html", view_path+"admin/analysis/fundamental_analysis.detail.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+
+	r.AddFromFiles("role",
+		view_path+"_base.html", view_path+"admin/role/role.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	return r
@@ -522,7 +530,17 @@ func main() {
 					"data": data,
 				},
 			)
+		})
 
+		adminRoutes.GET("/role", func(c *gin.Context) {
+			data := Setup(c, "Role", "Role", "Role", "Role", "Role")
+			c.HTML(
+				http.StatusOK,
+				"role",
+				gin.H{
+					"data": data,
+				},
+			)
 		})
 	}
 
@@ -692,6 +710,15 @@ func main() {
 	{
 		fundamentalAnalysisTagApiRoutes.GET("/getById/:id", fundamentalAnalysisTagController.GetById)
 		fundamentalAnalysisTagApiRoutes.GET("/getAll", fundamentalAnalysisTagController.GetAll)
+	}
+
+	roleApiRoutes := r.Group("api/role")
+	{
+		roleApiRoutes.POST("/getDatatables", roleController.GetDatatables)
+		roleApiRoutes.GET("/lookup", roleController.Lookup)
+		roleApiRoutes.POST("/save", roleController.Save)
+		roleApiRoutes.GET("/getById/:id", roleController.GetById)
+		roleApiRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
 	}
 
 	r.Run(":10000")
