@@ -56,7 +56,6 @@
             render: function (data, type, row) {
               var html = "";
               if (type === 'display') {
-                //html = `<a class="font-weight-bold" href="/order/detail?id=`+ row.id +`" style="text-decoration: none; font-size: 10pt;">`+ data +`</a>`;
                 html = `<span class="font-weight-bold" style="font-size: 10pt;">` + data + `</span>`;
               }
               return html;
@@ -71,7 +70,9 @@
             render: function (data, type, row) {
               var html = "";
               if (type == 'display') {
-                html += `<button type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 editRow" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Ubah</button>`;
+                html += `<a href="/admin/role/member?id=` + row.id + `" type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Member</a>`;
+                html += `<a href="/admin/role/menu?id=` + row.id + `" type="button" class="btn btn-info btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Menu</a>`;
+                html += `<button type="button" class="btn btn-warning btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 editRow" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Ubah</button>`;
                 html += `<button type="button" class="btn btn-danger btn-xs font-weight-bold d-sm-inline-block shadow-md deleteRow mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Hapus</button>`;
               }
               return html;
