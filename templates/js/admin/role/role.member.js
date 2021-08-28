@@ -5,18 +5,45 @@
   var $txtSearch = $("#txt-search");
 
   var pageFunction = function () {
+    var loadData = function () {
+      $.handler.setLoading($('#loading-sm-template').html(), $("#role-name"));
+      $.ajax({
+        url: $.helper.baseApiPath("/role/getById/" + $recordId.val()),
+        type: 'GET',
+        success: function (r) {
+          if (r.status) {
+            $("#role-name").html(r.data.name);
+          } else {
+            toastr.error(r.status.message, "Warning!");  
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
     $btnSearch.on("click", function () { 
-      $.handler.setLoading($('#loading-template').html(), $("#section-users"));
       loadAvailableUsers();
-      // if($txtSearch.val().length >= 3) {
-      // } else {
-      //   toastr.error("Minimal 3 characters to search..", "Warning!");
-      // }
+    });
+
+    $txtSearch.keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which);
+        if(keycode == '13'){
+          loadAvailableUsers();
+        }
     });
 
     var loadAvailableUsers = function () {
+      if($txtSearch.val().length >= 1) {
+        $.handler.setLoading($('#loading-center-content-template').html(), $("#section-users"));
+      } else {
+        toastr.error("Minimal 1 characters to search..", "Warning!");
+        return;
+      }
+
       $.ajax({
-        url: $.helper.baseApiPath("/role_member/getUsersNotInRole/" + $recordId.val()),
+        url: $.helper.baseApiPath("/role_member/getUsersNotInRole") + "/" + $recordId.val() + "/" + $txtSearch.val(),
         type: 'GET',
         success: function (r) {
           console.log(r);
@@ -46,7 +73,7 @@
     }
 
     var loadRoleMembers = function () {
-      $.handler.setLoading($('#loading-template').html(), $("#section-roleMembers"));
+      $.handler.setLoading($('#loading-center-content-template').html(), $("#section-roleMembers"));
       $.ajax({
         url: $.helper.baseApiPath("/role_member/getUsersInRole/" + $recordId.val()),
         type: 'GET',
@@ -127,7 +154,7 @@
           console.log(r);
           if (r.status) {
             loadRoleMembers();
-            toastr.success("Success", "Success!")
+            toastr.success("Berhasil mengeluarkan user dari role.", "Success!")
           }
         },
         error: function (r) {
@@ -139,6 +166,12 @@
     return {
       init: function () {
         loadRoleMembers();
+        if ($recordId.val() != "") {
+          loadData();
+        } else {
+          toastr.error("404 not found!", "Warning!");  
+          window.location.assign($.helper.basePath("/admin/role"));
+        }
       }
     }
   }();

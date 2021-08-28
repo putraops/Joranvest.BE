@@ -7,13 +7,13 @@ import (
 
 type EntityRoleMemberView struct {
 	models.RoleMember
-	RoleName   string `json:"role_name"`
-	FirstName  string `json:"first_name"`
-	LastName   string `json:"last_name"`
-	FullName   string `json:"fullname"`
-	UserInital string `json:"user_initial"`
-	UserCreate string `json:"user_create"`
-	UserUpdate string `json:"user_update"`
+	RoleName    string `json:"role_name"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	FullName    string `json:"full_name"`
+	InitialName string `json:"initial_name"`
+	UserCreate  string `json:"user_create"`
+	UserUpdate  string `json:"user_update"`
 }
 
 func (EntityRoleMemberView) TableName() string {
@@ -37,15 +37,15 @@ func (EntityRoleMemberView) ViewModel() string {
 	sql.WriteString("  r.role_id,")
 	sql.WriteString("  ro.name AS role_name,")
 	sql.WriteString("  r.application_user_id,")
-	sql.WriteString("  a.first_name,")
-	sql.WriteString("  a.last_name,")
-	sql.WriteString("  CONCAT(a.first_name, ' ', a.last_name) AS fullname,")
-	sql.WriteString("  CONCAT(LEFT(a.first_name, 1), '', LEFT(a.last_name, 1)) AS user_initial,")
+	sql.WriteString("  u3.first_name,")
+	sql.WriteString("  u3.last_name,")
+	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS full_name,")
+	sql.WriteString("  CONCAT(UPPER(LEFT(u3.first_name, 1)), '', UPPER(LEFT(u3.last_name, 1))) AS initial_name,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM role_member r ")
 	sql.WriteString("LEFT JOIN role ro ON ro.id = r.role_id ")
-	sql.WriteString("LEFT JOIN application_user a ON a.id = r.application_user_id ")
+	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.application_user_id ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	return sql.String()

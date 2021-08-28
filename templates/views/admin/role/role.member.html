@@ -13,11 +13,13 @@
             <div class="card shadow mb-2">
                 <div class="card-body">
                     <span class="h-6 m-0 font-weight-bold text-primary">Role : </span>
-                    <span class="h-6 m-0 font-weight-bold">Writer</span>
+                    <span class="h-6 m-0 font-weight-bold" id="role-name">
+                        
+                    </span>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-6 col-xl-4">
+        <div class="col-md-6 col-lg-5 col-xl-4">
             <div class="card shadow mb-2">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">User</h6>
@@ -55,13 +57,7 @@
     </div>
 </div>
 
-<div id ="loading-template" class="d-none">
-    <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-        <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-</div>
+
 <div id="userNotAvailable-template" class="d-none">
     <div class="alert alert-danger no-radius" role="alert">
         Tidak ada user yang tersedia.
@@ -73,9 +69,9 @@
             <div class="row no-gutters align-items-center">
                 <div class="col mr-2">
                     <div class="media">
-                        <span class="badge badge-secondary btn-circle p-2 mr-2" style="font-size: 15px;">JV</span>                                                <div class="media-body">
-                          <h6 class="mt-0 mb-0">$.{first_name}</h6>
-                          <span class="d-nonea" style="font-size: 12px;">$.{last_name}</span>
+                        <span class="badge badge-secondary btn-circle p-2 mr-2" style="font-size: 15px;">$.{initial_name}</span>                                               <div class="media-body">
+                          <h6 class="mt-0 mb-0">$.{full_name}</h6>
+                          <!-- <span class="d-nonea" style="font-size: 12px;">$.{last_name}</span> -->
                         </div>
                     </div>
                 </div>
@@ -93,9 +89,9 @@
             <div class="row no-gutters align-items-center">
                 <div class="col mr-2">
                     <div class="media">
-                        <span class="badge badge-secondary btn-circle p-2 mr-2" style="font-size: 15px;">JV</span>                                                <div class="media-body">
-                          <h6 class="mt-0 mb-0">$.{first_name}</h6>
-                          <span class="d-nonea" style="font-size: 12px;">$.{last_name}</span>
+                        <span class="badge badge-secondary btn-circle p-2 mr-2" style="font-size: 15px;">$.{initial_name}</span>                                                <div class="media-body">
+                          <h6 class="mt-0 mb-0">$.{full_name}</h6>
+                          <!-- <span class="d-nonea" style="font-size: 12px;">$.{last_name}</span> -->
                         </div>
                     </div>
                 </div>

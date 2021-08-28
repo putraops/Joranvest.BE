@@ -7,7 +7,11 @@ import (
 
 type EntityApplicationUserView struct {
 	models.ApplicationUser
-	RoleName string `json:"role_name"`
+	RoleName    string `json:"role_name"`
+	FullName    string `json:"full_name"`
+	InitialName string `json:"initial_name"`
+	UserCreate  string `json:"user_create"`
+	UserUpdate  string `json:"user_update"`
 }
 
 func (EntityApplicationUserView) TableName() string {
@@ -36,14 +40,17 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  r.phone,")
 	sql.WriteString("  r.email,")
 	sql.WriteString("  r.is_admin,")
-	sql.WriteString("  ro.name AS role_name ")
+	sql.WriteString("  CONCAT(r.first_name, ' ', r.last_name) AS full_name,")
+	sql.WriteString("  CONCAT(UPPER(LEFT(r.first_name, 1)), '', UPPER(LEFT(r.last_name, 1))) AS initial_name,")
+	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
+	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM application_user r ")
-	sql.WriteString("LEFT JOIN role_member rm ON rm.application_user_id = r.id ")
-	sql.WriteString("LEFT JOIN role AS ro ON ro.id = rm.role_id ")
+	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
+	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	return sql.String()
 }
 func (EntityApplicationUserView) Migration() map[string]string {
-	var view = EntityMembershipView{}
+	var view = EntityApplicationUserView{}
 	var m = make(map[string]string)
 	m["view_name"] = view.TableName()
 	m["query"] = view.ViewModel()

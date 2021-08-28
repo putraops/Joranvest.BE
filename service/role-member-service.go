@@ -12,7 +12,7 @@ type RoleMemberService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.RoleMember
 	GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView
-	GetUsersNotInRole(roleId string) []models.ApplicationUser
+	GetUsersNotInRole(roleId string, search string) []entity_view_models.EntityApplicationUserView
 	Insert(record models.RoleMember) helper.Response
 	Update(record models.RoleMember) helper.Response
 	GetById(recordId string) helper.Response
@@ -43,8 +43,8 @@ func (service *roleMemberService) GetUsersInRole(roleId string) []entity_view_mo
 	return result
 }
 
-func (service *roleMemberService) GetUsersNotInRole(roleId string) []models.ApplicationUser {
-	result := service.roleMemberRepository.GetUsersNotInRole(roleId)
+func (service *roleMemberService) GetUsersNotInRole(roleId string, search string) []entity_view_models.EntityApplicationUserView {
+	result := service.roleMemberRepository.GetUsersNotInRole(roleId, search)
 	return result
 }
 

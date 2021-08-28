@@ -56,8 +56,9 @@ func (c *roleMemberController) GetUsersInRole(context *gin.Context) {
 
 func (c *roleMemberController) GetUsersNotInRole(context *gin.Context) {
 	id := context.Param("roleId")
+	search := context.Param("search")
 
-	var users = c.roleMemberService.GetUsersNotInRole(id)
+	var users = c.roleMemberService.GetUsersNotInRole(id, search)
 	res := helper.BuildResponse(true, "Ok", users)
 	context.JSON(http.StatusOK, res)
 }

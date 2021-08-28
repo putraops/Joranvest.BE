@@ -191,7 +191,7 @@ func (db *roleConnection) Update(record models.Role) helper.Response {
 
 func (db *roleConnection) GetById(recordId string) helper.Response {
 	var record models.Role
-	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

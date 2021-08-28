@@ -748,7 +748,7 @@ func main() {
 		roleMemberApiRoutes.GET("/getById/:id", roleMemberController.GetById)
 		roleMemberApiRoutes.DELETE("/deleteById/:id", roleMemberController.DeleteById)
 		roleMemberApiRoutes.GET("/getUsersInRole/:roleId", roleMemberController.GetUsersInRole)
-		roleMemberApiRoutes.GET("/getUsersNotInRole/:roleId", roleMemberController.GetUsersNotInRole)
+		roleMemberApiRoutes.GET("/getUsersNotInRole/:roleId/:search", roleMemberController.GetUsersNotInRole)
 	}
 
 	r.Run(":10000")
