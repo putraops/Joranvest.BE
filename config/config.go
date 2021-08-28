@@ -75,6 +75,9 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.ApplicationUser{},
 		&models.Role{},
 		&models.RoleMember{},
+		&models.ApplicationMenuCategory{},
+		&models.ApplicationMenu{},
+		&models.RoleMenu{},
 
 		&models.EmitenCategory{},
 		&models.Emiten{},
@@ -92,9 +95,6 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.FundamentalAnalysis{},
 		&models.FundamentalAnalysisTag{},
 
-		&models.ApplicationMenuCategory{},
-		&models.ApplicationMenu{},
-
 		&models.Order{},
 	)
 
@@ -108,6 +108,15 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_role_member = entity_view_models.EntityRoleMemberView{}
 	viewList[vw_role_member.TableName()] = vw_role_member.Migration()
+
+	var vw_application_menu_category = entity_view_models.EntityApplicationMenuCategoryView{}
+	viewList[vw_application_menu_category.TableName()] = vw_application_menu_category.Migration()
+
+	var vw_application_menu = entity_view_models.EntityApplicationMenuView{}
+	viewList[vw_application_menu.TableName()] = vw_application_menu.Migration()
+
+	var vw_role_menu = entity_view_models.EntityRoleMenuView{}
+	viewList[vw_role_menu.TableName()] = vw_role_menu.Migration()
 
 	var vw_order = entity_view_models.EntityMembershipView{}
 	viewList[vw_order.TableName()] = vw_order.Migration()
@@ -138,12 +147,6 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_fundamental_analysis_tag = entity_view_models.EntityFundamentalAnalysisTagView{}
 	viewList[vw_fundamental_analysis_tag.TableName()] = vw_fundamental_analysis_tag.Migration()
-
-	var vw_application_menu_category = entity_view_models.EntityApplicationMenuCategoryView{}
-	viewList[vw_application_menu_category.TableName()] = vw_application_menu_category.Migration()
-
-	var vw_application_menu = entity_view_models.EntityApplicationMenuView{}
-	viewList[vw_application_menu.TableName()] = vw_application_menu.Migration()
 
 	if len(viewList) > 0 {
 		for _, detail := range viewList {
