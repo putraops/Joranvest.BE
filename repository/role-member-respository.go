@@ -18,6 +18,7 @@ import (
 type RoleMemberRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.RoleMember
+	GetUsersNotInRole(roleId string) []models.ApplicationUser
 	Insert(t models.RoleMember) helper.Response
 	Update(record models.RoleMember) helper.Response
 	GetById(recordId string) helper.Response
@@ -103,7 +104,6 @@ func (db *roleMemberConnection) GetDatatables(request commons.DataTableRequest) 
 	}
 	return res
 }
-
 func (db *roleMemberConnection) GetAll(filter map[string]interface{}) []models.RoleMember {
 	var records []models.RoleMember
 	if len(filter) == 0 {
@@ -111,6 +111,14 @@ func (db *roleMemberConnection) GetAll(filter map[string]interface{}) []models.R
 	} else if len(filter) != 0 {
 		db.connection.Where(filter).Find(&records)
 	}
+	return records
+}
+
+func (db *roleMemberConnection) GetUsersNotInRole(roleId string) []models.ApplicationUser {
+	records := []models.ApplicationUser{}
+	db.connection.
+		Where("id NOT IN (?)", db.connection.Where("role_id = ? ", roleId).Table("role_member").
+			Select("application_user_id")).Find(&records)
 	return records
 }
 

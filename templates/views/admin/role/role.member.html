@@ -1,0 +1,88 @@
+{{define "_content"}}
+
+<div class="container-fluid text-dark">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pb-2">
+        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Role Member</li>
+        </ol>
+    </nav>  
+    <div class="row">
+        <input type="text" class="d-none" id="recordId" value="{{.data.id}}" />
+        <div class="col-md-12">
+            <div class="card shadow mb-2">
+                <div class="card-body">
+                    <span class="h-6 m-0 font-weight-bold text-primary">Role : </span>
+                    <span class="h-6 m-0 font-weight-bold">Writer</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-6 col-xl-4">
+            <div class="card shadow mb-2">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">User</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" placeholder="Search..." id="txt-search">
+                                <div class="input-group-append">
+                                  <button class="btn btn-outline-secondary no-radius" type="button" id="btn-search">Search</button>
+                                </div>
+                            </div>
+                            <hr />
+                        </div>
+                        <div class="col-12" id="section-users">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-7 col-xl-8">
+            <div class="card shadow mb-2">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Member</h6>
+                </div>
+                <div class="card-body">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id ="loading-template" class="d-none">
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+</div>
+<div id="userNotAvailable-template" class="d-none">
+    <div class="alert alert-danger no-radius" role="alert">
+        Tidak ada user yang tersedia.
+    </div>
+</div>
+<div id="user-template" class="d-none">
+    <div class="card shadow no-radius py-0 mb-1" id="user-$.{id}">
+        <div class="card-body p-2">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                    <div class="media">
+                        <span class="badge badge-secondary btn-circle p-2 mr-2" style="font-size: 15px;">DM</span>                                                <div class="media-body">
+                          <h6 class="mt-0 mb-0">$.{first_name}</h6>
+                          <span class="d-nonea" style="font-size: 12px;">$.{last_name}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-info btn-xs addToRole" data-user_id="$.{id}">Add <i class="fa fa-sign-in-alt"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "_baseScript" .}}
+<script src="/script/admin/role/role.member.js?t={{.data.timenow}}"></script>
+{{end}}

@@ -181,4 +181,45 @@ function thousandSeparatorInteger(nStr) {
     }
 
     $.helper = $.extend({}, routes, controlHelper);
+
+
+    var template = {
+        setLoading: function ($element, $to) {
+            return $to.html($element);
+        },
+        setTemplate: function ($el) {
+            return $el;
+        }
+    }
+    var handler = {
+        template : {
+            fill: function (form, data, excludes) {
+                var $html = form;
+                var isFound = false;
+                var start = 0;
+                var end = 0;
+                for (let i = 0; i < form.length; i++) {
+                    if (form[i] == "$" && form[i + 1] == "." && form[i + 2] == "{") {
+                        isFound = true;
+                        start = i;
+                    } 
+
+                    if (isFound) {
+                        if (form[i] == "}") {
+                            end = i;
+                            var variable = form.substring((start + 3), end);
+                            var value = data[variable];
+                            variable = "$.{" + variable + "}";
+                            $html = $html.replace(variable, value);
+                            isFound = false;
+                            start = 0;
+                            end = 0;
+                        }  
+                    }
+                }
+                return $html;
+            }
+        }
+    }
+    $.handler = $.extend({}, template, handler);
 }(jQuery));

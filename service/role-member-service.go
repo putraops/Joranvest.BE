@@ -10,6 +10,7 @@ import (
 type RoleMemberService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.RoleMember
+	GetUsersNotInRole(roleId string) []models.ApplicationUser
 	Insert(record models.RoleMember) helper.Response
 	Update(record models.RoleMember) helper.Response
 	GetById(recordId string) helper.Response
@@ -33,6 +34,11 @@ func (service *roleMemberService) GetDatatables(request commons.DataTableRequest
 
 func (service *roleMemberService) GetAll(filter map[string]interface{}) []models.RoleMember {
 	return service.roleMemberRepository.GetAll(filter)
+}
+
+func (service *roleMemberService) GetUsersNotInRole(roleId string) []models.ApplicationUser {
+	result := service.roleMemberRepository.GetUsersNotInRole(roleId)
+	return result
 }
 
 func (service *roleMemberService) Insert(record models.RoleMember) helper.Response {
