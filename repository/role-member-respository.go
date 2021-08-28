@@ -18,6 +18,7 @@ import (
 type RoleMemberRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.RoleMember
+	GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView
 	GetUsersNotInRole(roleId string) []models.ApplicationUser
 	Insert(t models.RoleMember) helper.Response
 	Update(record models.RoleMember) helper.Response
@@ -114,11 +115,19 @@ func (db *roleMemberConnection) GetAll(filter map[string]interface{}) []models.R
 	return records
 }
 
+func (db *roleMemberConnection) GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView {
+	records := []entity_view_models.EntityRoleMemberView{}
+	db.connection.Find(&records)
+	// Where("id IN (?)", db.connection.Where("role_id = ? ", roleId).Table("role_member").
+	// 	Select("application_user_id")).Find(&records)
+	return records
+}
+
 func (db *roleMemberConnection) GetUsersNotInRole(roleId string) []models.ApplicationUser {
 	records := []models.ApplicationUser{}
 	db.connection.
-		Where("id NOT IN (?)", db.connection.Where("role_id = ? ", roleId).Table("role_member").
-			Select("application_user_id")).Find(&records)
+		Where("is_admin <> true AND id NOT IN (?)", db.connection.Where("role_id = ? ", roleId).Table("role_member").Select("application_user_id")).
+		Find(&records)
 	return records
 }
 

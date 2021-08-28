@@ -16,6 +16,7 @@ import (
 
 type RoleMemberController interface {
 	GetDatatables(context *gin.Context)
+	GetUsersInRole(context *gin.Context)
 	GetUsersNotInRole(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
@@ -43,6 +44,14 @@ func (c *roleMemberController) GetDatatables(context *gin.Context) {
 	}
 	var result = c.roleMemberService.GetDatatables(dt)
 	context.JSON(http.StatusOK, result)
+}
+
+func (c *roleMemberController) GetUsersInRole(context *gin.Context) {
+	id := context.Param("roleId")
+
+	var users = c.roleMemberService.GetUsersInRole(id)
+	res := helper.BuildResponse(true, "Ok", users)
+	context.JSON(http.StatusOK, res)
 }
 
 func (c *roleMemberController) GetUsersNotInRole(context *gin.Context) {

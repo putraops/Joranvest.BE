@@ -1,25 +1,20 @@
 (function ($) {
   'use strict';
   var $recordId = $("#recordId");
-  var $form = $('#form-basic');
-  var $modalForm = $("#modal-addNew");
-  var $btnAddNew = $("#btn-addNew");
-  var $btnSave = $("#btn-save");
   var $btnSearch = $("#btn-search");
-
   var $txtSearch = $("#txt-search");
 
   var pageFunction = function () {
     $btnSearch.on("click", function () { 
       $.handler.setLoading($('#loading-template').html(), $("#section-users"));
-      loadUsers();
+      loadAvailableUsers();
       // if($txtSearch.val().length >= 3) {
       // } else {
       //   toastr.error("Minimal 3 characters to search..", "Warning!");
       // }
     });
 
-    var loadUsers = function () {
+    var loadAvailableUsers = function () {
       $.ajax({
         url: $.helper.baseApiPath("/role_member/getUsersNotInRole/" + $recordId.val()),
         type: 'GET',
@@ -35,13 +30,42 @@
                 $("#section-users").append(html);
               });
               $(".addToRole").on("click", function () {
-                toastr.error("Error", "Error");
-                $("#user-" + $(this).data("user_id")).remove();
-
                 SaveOrUpdate($(this).data("user_id"));
               });
             } else {
               $.handler.setLoading($('#userNotAvailable-template').html(), $("#section-users"));
+            }
+          } else {
+            toastr.error(r.status.message, "Warning!");  
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
+    var loadRoleMembers = function () {
+      $.handler.setLoading($('#loading-template').html(), $("#section-roleMembers"));
+      $.ajax({
+        url: $.helper.baseApiPath("/role_member/getUsersInRole/" + $recordId.val()),
+        type: 'GET',
+        success: function (r) {
+          console.log(r);
+          
+          var temp = $.handler.setTemplate($('#roleMember-template').html());
+          if (r.status) {
+            if (r.data.length > 0) {
+              $("#section-roleMembers").html("");
+              $.each(r.data, function( index, value ) {
+                var html = $.handler.template.fill(temp, value);
+                $("#section-roleMembers").append(html);
+              });
+              $(".removeFromRole").on("click", function () {
+                deleteById($(this).data("user_id"));
+              });
+            } else {
+              $.handler.setLoading($('#userNotAvailable-template').html(), $("#section-roleMembers"));
             }
           } else {
             toastr.error(r.status.message, "Warning!");  
@@ -67,7 +91,9 @@
         success: function (r) {
           console.log(r);
           if (r.status) {
+            $("#user-" + user_id).remove();
             toastr.success("Berhasil menambahkan ke dalam Role", "Success!");
+            loadRoleMembers();
           } else {
             $.each(r.errors, function (index, value) {
               console.log("else: ", value);
@@ -91,79 +117,28 @@
           });
         }
       });
-
-      return;
-      var isvalidate = $form[0].checkValidity();
-      if (isvalidate) {
-        var record = $form.serializeToJSON();
-        console.log(record);
-        
-      } else {
-        e.preventDefault();
-        e.stopPropagation();
-        $form.addClass('was-validated');
-      }
     }
 
-    
-    var getById = function (id) {
+    var deleteById = function (id) {
       $.ajax({
-        url: $.helper.baseApiPath("/role/getById/" + id),
-        type: 'GET',
+        url: $.helper.baseApiPath("/role_member/deleteById/" + id),
+        type: 'DELETE',
         success: function (r) {
+          console.log(r);
           if (r.status) {
-            $form.find('input').val(function () {
-              return r.data[this.name];
-            });
-            $modalForm.modal("show");
+            loadRoleMembers();
+            toastr.success("Success", "Success!")
           }
         },
         error: function (r) {
-          toastr.error(r.responseText, "Warning!");
+          toastr.error(r.responseText, "Warning");
         }
       });
     }
-
-    var deleteById = function (id, name) {
-      Swal.fire({
-        title: 'Apakah yakin ingin menghapus ' + name + '?',
-        text: "",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya',
-        cancelButtonText: 'Tidak'
-      }).then((result) => {
-        if (result.value) {
-          $.ajax({
-            url: $.helper.baseApiPath("/role/deleteById/" + id),
-            type: 'DELETE',
-            success: function (r) {
-              console.log(r);
-              if (r.status) {
-                $dt.ajax.reload();
-                Swal.fire('Berhasil!', name + ' berhasil dihapus', 'success');
-              }
-            },
-            error: function (r) {
-              toastr.error(r.responseText, "Warning");
-            }
-          });
-        }
-      });
-    }
-
-    $btnAddNew.on("click", function () {
-      $('#recordId').val(null).trigger('change');
-      $form.trigger("reset");
-      $form.removeClass('was-validated');
-      $modalForm.modal("show");
-    });
-    
 
     return {
       init: function () {
+        loadRoleMembers();
       }
     }
   }();

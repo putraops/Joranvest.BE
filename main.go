@@ -747,6 +747,7 @@ func main() {
 		roleMemberApiRoutes.POST("/save", roleMemberController.Save)
 		roleMemberApiRoutes.GET("/getById/:id", roleMemberController.GetById)
 		roleMemberApiRoutes.DELETE("/deleteById/:id", roleMemberController.DeleteById)
+		roleMemberApiRoutes.GET("/getUsersInRole/:roleId", roleMemberController.GetUsersInRole)
 		roleMemberApiRoutes.GET("/getUsersNotInRole/:roleId", roleMemberController.GetUsersNotInRole)
 	}
 

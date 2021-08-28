@@ -4,12 +4,14 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
+	entity_view_models "joranvest/models/view_models"
 	"joranvest/repository"
 )
 
 type RoleMemberService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.RoleMember
+	GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView
 	GetUsersNotInRole(roleId string) []models.ApplicationUser
 	Insert(record models.RoleMember) helper.Response
 	Update(record models.RoleMember) helper.Response
@@ -34,6 +36,11 @@ func (service *roleMemberService) GetDatatables(request commons.DataTableRequest
 
 func (service *roleMemberService) GetAll(filter map[string]interface{}) []models.RoleMember {
 	return service.roleMemberRepository.GetAll(filter)
+}
+
+func (service *roleMemberService) GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView {
+	result := service.roleMemberRepository.GetUsersInRole(roleId)
+	return result
 }
 
 func (service *roleMemberService) GetUsersNotInRole(roleId string) []models.ApplicationUser {

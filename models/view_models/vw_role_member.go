@@ -6,7 +6,14 @@ import (
 )
 
 type EntityRoleMemberView struct {
-	models.Role
+	models.RoleMember
+	RoleName   string `json:"role_name"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	FullName   string `json:"fullname"`
+	UserInital string `json:"user_initial"`
+	UserCreate string `json:"user_create"`
+	UserUpdate string `json:"user_update"`
 }
 
 func (EntityRoleMemberView) TableName() string {
@@ -33,6 +40,7 @@ func (EntityRoleMemberView) ViewModel() string {
 	sql.WriteString("  a.first_name,")
 	sql.WriteString("  a.last_name,")
 	sql.WriteString("  CONCAT(a.first_name, ' ', a.last_name) AS fullname,")
+	sql.WriteString("  CONCAT(LEFT(a.first_name, 1), '', LEFT(a.last_name, 1)) AS user_initial,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM role_member r ")
