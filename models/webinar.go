@@ -20,7 +20,6 @@ type Webinar struct {
 
 	WebinarCategoryId       string       `gorm:"type:varchar(50);not null" json:"webinar_category_id"`
 	OrganizerOrganizationId string       `gorm:"type:varchar(50);" json:"organizer_organization_id"`
-	OrganizerUserId         string       `gorm:"type:varchar(50);" json:"organizer_user_id"`
 	Title                   string       `gorm:"type:text;not null" json:"title"`
 	Description             string       `gorm:"type:text" json:"description"`
 	WebinarFirstStartDate   sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_first_start_date"`
@@ -35,8 +34,8 @@ type Webinar struct {
 	Reward                  int          `gorm:"type:int" json:"reward"`
 	Status                  int          `gorm:"type:int" json:"status"`
 
-	WebinarCategory WebinarCategory `gorm:"foreignkey:WebinarCategoryId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar_category"`
-	ApplicationUser ApplicationUser `gorm:"foreignkey:OrganizerUserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"organizer_user"`
+	WebinarSpeaker  []WebinarSpeaker `gorm:"-" json:"fundamental_analysis_tag"`
+	WebinarCategory WebinarCategory  `gorm:"foreignkey:WebinarCategoryId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar_category"`
 }
 
 func (Webinar) TableName() string {
