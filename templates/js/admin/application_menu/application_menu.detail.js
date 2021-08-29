@@ -4,10 +4,12 @@
   var $form = $('#form-basic');
   var $modalForm = $("#modal-addNew");
   var $btnAddNew = $("#btn-addNew");
+  var $btnAddNewDivider = $("#btn-addNewDivider");
+  var $btnAddNewHeader = $("#btn-addNewHeader");
   var $btnSave = $("#btn-save");
   var $btnFilter = $("#btn-filter");
   var $tree = $("#category-tree");
-  var $dt;
+  var base_admin_url = "/admin/";
 
   var pageFunction = function () {
     var getCategoryMenuById = function () {
@@ -68,10 +70,10 @@
           state: { "key": "id" },
           plugins: ["dnd", "state", "types", "contextmenu"]
       });
-  }
+    }
 
   
-  function customMenu(node) {
+    function customMenu(node) {
     // The default set of all items
     var items = {
         Create: {
@@ -103,7 +105,30 @@
         }
     };
     return items;
-}
+    }
+
+    $btnAddNewHeader.on("click", function () {
+      var data = {
+        is_header: true,
+        application_menu_category_id: $applicationMenuCategoryId.val(),
+        name: "Header"
+      };
+      $.post($.helper.baseApiPath("/application_menu/save"), data, function (r) {
+        $tree.jstree("refresh");
+      });
+    });
+
+    $btnAddNewDivider.on("click", function () {
+      var data = {
+        is_divider: true,
+        application_menu_category_id: $applicationMenuCategoryId.val(),
+        name: "Divider"
+      };
+      $.post($.helper.baseApiPath("/application_menu/save"), data, function (r) {
+        $tree.jstree("refresh");
+      });
+    });
+
 
     $btnSave.on("click", function (event) {
       SaveOrUpdate(event);
@@ -113,6 +138,7 @@
       var isvalidate = $form[0].checkValidity();
       if (isvalidate) {
         var record = $form.serializeToJSON();
+        record.action_url = base_admin_url + record.action_url;
         $.ajax({
           url: $.helper.baseApiPath("/application_menu/save"),
           type: 'POST',
@@ -167,6 +193,9 @@
               $form.find('input').val(function () {
                 return r.data[this.name];
               });             
+
+              // $("input[name=action_url]").val(r.data.action_url);
+              $("input[name=action_url]").val((r.data.action_url).replace(base_admin_url, ""));
             } else {
               $("#parent_id").val(r.data.id);
             }

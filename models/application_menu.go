@@ -21,6 +21,8 @@ type ApplicationMenu struct {
 	ActionUrl                 string       `gorm:"type:varchar(50)" json:"action_url"`
 	IconClass                 string       `gorm:"type:varchar(50)" json:"icon_class"`
 	ParentId                  string       `gorm:"type:varchar(50)" json:"parent_id"`
+	IsDivider                 bool         `gorm:"type:bool" json:"is_divider"`
+	IsHeader                  bool         `gorm:"type:bool" json:"is_header"`
 	Description               string       `gorm:"type:text" json:"description"`
 	ApplicationMenuCategoryId string       `gorm:"type:varchar(50);not null" json:"application_menu_category_id"`
 

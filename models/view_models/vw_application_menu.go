@@ -36,6 +36,8 @@ func (EntityApplicationMenuView) ViewModel() string {
 	sql.WriteString("  r.icon_class,")
 	sql.WriteString("  r.parent_id,")
 	sql.WriteString("  a.name AS parent_name,")
+	sql.WriteString("  COALESCE(r.is_divider, false) AS is_divider,")
+	sql.WriteString("  COALESCE(r.is_header, false) AS is_header,")
 	sql.WriteString("  r.description,")
 	sql.WriteString("  r.application_menu_category_id,")
 	sql.WriteString("  c.name AS application_menu_category_name,")
