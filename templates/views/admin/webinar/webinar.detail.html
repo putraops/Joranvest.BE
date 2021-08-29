@@ -24,7 +24,7 @@
                                 <div class="alert alert-warning no-radius p-2" role="alert">
                                     <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh kosong.</span>
                                 </div>
-                                <form id="form-technical-analysis">
+                                <form id="form-main">
                                     <input type="hidden" name="id" id="recordId" value={{.data.id}}>
 
                                     <div class="card no-radius mt-2">
@@ -86,11 +86,18 @@
                                                 <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Webinar Level tidak boleh kosong.</small>
                                             </div>
 
-                                            <div class="form-group mb-1">
+                                            <div class="form-group mb-1" id="section-speaker-organization">
                                                 <label class="mb-1 input-title">Organisasi <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="organization_id" name="organization_id" required>
+                                                <select class="form-control" id="organization_id" name="organization_id">
                                                 </select>                                       
-                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Emiten tidak boleh kosong.</small>
+                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organization_id">Pembicara tidak boleh kosong.</small>
+                                            </div>
+
+                                            <div class="form-group mb-1" id="section-speaker-user">
+                                                <label class="mb-1 input-title">Pembicara <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="organizer_user_id" name="organizer_user_id" multiple="multiple">
+                                                </select>                                       
+                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organizer_user_id">Pembicara tidak boleh kosong.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -121,18 +128,18 @@
                                                                     <i class="far fa-calendar-alt" aria-hidden="true"></i>
                                                                     </button>
                                                                 </div>
-                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="" id="date-start" placeholder="Pick a date" autocomplete="off" readonly="">
+                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_first_start_date" id="date-start" placeholder="Pick a date" autocomplete="off" required="">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="input-group mb-1">
-                                                                <input type="time" class="form-control" name="">
-                                                                <input type="time" class="form-control" name="">
+                                                                <input type="time" class="form-control" id="webinar_first_start_time" name="" required="">
+                                                                <input type="time" class="form-control" id="webinar_first_end_time" name="">
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-lg-6 d-none" id="section-range-end">
+                                                <div class="col-lg-6" id="section-range-end">
                                                     <label class="input-title">Akhir</label> 
                                                     <div class="row">
                                                         <div class="col-md-6">
@@ -142,13 +149,13 @@
                                                                     <i class="far fa-calendar-alt" aria-hidden="true"></i>
                                                                     </button>
                                                                 </div>
-                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="" id="date-end" placeholder="Pick a date" autocomplete="off" readonly="">
+                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_last_start_date" id="date-end" placeholder="Pick a date" autocomplete="off" readonly="">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="input-group mb-1">
-                                                                <input type="time" class="form-control" id="rangeStart-time-start" name="">
-                                                                <input type="time" class="form-control" id="rangeStart-time-end" name="">
+                                                                <input type="time" class="form-control" id="webinar_last_start_time" name="">
+                                                                <input type="time" class="form-control" id="webinar_last_end_time" name="">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -168,7 +175,7 @@
                                                         <div class="col-12">
                                                             <div class="form-group mb-0">
                                                                 <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox" value="" id="chx-event-charge" style="margin-top: 7px;">
+                                                                    <input class="form-check-input" type="checkbox" value="" id="cbx-event-charge" style="margin-top: 7px;">
                                                                     <label class="form-check-label" for="defaultCheck1">
                                                                         <label class="input-title">Gratis</label> 
                                                                     </label>
@@ -179,7 +186,7 @@
                                                             <label class="mb-1 input-title">Biaya</label> 
                                                             <div class="form-row mb-0">
                                                                 <div class="col">
-                                                                <input type="text" class="form-control text-right numeric" name="start_buy" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                                <input type="text" class="form-control text-right numeric" name="price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -187,7 +194,7 @@
                                                             <label class="mb-1 input-title">Potongan Harga</label> 
                                                             <div class="form-row mb-0">
                                                                 <div class="col">
-                                                                <input type="text" class="form-control text-right numeric" name="start_buy" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                                <input type="text" class="form-control text-right numeric" name="discount" data-inputmask="'alias': 'currency'" im-insert="true" required="">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -217,7 +224,7 @@
                                                             <label class="mb-1 input-title">Point</label> 
                                                             <div class="form-row mb-0">
                                                                 <div class="col">
-                                                                    <input type="text" class="form-control numeric" name="start_buy" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                                    <input type="text" class="form-control numeric" name="reward" data-inputmask="'alias': 'currency'" im-insert="true">
                                                                 </div>
                                                             </div>
                                                         </div>

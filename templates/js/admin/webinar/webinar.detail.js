@@ -1,6 +1,6 @@
 (function ($) {
   'use strict';
-  var $form = $('#form-technical-analysis');
+  var $form = $('#form-main');
   var $btnSave = $("#btn-save");
   var $recordId = $("#recordId");
 
@@ -44,6 +44,20 @@
         placeholder: "Pilih Tipe Pembicara",
         minimumInputLength: 0,
         allowClear: true,
+      }).on('select2:select', function (e) {
+        var value = e.params.data;
+        $("#section-speaker-organization").addClass("d-none");
+        $("#section-speaker-user").addClass("d-none");
+        $('#organization_id').val(null).trigger('change');
+        $('#organizer_user_id').val(null).trigger('change');
+        
+        $("#validation-organizer_user_id").css("display", "none");
+        $("#validation-organization_id").css("display", "none");
+        if (value.text.toLowerCase() == "personal") {
+          $("#section-speaker-user").removeClass("d-none");
+        } else {
+          $("#section-speaker-organization").removeClass("d-none");
+        }
       });
       $('#speaker_type').val(null).trigger('change');
     }
@@ -82,9 +96,52 @@
           return html;
         },
         cache: true,
-        placeholder: "Pilih Emiten",
+        placeholder: "Pilih Organisasi",
         minimumInputLength: 0,
         allowClear: true,
+      }).on('select2:select', function (e) {
+        $("#validation-organization_id").css("display", "none");
+      });
+    }
+
+    var initApplicationUserLookup = function () {
+      var url = $.helper.baseApiPath("/application_user/lookup");
+      $("#organizer_user_id").select2({
+        ajax: {
+          url: url,
+          dataType: 'json',
+          delay: 250,
+          type: "GET",
+          contentType: "application/json",
+          data: function (params) {
+            var field = JSON.stringify(["first_name", "last_name"]);
+            var req = {
+              q: params.term, // search term
+              page: params.page,
+              field: field
+            };
+
+            return req;
+          },
+          processResults: function (r) {
+            return r.data;
+          },
+        },
+        escapeMarkup: function (markup) {
+          return markup;
+        },
+        templateResult: function (data) {
+          var html = `<div class="" style="font-size: 10pt; ">
+                        <span class="fw-700">` + data.text + `</span>
+                      </div>`;
+          return html;
+        },
+        cache: true,
+        placeholder: "Pilih Pembicara",
+        minimumInputLength: 0,
+        allowClear: true,
+      }).on('select2:select', function (e) {
+        $("#validation-organizer_user_id").css("display", "none");
       });
     }
     
@@ -96,12 +153,29 @@
     }
 
     $btnSave.on("click", function (event) {
-      var title = "Apakah yakin ingin menambah Analisa Teknikal?";
-      if ($recordId.val() != "") title = "Apakah yakin ingin mengubah Analisa Teknikal";
+      var title = "Apakah yakin ingin menambah Webinar?";
+      if ($recordId.val() != "") title = "Apakah yakin ingin mengubah Webinar";
 
-      
       var isvalidate = $form[0].checkValidity();
+
+      if ($('#speaker_type').val() != null) {
+        if (($('#speaker_type').val()).toLowerCase() == "personal") {
+          if ($('#organizer_user_id').val() == "") {
+            isvalidate = false;
+            $("#validation-organizer_user_id").css("display", "block");
+          }
+        } else {
+          if ($('#organization_id').val() == null || $('#organization_id').val() == "") {
+            isvalidate = false;
+            $("#validation-organization_id").css("display", "block");
+          }
+        }
+      }
+
       if (isvalidate) {
+        //SaveOrUpdate(event);
+        //return;
+
         Swal.fire({
           title: title,
           text: "",
@@ -125,15 +199,33 @@
 
     var SaveOrUpdate = function (e) {
       var record = $form.serializeToJSON();
+      console.log("record.webinar_first_start_date: ", record.webinar_first_start_date);
+      console.log("record.webinar_first_start_time: ", $("#webinar_first_start_time").val());
+      console.log("record.webinar_first_end_time: ", $("#webinar_first_end_time").val());
+
+      if (record.webinar_first_start_date){
+        if ($("#webinar_first_end_time").val() != "") {
+          record.webinar_first_end_date = record.webinar_first_start_date + "T"+ $("#webinar_first_end_time").val() + ":00Z";
+        }
+        record.webinar_first_start_date += "T"+ $("#webinar_first_start_time").val() + ":00Z";
+      }
+      if (record.webinar_last_start_date){
+        if ($("#webinar_last_end_time").val() != "") {
+          record.webinar_last_end_date = record.webinar_last_start_date + "T"+ $("#webinar_last_end_time").val() + ":00Z";
+        }
+        record.webinar_last_start_date += "T"+ $("#webinar_last_start_time").val() + ":00Z";
+      }
+      console.log(record);
+
       $.ajax({
-        url: $.helper.baseApiPath("/technical_analysis/save"),
+        url: $.helper.baseApiPath("/webinar/save"),
         type: 'POST',
         data: record,
         success: function (r) {
           console.log(r);
           if (r.status) {
-            var $message = "Berhasil menambah Analisa Teknikal";
-            if (record.id != "") $message = "Berhasil mengubah Analisa Teknikal";
+            var $message = "Berhasil menambah Webinar";
+            if (record.id != "") $message = "Berhasil mengubah Webinar";
             Swal.fire('Berhasil!', $message, 'success');
             
             $recordId.val(r.data.id)
@@ -142,7 +234,7 @@
             $.each(r.errors, function (index, value) {
               console.log(value);
               if (value.includes(`unique constraint "uk_name"`)) {
-                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar produk.", 'Peringatan!');
+                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar webinar.", 'Peringatan!');
               } else {
                 toastr.error(value, 'Error!');
               }
@@ -197,6 +289,20 @@
       }
     });
 
+    $("#cbx-event-charge").change(function () {
+      if ($(this).is(":checked")) {
+        $("input[name=price]").val("0")
+        $("input[name=discount]").val("0");
+        $("input[name=price]").attr("readonly", "");
+        $("input[name=discount]").attr("readonly", "");
+      } else {
+        $("input[name=price]").val("");
+        $("input[name=discount]").val("");
+        $("input[name=price]").removeAttr("readonly");
+        $("input[name=discount]").removeAttr("readonly");
+      }
+    });
+
     $("#event_range").change(function() {
       triggerEventRange();
     });
@@ -206,8 +312,8 @@
         $("#section-range-end").removeClass("d-none")
       } else {
         $("#date-end").val("");
-        $("#rangeStart-time-start").val("");
-        $("#rangeStart-time-end").val("");
+        $("#webinar_last_start_time").val("");
+        $("#webinar_last_end_time").val("");
         $("#section-range-end").addClass("d-none")
       }
     }
@@ -219,6 +325,7 @@
         initWebinarLevelLookup();
         initSpeakerTypeLookup();
         initOrganizationLookup();
+        initApplicationUserLookup();
         loadDetail();
       }
     }
