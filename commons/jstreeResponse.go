@@ -14,8 +14,9 @@ type JStreeResponse struct {
 }
 
 type JStreeState struct {
-	Opened   bool `json:"opened" form:"opened"`
-	Disabled bool `json:"disabled" form:"disabled"`
-	Selected bool `json:"selected" form:"selected"`
-	Checked  bool `json:"checked" form:"checked"`
+	Opened     bool `json:"opened" form:"opened"`
+	Disabled   bool `json:"disabled" form:"disabled"`
+	Selected   bool `json:"selected" form:"selected"`
+	Checked    bool `json:"checked" form:"checked"`
+	HasSibling bool `json:"has_sibling" form:"has_sibling"`
 }

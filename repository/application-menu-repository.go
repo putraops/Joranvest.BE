@@ -210,6 +210,7 @@ func (db *applicationMenuConnection) GetTreeByRoleId(roleId string) []commons.JS
 			item.JStreeState.Disabled = false
 			item.JStreeState.Selected = true
 			item.JStreeState.Checked = s.IsChecked
+			item.JStreeState.HasSibling = false
 
 			var childrenModel []entity_view_models.EntityApplicationMenuView
 			var sqlChildrenQuery strings.Builder
@@ -228,6 +229,7 @@ func (db *applicationMenuConnection) GetTreeByRoleId(roleId string) []commons.JS
 			db.connection.Raw(sqlChildrenQuery.String()).Scan(&childrenModel)
 
 			if len(childrenModel) > 0 {
+				item.JStreeState.Checked = false
 				var children []commons.JStreeResponse
 				for _, c := range childrenModel {
 					var child commons.JStreeResponse
@@ -238,7 +240,10 @@ func (db *applicationMenuConnection) GetTreeByRoleId(roleId string) []commons.JS
 					child.JStreeState.Disabled = false
 					child.JStreeState.Selected = true
 					child.JStreeState.Checked = c.IsChecked
-
+					child.JStreeState.HasSibling = false
+					if len(childrenModel) > 1 {
+						child.JStreeState.HasSibling = true
+					}
 					children = append(children, child)
 				}
 				item.Children = children
