@@ -1,0 +1,32 @@
+{{define "_content"}}
+
+<div class="container-fluid text-dark">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pb-2">
+        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/admin/role">Role</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Role Name</li>
+        </ol>
+    </nav>  
+    <div class="row">
+        <input type="text" class="d-none" id="recordId" value="{{.data.id}}" />
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="mt-0">
+                        <span class="h-6 m-0 font-weight-bold text-primary">Role : </span>
+                        <span class="h-6 m-0 font-weight-bold" id="role-name"></span>
+                        <hr class="mt-2 mb-3" />
+                        <span id="no-data">Tidak ada data</span>
+                        <div id="section-tree" class="panel-body d-none" style="min-height:300px">
+                            <div id="category-tree"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "_baseScript" .}}
+<script src="/script/admin/role/role.menu.js?t={{.data.timenow}}"></script>
+{{end}}

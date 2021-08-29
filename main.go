@@ -38,6 +38,7 @@ var (
 	fundamentalAnalysisTagRepository  repository.FundamentalAnalysisTagRepository  = repository.NewFundamentalAnalysisTagRepository(db)
 	roleRepository                    repository.RoleRepository                    = repository.NewRoleRepository(db)
 	roleMemberRepository              repository.RoleMemberRepository              = repository.NewRoleMemberRepository(db)
+	roleMenuRepository                repository.RoleMenuRepository                = repository.NewRoleMenuRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
@@ -56,6 +57,7 @@ var (
 	fundamentalAnalysisTagService  service.FundamentalAnalysisTagService  = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
 	roleService                    service.RoleService                    = service.NewRoleService(roleRepository)
 	roleMemberService              service.RoleMemberService              = service.NewRoleMemberService(roleMemberRepository)
+	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -73,6 +75,7 @@ var (
 	fundamentalAnalysisTagController  controllers.FundamentalAnalysisTagController  = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
 	roleController                    controllers.RoleController                    = controllers.NewRoleController(roleService, jwtService)
 	roleMemberController              controllers.RoleMemberController              = controllers.NewRoleMemberController(roleMemberService, jwtService)
+	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
 )
 
 func createMyRender(view_path string) multitemplate.Renderer {
@@ -174,6 +177,10 @@ func createMyRender(view_path string) multitemplate.Renderer {
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	r.AddFromFiles("role_member",
 		view_path+"_base.html", view_path+"admin/role/role.member.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+	r.AddFromFiles("role_menu",
+		view_path+"_base.html", view_path+"admin/role/role.menu.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	return r
@@ -563,6 +570,20 @@ func main() {
 				},
 			)
 		})
+		adminRoutes.GET("/role/menu", func(c *gin.Context) {
+			data := Setup(c, "Role Menu", "Role Menu", "Role Menu", "Role Menu", "Role Menu")
+			qry := c.Request.URL.Query()
+			if _, found := qry["id"]; found {
+				data["id"] = fmt.Sprint(qry["id"][0])
+			}
+			c.HTML(
+				http.StatusOK,
+				"role_menu",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
 	}
 
 	browseRoutes := r.Group("browse")
@@ -648,6 +669,7 @@ func main() {
 	applicationMenuApiRoutes := r.Group("api/application_menu")
 	{
 		applicationMenuApiRoutes.GET("/getTree", applicationMenuController.GetTree)
+		applicationMenuApiRoutes.GET("/getTreeByRoleId/:roleId", applicationMenuController.GetTreeByRoleId)
 		applicationMenuApiRoutes.GET("/lookup", applicationMenuController.Lookup)
 		applicationMenuApiRoutes.POST("/save", applicationMenuController.Save)
 		applicationMenuApiRoutes.GET("/getById/:id", applicationMenuController.GetById)
@@ -749,6 +771,13 @@ func main() {
 		roleMemberApiRoutes.DELETE("/deleteById/:id", roleMemberController.DeleteById)
 		roleMemberApiRoutes.GET("/getUsersInRole/:roleId", roleMemberController.GetUsersInRole)
 		roleMemberApiRoutes.GET("/getUsersNotInRole/:roleId/:search", roleMemberController.GetUsersNotInRole)
+	}
+	roleMenuApiRoutes := r.Group("api/role_menu")
+	{
+		roleMenuApiRoutes.POST("/save", roleMenuController.Save)
+		roleMenuApiRoutes.GET("/getById/:id", roleMenuController.GetById)
+		roleMenuApiRoutes.DELETE("/deleteById/:id", roleMenuController.DeleteById)
+		roleMenuApiRoutes.POST("/deleteByRoleAndMenuId", roleMenuController.DeleteByRoleAndMenuId)
 	}
 
 	r.Run(":10000")

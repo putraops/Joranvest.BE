@@ -8,3 +8,9 @@ type RoleMenuDto struct {
 	EntityId          string `json:"-"`
 	UpdatedBy         string
 }
+
+type DeleteRoleMenuDto struct {
+	RoleId            string `json:"role_id" form:"role_id" binding:"required"`
+	ApplicationMenuId string `json:"application_menu_id" form:"application_menu_id" binding:"required"`
+	IsParent          bool   `json:"is_parent" form:"is_parent"`
+}

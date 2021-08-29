@@ -16,6 +16,7 @@ import (
 type RoleMenuController interface {
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
+	DeleteByRoleAndMenuId(context *gin.Context)
 	Save(context *gin.Context)
 }
 
@@ -88,6 +89,29 @@ func (c *roleMenuController) DeleteById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	var result = c.roleMenuService.DeleteById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *roleMenuController) DeleteByRoleAndMenuId(context *gin.Context) {
+	var recordDto dto.DeleteRoleMenuDto
+
+	errDTO := context.Bind(&recordDto)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+
+	if recordDto.RoleId == "" || recordDto.ApplicationMenuId == "" {
+		response := helper.BuildErrorResponse("Failed to bind data", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	var result = c.roleMenuService.DeleteByRoleAndMenuId(recordDto.RoleId, recordDto.ApplicationMenuId, recordDto.IsParent)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)

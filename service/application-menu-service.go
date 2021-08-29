@@ -12,6 +12,7 @@ type ApplicationMenuService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.ApplicationMenu
 	GetTree() []commons.JStreeResponse
+	GetTreeByRoleId(roleId string) []commons.JStreeResponse
 	Insert(record models.ApplicationMenu) helper.Response
 	Update(record models.ApplicationMenu) helper.Response
 	GetById(recordId string) helper.Response
@@ -76,6 +77,10 @@ func (service *applicationMenuService) GetDatatables(request commons.DataTableRe
 
 func (service *applicationMenuService) GetTree() []commons.JStreeResponse {
 	return service.applicationMenuRepository.GetTree()
+}
+
+func (service *applicationMenuService) GetTreeByRoleId(roleId string) []commons.JStreeResponse {
+	return service.applicationMenuRepository.GetTreeByRoleId(roleId)
 }
 
 func (service *applicationMenuService) GetAll(filter map[string]interface{}) []models.ApplicationMenu {

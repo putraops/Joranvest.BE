@@ -19,6 +19,7 @@ type RoleMenuRepository interface {
 	Update(record models.RoleMenu) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
+	DeleteByRoleAndMenuId(roleId string, applicationMenuId string, isParent bool) helper.Response
 }
 
 type roleMenuConnection struct {
@@ -110,4 +111,49 @@ func (db *roleMenuConnection) DeleteById(recordId string) helper.Response {
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 	}
+}
+
+func (db *roleMenuConnection) DeleteByRoleAndMenuId(roleId string, applicationMenuId string, isParent bool) helper.Response {
+	tx := db.connection.Begin()
+
+	var menuRecord models.ApplicationMenu
+	db.connection.First(&menuRecord, "id = ?", applicationMenuId)
+	if menuRecord.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	} else {
+		if !isParent {
+			//-- Delete Child
+			if err := tx.Where("application_menu_id = ? AND role_id = ?", applicationMenuId, roleId).Delete(&models.RoleMenu{}).Error; err != nil {
+				tx.Rollback()
+				return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+			}
+		}
+		if isParent && menuRecord.ParentId == "" {
+			var children []models.ApplicationMenu
+			db.connection.Find(&children, "parent_id = ?", applicationMenuId)
+
+			//-- Delete Parent
+			if err := tx.Where("application_menu_id = ? AND role_id = ?", menuRecord.Id, roleId).Delete(&models.RoleMenu{}).Error; err != nil {
+				tx.Rollback()
+				return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+			}
+
+			//-- Delete Children
+			if len(children) > 0 {
+				fmt.Println("has children")
+				fmt.Println(len(children))
+
+				for _, v := range children {
+					fmt.Println(v.Id)
+					if err := tx.Where("application_menu_id = ? AND role_id = ?", v.Id, roleId).Delete(&models.RoleMenu{}).Error; err != nil {
+						tx.Rollback()
+						return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+					}
+				}
+			}
+		}
+	}
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }

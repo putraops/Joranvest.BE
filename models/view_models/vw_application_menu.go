@@ -9,6 +9,7 @@ type EntityApplicationMenuView struct {
 	models.ApplicationMenu
 	ParentName                  string `json:"parent_name"`
 	ApplicationMenuCategoryName string `json:"application_menu_category_name"`
+	IsChecked                   bool   `json:"is_checked"`
 }
 
 func (EntityApplicationMenuView) TableName() string {

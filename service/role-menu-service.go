@@ -12,6 +12,7 @@ type RoleMenuService interface {
 	Update(record models.RoleMenu) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
+	DeleteByRoleAndMenuId(roleId string, applicationMenuId string, isParent bool) helper.Response
 }
 
 type roleMenuService struct {
@@ -43,4 +44,8 @@ func (service *roleMenuService) GetById(recordId string) helper.Response {
 
 func (service *roleMenuService) DeleteById(recordId string) helper.Response {
 	return service.roleMenuRepository.DeleteById(recordId)
+}
+
+func (service *roleMenuService) DeleteByRoleAndMenuId(roleId string, applicationMenuId string, isParent bool) helper.Response {
+	return service.roleMenuRepository.DeleteByRoleAndMenuId(roleId, applicationMenuId, isParent)
 }

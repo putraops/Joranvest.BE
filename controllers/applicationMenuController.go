@@ -18,6 +18,7 @@ type ApplicationMenuController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
 	GetTree(context *gin.Context)
+	GetTreeByRoleId(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -62,6 +63,12 @@ func (c *applicationMenuController) GetDatatables(context *gin.Context) {
 
 func (c *applicationMenuController) GetTree(context *gin.Context) {
 	var result = c.applicationMenuService.GetTree()
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *applicationMenuController) GetTreeByRoleId(context *gin.Context) {
+	roleId := context.Param("roleId")
+	var result = c.applicationMenuService.GetTreeByRoleId(roleId)
 	context.JSON(http.StatusOK, result)
 }
 

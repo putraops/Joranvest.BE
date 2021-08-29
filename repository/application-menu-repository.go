@@ -20,6 +20,7 @@ type ApplicationMenuRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.ApplicationMenu
 	GetTree() []commons.JStreeResponse
+	GetTreeByRoleId(roleId string) []commons.JStreeResponse
 	Insert(t models.ApplicationMenu) helper.Response
 	Update(record models.ApplicationMenu) helper.Response
 	GetById(recordId string) helper.Response
@@ -156,6 +157,7 @@ func (db *applicationMenuConnection) GetTree() []commons.JStreeResponse {
 			item.JStreeState.Opened = true
 			item.JStreeState.Disabled = false
 			item.JStreeState.Selected = true
+			item.JStreeState.Checked = false
 
 			var childrenModel []models.ApplicationMenu
 			db.connection.Where("parent_id = ?", item.Id).Find(&childrenModel)
@@ -169,12 +171,82 @@ func (db *applicationMenuConnection) GetTree() []commons.JStreeResponse {
 					child.JStreeState.Opened = true
 					child.JStreeState.Disabled = false
 					child.JStreeState.Selected = true
+					child.JStreeState.Checked = false
 					children = append(children, child)
 				}
 				item.Children = children
 			}
 			res = append(res, item)
 		}
+	}
+	return res
+}
+
+func (db *applicationMenuConnection) GetTreeByRoleId(roleId string) []commons.JStreeResponse {
+	var res []commons.JStreeResponse
+	var records []entity_view_models.EntityApplicationMenuView
+
+	var sqlQuery strings.Builder
+	sqlQuery.WriteString("SELECT ")
+	sqlQuery.WriteString("* ")
+	sqlQuery.WriteString("FROM ( ")
+	sqlQuery.WriteString("	SELECT r.*, true AS is_checked ")
+	sqlQuery.WriteString("	FROM application_menu r ")
+	sqlQuery.WriteString("	WHERE r.parent_id = '' AND r.id IN (SELECT application_menu_id FROM role_menu WHERE role_id = '" + roleId + "') ")
+	sqlQuery.WriteString("	UNION ")
+	sqlQuery.WriteString("	SELECT r.*, false AS is_checked ")
+	sqlQuery.WriteString("	FROM application_menu r ")
+	sqlQuery.WriteString("	WHERE r.parent_id = '' AND r.id NOT IN (SELECT application_menu_id FROM role_menu WHERE role_id = '" + roleId + "') ")
+	sqlQuery.WriteString(") AS r ")
+	sqlQuery.WriteString("ORDER BY r.order_index ASC")
+	db.connection.Raw(sqlQuery.String()).Scan(&records)
+	if len(records) > 0 {
+		for _, s := range records {
+			var item commons.JStreeResponse
+			item.Id = s.Id
+			item.Text = s.Name
+			item.Description = s.Description
+			item.JStreeState.Opened = true
+			item.JStreeState.Disabled = false
+			item.JStreeState.Selected = true
+			item.JStreeState.Checked = s.IsChecked
+
+			var childrenModel []entity_view_models.EntityApplicationMenuView
+			var sqlChildrenQuery strings.Builder
+			sqlChildrenQuery.WriteString("SELECT ")
+			sqlChildrenQuery.WriteString("* ")
+			sqlChildrenQuery.WriteString("FROM ( ")
+			sqlChildrenQuery.WriteString("	SELECT r.*, true AS is_checked ")
+			sqlChildrenQuery.WriteString("	FROM application_menu r ")
+			sqlChildrenQuery.WriteString("	WHERE r.parent_id = '" + s.Id + "' AND r.id IN (SELECT application_menu_id FROM role_menu WHERE role_id = '" + roleId + "') ")
+			sqlChildrenQuery.WriteString("	UNION ")
+			sqlChildrenQuery.WriteString("	SELECT r.*, false AS is_checked ")
+			sqlChildrenQuery.WriteString("	FROM application_menu r ")
+			sqlChildrenQuery.WriteString("	WHERE r.parent_id = '" + s.Id + "' AND r.id NOT IN (SELECT application_menu_id FROM role_menu WHERE role_id = '" + roleId + "') ")
+			sqlChildrenQuery.WriteString(") AS r ")
+			sqlChildrenQuery.WriteString("ORDER BY r.order_index ASC")
+			db.connection.Raw(sqlChildrenQuery.String()).Scan(&childrenModel)
+
+			if len(childrenModel) > 0 {
+				var children []commons.JStreeResponse
+				for _, c := range childrenModel {
+					var child commons.JStreeResponse
+					child.Id = c.Id
+					child.Text = c.Name
+					child.Description = c.Description
+					child.JStreeState.Opened = true
+					child.JStreeState.Disabled = false
+					child.JStreeState.Selected = true
+					child.JStreeState.Checked = c.IsChecked
+
+					children = append(children, child)
+				}
+				item.Children = children
+			}
+
+			res = append(res, item)
+		}
+
 	}
 	return res
 }

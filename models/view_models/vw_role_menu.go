@@ -9,6 +9,7 @@ type EntityRoleMenuView struct {
 	models.RoleMember
 	RoleName            string `json:"role_name"`
 	ApplicationMenuName string `json:"application_menu_name"`
+	ParentId            string `json:"parent_id"`
 	UserCreate          string `json:"user_create"`
 	UserUpdate          string `json:"user_update"`
 }
@@ -35,6 +36,7 @@ func (EntityRoleMenuView) ViewModel() string {
 	sql.WriteString("  ro.name AS role_name,")
 	sql.WriteString("  r.application_menu_id,")
 	sql.WriteString("  m.name AS application_menu_name,")
+	sql.WriteString("  m.parent_id,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM role_menu r ")
