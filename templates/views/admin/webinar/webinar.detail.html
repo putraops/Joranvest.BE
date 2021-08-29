@@ -39,7 +39,14 @@
         
                                             <div class="form-group mb-1">
                                                 <label class="mb-1">Description </label>
-                                                <textarea class="form-control" name="description" style="line-height: 3;"></textarea>
+                                                <textarea class="form-control" name="description"></textarea>
+                                            </div>
+
+                                            <div class="form-group mb-1">
+                                                <label class="mb-1 input-title">Kategori <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="webinar_category_id" name="webinar_category_id">
+                                                </select>                                       
+                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-webinar_category_id">Kategori tidak boleh kosong.</small>
                                             </div>
 
                                             <div class="form-group mb-2">
@@ -65,7 +72,7 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <input type="text" class="form-control numeric" name="min-age" data-inputmask="'alias': 'currency'" im-insert="true" required="" value="18">
+                                                        <input type="text" class="form-control numeric" name="min_age" data-inputmask="'alias': 'currency'" im-insert="true" required="" value="18">
                                                     </div>
                                                 </div>
                                             </div>
@@ -86,16 +93,16 @@
                                                 <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Webinar Level tidak boleh kosong.</small>
                                             </div>
 
-                                            <div class="form-group mb-1" id="section-speaker-organization">
+                                            <div class="form-group mb-1 d-none" id="section-speaker-organization">
                                                 <label class="mb-1 input-title">Organisasi <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="organization_id" name="organization_id">
+                                                <select class="form-control" id="organizer_organization_id" name="organizer_organization_id">
                                                 </select>                                       
                                                 <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organization_id">Pembicara tidak boleh kosong.</small>
                                             </div>
 
-                                            <div class="form-group mb-1" id="section-speaker-user">
+                                            <div class="form-group mb-1 d-none" id="section-speaker-user">
                                                 <label class="mb-1 input-title">Pembicara <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="organizer_user_id" name="organizer_user_id" multiple="multiple">
+                                                <select class="form-control" id="organizer_user_id" name="webinar_speaker" multiple="multiple">
                                                 </select>                                       
                                                 <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organizer_user_id">Pembicara tidak boleh kosong.</small>
                                             </div>
@@ -128,7 +135,7 @@
                                                                     <i class="far fa-calendar-alt" aria-hidden="true"></i>
                                                                     </button>
                                                                 </div>
-                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_first_start_date" id="date-start" placeholder="Pick a date" autocomplete="off" required="">
+                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_first_start_date" id="date-start" placeholder="Pilih Tanggal" autocomplete="off" required="">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
@@ -139,8 +146,8 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-lg-6" id="section-range-end">
-                                                    <label class="input-title">Akhir</label> 
+                                                <div class="col-lg-6 d-none" id="section-range-end">
+                                                    <label class="input-title">Selesai</label> 
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="input-group mb-1">
@@ -149,7 +156,7 @@
                                                                     <i class="far fa-calendar-alt" aria-hidden="true"></i>
                                                                     </button>
                                                                 </div>
-                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_last_start_date" id="date-end" placeholder="Pick a date" autocomplete="off" readonly="">
+                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_last_start_date" id="date-end" placeholder="Pilih Tanggal" autocomplete="off" readonly="">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">

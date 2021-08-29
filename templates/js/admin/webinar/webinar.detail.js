@@ -9,6 +9,48 @@
       format: 'yyyy-mm-dd',
       autoHide: true
     });
+
+    var initWebinarCategoryLookup = function () {
+      var url = $.helper.baseApiPath("/webinar_category/lookup");
+      $("#webinar_category_id").select2({
+        ajax: {
+          url: url,
+          dataType: 'json',
+          delay: 250,
+          type: "GET",
+          contentType: "application/json",
+          data: function (params) {
+            var field = JSON.stringify(["name"]);
+            var req = {
+              q: params.term, // search term
+              page: params.page,
+              field: field
+            };
+
+            return req;
+          },
+          processResults: function (r) {
+            return r.data;
+          },
+        },
+        escapeMarkup: function (markup) {
+          return markup;
+        },
+        templateResult: function (data) {
+          var _description = data.description == undefined ? "-" : data.description;
+          var html = `<div class="" style="font-size: 10pt; ">
+                        <span class="fw-700">` + data.text + `</span>
+                      </div>`;
+          return html;
+        },
+        cache: true,
+        placeholder: "Pilih Kategori",
+        minimumInputLength: 0,
+        allowClear: true,
+      }).on('select2:select', function (e) {
+        $("#validation-webinar_category_id").css("display", "none");
+      });
+    }
     
     var initWebinarLevelLookup = function () {
       $("#webinar_level").select2({
@@ -48,7 +90,7 @@
         var value = e.params.data;
         $("#section-speaker-organization").addClass("d-none");
         $("#section-speaker-user").addClass("d-none");
-        $('#organization_id').val(null).trigger('change');
+        $('#organizer_organization_id').val(null).trigger('change');
         $('#organizer_user_id').val(null).trigger('change');
         
         $("#validation-organizer_user_id").css("display", "none");
@@ -64,7 +106,7 @@
 
     var initOrganizationLookup = function () {
       var url = $.helper.baseApiPath("/organization/lookup");
-      $("#organization_id").select2({
+      $("#organizer_organization_id").select2({
         ajax: {
           url: url,
           dataType: 'json',
@@ -165,7 +207,7 @@
             $("#validation-organizer_user_id").css("display", "block");
           }
         } else {
-          if ($('#organization_id').val() == null || $('#organization_id').val() == "") {
+          if ($('#organizer_organization_id').val() == null || $('#organizer_organization_id').val() == "") {
             isvalidate = false;
             $("#validation-organization_id").css("display", "block");
           }
@@ -208,12 +250,18 @@
           record.webinar_first_end_date = record.webinar_first_start_date + "T"+ $("#webinar_first_end_time").val() + ":00Z";
         }
         record.webinar_first_start_date += "T"+ $("#webinar_first_start_time").val() + ":00Z";
+        if ($("#webinar_first_end_time").val() == "") {
+          record.webinar_first_end_date = record.webinar_first_start_date;
+        }
       }
       if (record.webinar_last_start_date){
         if ($("#webinar_last_end_time").val() != "") {
           record.webinar_last_end_date = record.webinar_last_start_date + "T"+ $("#webinar_last_end_time").val() + ":00Z";
         }
         record.webinar_last_start_date += "T"+ $("#webinar_last_start_time").val() + ":00Z";
+        if ($("#webinar_last_end_time").val() == "") {
+          record.webinar_last_end_date = record.webinar_last_start_date;
+        }
       }
       console.log(record);
 
@@ -322,6 +370,7 @@
 
     return {
       init: function () {
+        initWebinarCategoryLookup();
         initWebinarLevelLookup();
         initSpeakerTypeLookup();
         initOrganizationLookup();
