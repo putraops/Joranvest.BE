@@ -14,6 +14,7 @@ import (
 
 type ApplicationUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	Lookup(req map[string]interface{}) []models.ApplicationUser
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
 	VerifyCredential(credential string, password string) interface{}
@@ -104,6 +105,41 @@ func (db *applicationUserConnection) GetDatatables(request commons.DataTableRequ
 		res.DataRow = []entity_view_models.EntityMembershipView{}
 	}
 	return res
+}
+
+func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models.ApplicationUser {
+	records := []models.ApplicationUser{}
+	db.connection.Order("first_name, last_name asc")
+
+	var sqlQuery strings.Builder
+	sqlQuery.WriteString("SELECT * FROM " + db.tableName)
+
+	v, found := req["condition"]
+	if found {
+		sqlQuery.WriteString(" WHERE 1 = 1 AND is_admin = false ")
+		requests := v.(helper.DataFilter).Request
+		for _, v := range requests {
+			totalFilter := 0
+			if v.Operator == "like" {
+				for _, valueDetail := range v.Field {
+					if totalFilter == 0 {
+						sqlQuery.WriteString(" AND (LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
+					} else {
+						sqlQuery.WriteString(" OR LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
+					}
+					totalFilter++
+				}
+			}
+
+			if totalFilter > 0 {
+				sqlQuery.WriteString(")")
+			}
+		}
+	}
+
+	fmt.Println("Query: ", sqlQuery.String())
+	db.connection.Raw(sqlQuery.String()).Scan(&records)
+	return records
 }
 
 func (db *applicationUserConnection) Insert(record models.ApplicationUser) (models.ApplicationUser, error) {

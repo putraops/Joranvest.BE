@@ -14,6 +14,7 @@ import (
 //-- This is user contract
 type ApplicationUserService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	Lookup(request helper.Select2Request) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
 	GetById(recordId string) helper.Response
@@ -33,6 +34,47 @@ func NewApplicationUserService(repo repository.ApplicationUserRepository) Applic
 
 func (service *applicationUserService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.applicationUserRepository.GetDatatables(request)
+}
+
+func (service *applicationUserService) Lookup(r helper.Select2Request) helper.Response {
+	var ary helper.Select2Response
+
+	request := make(map[string]interface{})
+	request["qry"] = r.Q
+	request["condition"] = helper.DataFilter{
+		Request: []helper.Operator{
+			{
+				Operator: "like",
+				Field:    r.Field,
+				Value:    r.Q,
+			},
+		},
+	}
+
+	result := service.applicationUserRepository.Lookup(request)
+	if len(result) > 0 {
+		for _, record := range result {
+			var p = helper.Select2Item{
+				Id:          record.Id,
+				Text:        record.FirstName + " " + record.LastName,
+				Description: "",
+				Selected:    true,
+				Disabled:    false,
+			}
+			ary.Results = append(ary.Results, p)
+		}
+	} else {
+		var p = helper.Select2Item{
+			Id:          "",
+			Text:        "No result found",
+			Description: "",
+			Selected:    true,
+			Disabled:    true,
+		}
+		ary.Results = append(ary.Results, p)
+	}
+	ary.Count = len(result)
+	return helper.ServerResponse(true, "Ok", "", ary)
 }
 
 func (service *applicationUserService) Update(record dto.ApplicationUserUpdateDto) models.ApplicationUser {

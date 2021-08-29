@@ -783,6 +783,7 @@ func main() {
 	applicationUserApiRoutes := r.Group("api/application_user")
 	{
 		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
+		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
 	}
 
 	technicalAnalysisApiRoutes := r.Group("api/technical_analysis")

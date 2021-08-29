@@ -15,6 +15,7 @@ import (
 
 type ApplicationUserController interface {
 	GetDatatables(context *gin.Context)
+	Lookup(context *gin.Context)
 	Update(context *gin.Context)
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
@@ -43,6 +44,20 @@ func (c *applicationUserController) GetDatatables(context *gin.Context) {
 	}
 	var result = c.applicationUserService.GetDatatables(dt)
 	context.JSON(http.StatusOK, result)
+}
+
+func (c *applicationUserController) Lookup(context *gin.Context) {
+	var request helper.Select2Request
+	qry := context.Request.URL.Query()
+
+	if _, found := qry["q"]; found {
+		request.Q = fmt.Sprint(qry["q"][0])
+	}
+	request.Field = helper.StringifyToArray(fmt.Sprint(qry["field"]))
+
+	var result = c.applicationUserService.Lookup(request)
+	response := helper.BuildResponse(true, "Ok", result.Data)
+	context.JSON(http.StatusOK, response)
 }
 
 func (c *applicationUserController) GetAll(context *gin.Context) {
