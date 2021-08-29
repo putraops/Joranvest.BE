@@ -39,6 +39,7 @@ var (
 	roleRepository                    repository.RoleRepository                    = repository.NewRoleRepository(db)
 	roleMemberRepository              repository.RoleMemberRepository              = repository.NewRoleMemberRepository(db)
 	roleMenuRepository                repository.RoleMenuRepository                = repository.NewRoleMenuRepository(db)
+	organizationRepository            repository.OrganizationRepository            = repository.NewOrganizationRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
@@ -58,6 +59,7 @@ var (
 	roleService                    service.RoleService                    = service.NewRoleService(roleRepository)
 	roleMemberService              service.RoleMemberService              = service.NewRoleMemberService(roleMemberRepository)
 	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
+	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -76,6 +78,7 @@ var (
 	roleController                    controllers.RoleController                    = controllers.NewRoleController(roleService, jwtService)
 	roleMemberController              controllers.RoleMemberController              = controllers.NewRoleMemberController(roleMemberService, jwtService)
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
+	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 )
 
 func createMyRender(view_path string) multitemplate.Renderer {
@@ -181,6 +184,11 @@ func createMyRender(view_path string) multitemplate.Renderer {
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	r.AddFromFiles("role_menu",
 		view_path+"_base.html", view_path+"admin/role/role.menu.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+
+	r.AddFromFiles("organization",
+		view_path+"_base.html", view_path+"admin/organization/organization.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	return r
@@ -584,6 +592,17 @@ func main() {
 				},
 			)
 		})
+
+		adminRoutes.GET("/organization", func(c *gin.Context) {
+			data := Setup(c, "Organization", "Organization", "Organization", "Organization", "Organization")
+			c.HTML(
+				http.StatusOK,
+				"organization",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
 	}
 
 	browseRoutes := r.Group("browse")
@@ -778,6 +797,15 @@ func main() {
 		roleMenuApiRoutes.GET("/getById/:id", roleMenuController.GetById)
 		roleMenuApiRoutes.DELETE("/deleteById/:id", roleMenuController.DeleteById)
 		roleMenuApiRoutes.POST("/deleteByRoleAndMenuId", roleMenuController.DeleteByRoleAndMenuId)
+	}
+
+	organizationApiRoutes := r.Group("api/organization")
+	{
+		organizationApiRoutes.POST("/getDatatables", organizationController.GetDatatables)
+		organizationApiRoutes.GET("/lookup", organizationController.Lookup)
+		organizationApiRoutes.POST("/save", organizationController.Save)
+		organizationApiRoutes.GET("/getById/:id", organizationController.GetById)
+		organizationApiRoutes.DELETE("/deleteById/:id", organizationController.DeleteById)
 	}
 
 	r.Run(":10000")

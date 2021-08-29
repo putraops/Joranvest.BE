@@ -4,7 +4,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb pb-2">
         <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Tag</li>
+        <li class="breadcrumb-item active" aria-current="page">Organization</li>
         </ol>
     </nav>  
 
@@ -25,7 +25,7 @@
                     <form id="form-basic" class="needs-validation" novalidate>
                         <input type="text" name="id" id="recordId" class="d-none" />
                         <div class="form-group mb-2">
-                            <label class="mb-1">Tag<span class="text-danger">*</span></label>
+                            <label class="mb-1">Organization<span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
                         </div>
                     </form>
@@ -53,7 +53,7 @@
                         <table id="dtBasic" class="display nowrap w-100" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>Tag</th>
+                                    <th>Organization</th>
                                     <th class="text-center" style="max-width: 150px;">Action</th>
                                 </tr>
                             </thead>
@@ -67,5 +67,5 @@
     </div>
 </div>
 {{template "_baseScript" .}}
-<script src="/script/admin/tag/tag.index.js?t={{.data.timenow}}"></script>
+<script src="/script/admin/organization/organization.index.js?t={{.data.timenow}}"></script>
 {{end}}
