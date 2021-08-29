@@ -1,14 +1,19 @@
 package service
 
 import (
+	"database/sql"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type RoleMenuService interface {
 	GetAll(filter map[string]interface{}) []models.RoleMenu
-	Insert(record models.RoleMenu) helper.Response
+	Insert(record dto.InsertRoleMenuDto) helper.Response
 	Update(record models.RoleMenu) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
@@ -30,8 +35,29 @@ func (service *roleMenuService) GetAll(filter map[string]interface{}) []models.R
 	return service.roleMenuRepository.GetAll(filter)
 }
 
-func (service *roleMenuService) Insert(record models.RoleMenu) helper.Response {
-	return service.roleMenuRepository.Insert(record)
+func (service *roleMenuService) Insert(record dto.InsertRoleMenuDto) helper.Response {
+	var records []models.RoleMenu
+
+	var newRecord models.RoleMenu
+	newRecord.Id = uuid.New().String()
+	newRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	newRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	newRecord.ApplicationMenuId = record.ApplicationMenuId
+	newRecord.RoleId = record.RoleId
+	records = append(records, newRecord)
+
+	if len(record.ChildrenIds) > 0 {
+		for _, v := range record.ChildrenIds {
+			var newRecord models.RoleMenu
+			newRecord.Id = uuid.New().String()
+			newRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+			newRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+			newRecord.ApplicationMenuId = v
+			newRecord.RoleId = record.RoleId
+			records = append(records, newRecord)
+		}
+	}
+	return service.roleMenuRepository.Insert(records)
 }
 
 func (service *roleMenuService) Update(record models.RoleMenu) helper.Response {

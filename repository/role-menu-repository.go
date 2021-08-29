@@ -8,14 +8,13 @@ import (
 	entity_view_models "joranvest/models/view_models"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type RoleMenuRepository interface {
 	GetAll(filter map[string]interface{}) []models.RoleMenu
-	Insert(t models.RoleMenu) helper.Response
+	Insert(t []models.RoleMenu) helper.Response
 	Update(record models.RoleMenu) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
@@ -48,12 +47,9 @@ func (db *roleMenuConnection) GetAll(filter map[string]interface{}) []models.Rol
 	return records
 }
 
-func (db *roleMenuConnection) Insert(record models.RoleMenu) helper.Response {
+func (db *roleMenuConnection) Insert(record []models.RoleMenu) helper.Response {
 	tx := db.connection.Begin()
 
-	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})

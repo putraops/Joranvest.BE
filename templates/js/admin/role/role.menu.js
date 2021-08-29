@@ -83,9 +83,17 @@
         $("#" + result.node.id + ">a").append(loading);
 
         if (result.node.state.checked) {
-          if (result.node.parent == "#") {
+          if (result.node.children.length > 0) {
+            data.has_children = true;
+            // data.children = result.node.children.
+
+            console.log(JSON.stringify(result.node.children));
+            data.children = JSON.stringify(result.node.children);
             //-- Do something to insert children into database
           }
+
+          console.log(data);
+
           $.post($.helper.baseApiPath("/role_menu/save"), data, function (r) {
             $("#" + result.node.id + ">a>span").remove();
           });

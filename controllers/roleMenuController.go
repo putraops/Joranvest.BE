@@ -1,16 +1,15 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"joranvest/dto"
 	"joranvest/helper"
-	"joranvest/models"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mashingan/smapping"
 )
 
 type RoleMenuController interface {
@@ -34,7 +33,7 @@ func NewRoleMenuController(roleMenuService service.RoleMenuService, jwtService s
 
 func (c *roleMenuController) Save(context *gin.Context) {
 	result := helper.Response{}
-	var recordDto dto.RoleMenuDto
+	var recordDto dto.InsertRoleMenuDto
 
 	errDTO := context.Bind(&recordDto)
 	if errDTO != nil {
@@ -44,17 +43,11 @@ func (c *roleMenuController) Save(context *gin.Context) {
 		authHeader := context.GetHeader("Authorization")
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
-		var newRecord = models.RoleMenu{}
-		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
-		newRecord.EntityId = userIdentity.EntityId
+		recordDto.EntityId = userIdentity.EntityId
+		recordDto.CreatedBy = userIdentity.UserId
+		json.Unmarshal([]byte(recordDto.Children), &recordDto.ChildrenIds)
 
-		if recordDto.Id == "" {
-			newRecord.CreatedBy = userIdentity.UserId
-			result = c.roleMenuService.Insert(newRecord)
-		} else {
-			newRecord.UpdatedBy = userIdentity.UserId
-			result = c.roleMenuService.Update(newRecord)
-		}
+		result = c.roleMenuService.Insert(recordDto)
 
 		if result.Status {
 			response := helper.BuildResponse(true, "OK", result.Data)
