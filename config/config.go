@@ -78,6 +78,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.ApplicationMenuCategory{},
 		&models.ApplicationMenu{},
 		&models.RoleMenu{},
+		&models.Organization{},
 
 		&models.EmitenCategory{},
 		&models.Emiten{},
@@ -111,6 +112,9 @@ func SetupDatabaseConnection() *gorm.DB {
 	var vw_role_member = entity_view_models.EntityRoleMemberView{}
 	viewList[vw_role_member.TableName()] = vw_role_member.Migration()
 
+	var vw_organization = entity_view_models.EntityOrganizationView{}
+	viewList[vw_organization.TableName()] = vw_organization.Migration()
+
 	var vw_application_menu_category = entity_view_models.EntityApplicationMenuCategoryView{}
 	viewList[vw_application_menu_category.TableName()] = vw_application_menu_category.Migration()
 
@@ -138,8 +142,8 @@ func SetupDatabaseConnection() *gorm.DB {
 	var vw_webinar_category = entity_view_models.EntityWebinarCategoryView{}
 	viewList[vw_webinar_category.TableName()] = vw_webinar_category.Migration()
 
-	//var vw_webinary = entity_view_models.EntityWebinarCategoryView{}
-	//viewList[vw_webinar_category.TableName()] = vw_webinar_category.Migration()
+	var vw_webinar = entity_view_models.EntityWebinarView{}
+	viewList[vw_webinar.TableName()] = vw_webinar.Migration()
 
 	var vw_webinar_speaker = entity_view_models.EntityWebinarSpeakerView{}
 	viewList[vw_webinar_speaker.TableName()] = vw_webinar_speaker.Migration()
