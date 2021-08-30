@@ -1,11 +1,14 @@
 package helper
 
 type Select2Item struct {
-	Id          string `json:"id"`
-	Text        string `json:"text"`
-	Description string `json:"description"`
-	Selected    bool
-	Disabled    bool
+	Id          string      `json:"id"`
+	Text        string      `json:"text"`
+	Description string      `json:"description"`
+	Selected    bool        `json:"selected"`
+	Disabled    bool        `json:"disabled"`
+	HasChildren bool        `json:"has_children"`
+	Children    interface{} `json:"children"`
+	ParentId    string      `json:"parent_id"`
 }
 
 type Select2Request struct {

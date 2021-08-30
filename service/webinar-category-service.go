@@ -45,16 +45,27 @@ func (service *webinarCategoryService) Lookup(r helper.Select2Request) helper.Re
 	}
 
 	result := service.webinarCategoryRepository.Lookup(request)
+
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Text:        record.Name,
-				Description: record.Description,
-				Selected:    true,
-				Disabled:    false,
+			if record.ParentId == "" {
+				children := FindChildren(record.Id, result)
+				var hasChildren = false
+				if len(children) > 0 {
+					hasChildren = true
+				}
+				var p = helper.Select2Item{
+					Id:          record.Id,
+					Text:        record.Name,
+					Description: record.Description,
+					ParentId:    record.ParentId,
+					Selected:    false,
+					Disabled:    false,
+					HasChildren: hasChildren,
+					Children:    children,
+				}
+				ary.Results = append(ary.Results, p)
 			}
-			ary.Results = append(ary.Results, p)
 		}
 	} else {
 		var p = helper.Select2Item{
@@ -96,4 +107,24 @@ func (service *webinarCategoryService) GetById(recordId string) helper.Response 
 
 func (service *webinarCategoryService) DeleteById(recordId string) helper.Response {
 	return service.webinarCategoryRepository.DeleteById(recordId)
+}
+
+func FindChildren(parent_id string, records []models.WebinarCategory) []helper.Select2Item {
+	res := []helper.Select2Item{}
+
+	for _, v := range records {
+		if v.ParentId == parent_id {
+			var p = helper.Select2Item{
+				Id:          v.Id,
+				Text:        v.Name,
+				Description: v.Description,
+				ParentId:    parent_id,
+				Selected:    true,
+				Disabled:    false,
+				Children:    nil,
+			}
+			res = append(res, p)
+		}
+	}
+	return res
 }

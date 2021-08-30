@@ -30,6 +30,7 @@
             return req;
           },
           processResults: function (r) {
+            console.log(r);
             return r.data;
           },
         },
@@ -37,10 +38,11 @@
           return markup;
         },
         templateResult: function (data) {
+          console.log("templateResult", data);
           var _description = data.description == undefined ? "-" : data.description;
-          var html = `<div class="" style="font-size: 10pt; ">
+          var html = `<div class="" style="font-size: 10pt;">
                         <span class="fw-700">` + data.text + `</span>
-                      </div>`;
+                      </div>`
           return html;
         },
         cache: true,
