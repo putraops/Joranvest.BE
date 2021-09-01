@@ -13,6 +13,7 @@ type ServiceRepository interface {
 	GetAll(filter map[string]interface{}) interface{}
 	Lookup(req map[string]interface{}, r helper.Select2Request) []models.ApplicationUser
 	ConvertViewQueryIntoViewCount(param string) string
+	ConvertViewQueryIntoViewCountByPublic(param string, tableName string) string
 }
 
 type serviceConnection struct {
@@ -29,6 +30,13 @@ func (db *serviceConnection) ConvertViewQueryIntoViewCount(request string) strin
 	var response = ""
 	strParts := strings.Split(strings.ToLower(request), "from")
 	response = "SELECT COUNT(*) FROM " + strParts[1] + " "
+	return response
+}
+
+func (db *serviceConnection) ConvertViewQueryIntoViewCountByPublic(request string, tableName string) string {
+	var response = ""
+	strParts := strings.Split(strings.ToLower(request), "from public."+tableName+" r")
+	response = "SELECT COUNT(*) FROM " + tableName + " AS r " + strParts[1] + " "
 	return response
 }
 

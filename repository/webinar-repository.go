@@ -80,14 +80,14 @@ func (db *webinarConnection) GetDatatables(request commons.DataTableRequest) com
 	var sql strings.Builder
 	var sqlCount strings.Builder
 	sql.WriteString(fmt.Sprintf("SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY %s) peta_rn, ", orderpart))
-	sql.WriteString(strings.Replace(db.viewQuery, "SELECT", "", -1))
+	sql.WriteString(strings.Replace(db.viewQuery, "SELECT  r.id", "r.id", -1))
 	sql.WriteString(" WHERE 1 = 1 ")
 	sql.WriteString(conditions)
 	sql.WriteString(") peta_paged ")
 	sql.WriteString(fmt.Sprintf("WHERE peta_rn > %s AND peta_rn <= %s ", start, length))
 	db.connection.Raw(sql.String()).Scan(&records)
 
-	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
+	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCountByPublic(db.viewQuery, db.tableName))
 	sqlCount.WriteString("WHERE 1=1")
 	sqlCount.WriteString(conditions)
 	db.connection.Raw(sqlCount.String()).Scan(&res.RecordsFiltered)
@@ -162,6 +162,7 @@ func (db *webinarConnection) Update(record models.Webinar) helper.Response {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
 
+	fmt.Println(len(record.WebinarSpeaker))
 	for i := 0; i < len(record.WebinarSpeaker); i++ {
 		fmt.Println(record.WebinarSpeaker[i].WebinarId)
 		record.WebinarSpeaker[i].Id = uuid.New().String()

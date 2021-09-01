@@ -8,6 +8,7 @@ import (
 type EntityWebinarView struct {
 	models.Webinar
 	OrganizerOrganizationName string `json:"organizer_organization_name"`
+	SpeakerName               string `json:"speaker_name"`
 	UserCreate                string `json:"user_create"`
 	UserUpdate                string `json:"user_update"`
 }
@@ -34,6 +35,7 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.webinar_category_id,")
 	sql.WriteString("  r.organizer_organization_id,")
 	sql.WriteString("  o.name AS organizer_organization_name,")
+	sql.WriteString("  (SELECT s.speaker FROM (SELECT ws.webinar_id, string_agg(ws.speaker_full_name, ', ') AS speaker FROM vw_webinar_speaker ws WHERE ws.webinar_id = r.id GROUP BY 1) AS s) AS speaker_name,")
 	sql.WriteString("  r.title,")
 	sql.WriteString("  r.description,")
 	sql.WriteString("  r.webinar_first_start_date,")
@@ -49,14 +51,14 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.status,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
-	sql.WriteString("FROM webinar r ")
+	sql.WriteString("FROM public.webinar r ")
 	sql.WriteString("  LEFT JOIN webinar_category c ON c.id = r.webinar_category_id")
 	sql.WriteString("  LEFT JOIN organization o ON o.id = r.organizer_organization_id")
-	// sql.WriteString("  LEFT JOIN application_user u3 ON u3.id = r.organizer_user_id")
 	sql.WriteString("  LEFT JOIN application_user u1 ON u1.id = r.created_by")
 	sql.WriteString("  LEFT JOIN application_user u2 ON u2.id = r.updated_by")
 	return sql.String()
 }
+
 func (EntityWebinarView) Migration() map[string]string {
 	var view = EntityWebinarView{}
 	var m = make(map[string]string)

@@ -55,7 +55,6 @@ func (c *webinarController) Save(context *gin.Context) {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
 	} else {
-		fmt.Println("not error")
 		authHeader := context.GetHeader("Authorization")
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
@@ -68,15 +67,12 @@ func (c *webinarController) Save(context *gin.Context) {
 		json.Unmarshal([]byte(recordDto.WebinarSpeaker), &newRecord.WebinarSpeaker)
 		newRecord.EntityId = userIdentity.EntityId
 
-		fmt.Println(newRecord.WebinarCategoryId)
-
 		//-- Mapping Id in array into array of struct of WebinarSpeaker
 		for i := 0; i < len(arrtempWebinarSpeakerId); i++ {
 			newRecord.WebinarSpeaker[i].SpeakerId = arrtempWebinarSpeakerId[i]
 		}
 
 		// myDateString := "2018-01-20 00:00:00"
-		//var temp = time.Time{}
 		//-- Mapping WebinarStartDate
 		firstStartDate, err := time.Parse("2006-01-02 15:04:05 +0000 UTC", recordDto.WebinarFirstStartDate.String())
 		if err != nil {

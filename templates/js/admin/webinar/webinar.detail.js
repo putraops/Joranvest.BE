@@ -235,6 +235,7 @@
           }
         });
       } else {
+        toastr.error("Silahkan Periksa kembali Form", "Peringatan!")
         event.preventDefault();
         event.stopPropagation();
         $form.addClass('was-validated');
@@ -266,6 +267,8 @@
         }
       }
       console.log(record);
+
+      record.webinar_speaker = JSON.stringify(record.webinar_speaker);
 
       $.ajax({
         url: $.helper.baseApiPath("/webinar/save"),
@@ -308,7 +311,7 @@
     
     var getById = function (id) {
       $.ajax({
-        url: $.helper.baseApiPath("/technical_analysis/getById/" + id),
+        url: $.helper.baseApiPath("/webinar/getById/" + id),
         type: 'GET',
         success: function (r) {
           console.log("getById", r);
@@ -316,13 +319,13 @@
             $form.find('input').val(function () {
               return r.data[this.name];
             });
-            $("textarea[name=reason_to_buy]").val(r.data.reason_to_buy);
+            $("textarea[name=description]").val(r.data.description);
             
-            var newOption = new Option(r.data.emiten.emiten_name + " [" + r.data.emiten.emiten_code + "]", r.data.emiten_id, false, false);
-            $('#emiten_id').append(newOption).trigger('change');
-            $('#signal').val(r.data.signal).trigger('change');
-            $('#bandarmology_status').val(r.data.bandarmology_status).trigger('change');
-            $('#timeframe').val(r.data.timeframe).trigger('change');
+            // var newOption = new Option(r.data.emiten.emiten_name + " [" + r.data.emiten.emiten_code + "]", r.data.emiten_id, false, false);
+            // $('#emiten_id').append(newOption).trigger('change');
+            // $('#signal').val(r.data.signal).trigger('change');
+            // $('#bandarmology_status').val(r.data.bandarmology_status).trigger('change');
+            // $('#timeframe').val(r.data.timeframe).trigger('change');
           }
         },
         error: function (r) {
