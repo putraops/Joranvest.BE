@@ -321,11 +321,64 @@
             });
             $("textarea[name=description]").val(r.data.description);
             
-            // var newOption = new Option(r.data.emiten.emiten_name + " [" + r.data.emiten.emiten_code + "]", r.data.emiten_id, false, false);
-            // $('#emiten_id').append(newOption).trigger('change');
-            // $('#signal').val(r.data.signal).trigger('change');
-            // $('#bandarmology_status').val(r.data.bandarmology_status).trigger('change');
-            // $('#timeframe').val(r.data.timeframe).trigger('change');
+            $('#webinar_level').val(r.data.webinar_level).trigger('change');
+            var newOption = new Option(r.data.webinar_category.name, r.data.webinar_category_id, false, false);
+            $('#webinar_category_id').append(newOption).trigger('change');
+            if (r.data.organizer_organization_id == "") {
+              getWebinarSpeaker(r.data.id);
+              $('#speaker_type').val("Personal").trigger('change');
+              $("#section-speaker-user").removeClass("d-none");
+            } else {
+              $('#speaker_type').val("Organisasi").trigger('change');
+              $("#section-speaker-organization").removeClass("d-none");
+              getOrganization(r.data.organizer_organization_id);
+            }
+
+            //-- Price Config
+            if (r.data.price == 0) {
+              $("#cbx-event-charge").prop("checked", true);
+              $("input[name=price]").attr("readonly", "");
+              $("input[name=discount]").attr("readonly", "");
+            }
+
+            //-- Min Age Config
+            if (r.data.min_age == 0) {
+              $("#cbx-min-age").prop("checked", true);
+            }
+
+            //-- Certificate Config
+            if (r.data.is_certificate) {
+              $("#is_certificate").prop('checked', true);
+            }
+
+            //-- Date Configuration
+            $("input[name=webinar_first_start_date]").val(moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));
+            $("#date-start").datepicker('setDate', moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));    
+            $("#webinar_first_start_time").val(moment(r.data.webinar_first_start_date.Time).format('HH:mm'));
+            $("#webinar_first_end_time").val(moment(r.data.webinar_first_end_date.Time).format('HH:mm'));
+            if (r.data.webinar_last_start_date.Time != "0001-01-01T00:00:00Z") {
+              $("#section-range-end").removeClass("d-none");
+              $('#event_range').prop('checked', true);
+              
+              $("input[name=webinar_last_start_date]").val(moment(r.data.webinar_last_start_date.Time).format('YYYY-MM-DD'));
+              $("#date-end").datepicker('setDate', moment(r.data.webinar_last_start_date.Time).format('YYYY-MM-DD'));    
+              $("#webinar_last_start_time").val(moment(r.data.webinar_last_start_date.Time).format('HH:mm'));
+              $("#webinar_last_end_time").val(moment(r.data.webinar_last_end_date.Time).format('HH:mm'));
+            }
+
+
+            // $("#section-speaker-organization").addClass("d-none");
+            // $("#section-speaker-user").addClass("d-none");
+            // $('#organizer_organization_id').val(null).trigger('change');
+            // $('#organizer_user_id').val(null).trigger('change');
+            
+            // $("#validation-organizer_user_id").css("display", "none");
+            // $("#validation-organization_id").css("display", "none");
+            // if (value.text.toLowerCase() == "personal") {
+            //   $("#section-speaker-user").removeClass("d-none");
+            // } else {
+            //   $("#section-speaker-organization").removeClass("d-none");
+            // }
           }
         },
         error: function (r) {
@@ -336,9 +389,9 @@
 
     $("#cbx-min-age").change(function () {
       if ($(this).is(":checked")) {
-        $("input[name=min-age]").val("0");
+        $("input[name=min_age]").val("0");
       } else {
-        $("input[name=min-age]").val("");
+        $("input[name=min_age]").val("");
       }
     });
 
@@ -356,6 +409,7 @@
       }
     });
 
+
     $("#event_range").change(function() {
       triggerEventRange();
     });
@@ -371,7 +425,45 @@
       }
     }
 
-    
+    var getWebinarSpeaker = function (webinar_id) {
+      $.ajax({
+        url: $.helper.baseApiPath("/webinar_speaker/getAll?webinar_id=" + webinar_id),
+        type: 'GET',
+        success: function (r) {
+          console.log("webinarSpeaker", r);
+          if (r.status) {
+            if (r.data != null && r.data.length > 0) {
+              $.each(r.data, function( index, value ) {
+                var newOption = new Option(value.speaker_full_name, value.speaker_id, true, true);
+                $('#organizer_user_id').append(newOption).trigger('change');
+              });
+            }
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
+    var getOrganization = function (organization_id) {
+      $.ajax({
+        url: $.helper.baseApiPath("/organization/getById/" + organization_id),
+        type: 'GET',
+        success: function (r) {
+          console.log("webinarSpeaker", r);
+          if (r.status && r.data != null) {
+            var newOption = new Option(r.data.name, organization_id, false, false);
+            $('#organizer_organization_id').append(newOption).trigger('change');
+          } else {
+            toastr.error(r.status.message, "Warning!");
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
 
     return {
       init: function () {

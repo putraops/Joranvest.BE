@@ -78,11 +78,38 @@
           
           {
             data: "description",
-            name: "description"
+            name: "r.description"
           },
           {
             data: "webinar_level",
             name: "webinar_level"
+          },
+          {
+            data: "webinar_first_start_date",
+            name: "webinar_first_start_date",
+            orderable: true,
+            searchable: true,
+            class: "text-left min-date-width",
+            render: function (data, type, row) {
+              var html = `<div class='text-wrap'>`;
+              if (type === 'display') {
+                html  += moment(row.webinar_first_start_date.Time).format('MMM DD, YYYY');
+                html  += "<br/><span>Jam: " + moment(row.webinar_first_start_date.Time).format('HH:mm') + "</span>";
+                if (row.webinar_first_start_date.Time != row.webinar_first_end_date.Time) {
+                  html  += "<span> - " + moment(row.webinar_first_end_date.Time).format('HH:mm') + "</span>";
+                }
+                if (row.webinar_last_start_date.Time != "0001-01-01T00:00:00Z") {
+                  html  += "<br /><span>" + moment(row.webinar_last_start_date.Time).format('MMM DD, YYYY') + "</span>";
+                  html  += "<br/><span>Jam: " + moment(row.webinar_last_start_date.Time).format('HH:mm') + "</span>";
+                  if (row.webinar_last_start_date.Time != row.webinar_last_end_date.Time) {
+                    html  += "<span> - " + moment(row.webinar_first_end_date.Time).format('HH:mm') + "</span>";
+                  }
+                }
+
+                html += "</div>"
+              }
+              return html;
+            }
           },
           {
             data: "organizer_organization_name",
@@ -100,20 +127,6 @@
                   speaker = row.speaker_name;
                 }
                 html =  `<span class="font-weight-bold" style="font-size: 10pt;">` + speaker + `</span>`;
-              }
-              return html;
-            }
-          },
-          {
-            data: "webinar_first_start_date",
-            name: "webinar_first_start_date",
-            orderable: true,
-            searchable: true,
-            class: "text-left min-date-width",
-            render: function (data, type, row) {
-              var html = "";
-              if (type === 'display') {
-                html  = "<div class='text-wrap width-200'>" + moment(row.webinar_first_start_date.Time).format('MMM DD, YYYY HH:mm') + "</div>";
               }
               return html;
             }
@@ -143,8 +156,8 @@
           {
             data: "price",
             name: "price",
-            orderable: false,
-            searchable: false,
+            orderable: true,
+            searchable: true,
             class: "text-left",
             render: function (data, type, row) {
               var html = thousandSeparatorInteger(data);
@@ -154,8 +167,8 @@
           {
             data: "discount",
             name: "discount",
-            orderable: false,
-            searchable: false,
+            orderable: true,
+            searchable: true,
             class: "text-left",
             render: function (data, type, row) {
               var html = thousandSeparatorInteger(data);
@@ -165,8 +178,8 @@
           {
             data: "is_certificate",
             name: "is_certificate",
-            orderable: false,
-            searchable: false,
+            orderable: true,
+            searchable: true,
             class: "text-left",
             render: function (data, type, row) {
               var html = thousandSeparatorInteger(data);
@@ -181,8 +194,8 @@
           {
             data: "reward",
             name: "reward",
-            orderable: false,
-            searchable: false,
+            orderable: true,
+            searchable: true,
             class: "text-left",
             render: function (data, type, row) {
               var html = thousandSeparatorInteger(data);
