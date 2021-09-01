@@ -32,6 +32,7 @@ var (
 	emitenCategoryRepository          repository.EmitenCategoryRepository          = repository.NewEmitenCategoryRepository(db)
 	webinarCategoryRepository         repository.WebinarCategoryRepository         = repository.NewWebinarCategoryRepository(db)
 	webinarRepository                 repository.WebinarRepository                 = repository.NewWebinarRepository(db)
+	webinarSpeakerRepository          repository.WebinarSpeakerRepository          = repository.NewWebinarSpeakerRepository(db)
 	sectorRepository                  repository.SectorRepository                  = repository.NewSectorRepository(db)
 	tagRepository                     repository.TagRepository                     = repository.NewTagRepository(db)
 	technicalAnalysisRepository       repository.TechnicalAnalysisRepository       = repository.NewTechnicalAnalysisRepository(db)
@@ -53,6 +54,7 @@ var (
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
 	webinarCategoryService         service.WebinarCategoryService         = service.NewWebinarCategoryService(webinarCategoryRepository)
 	webinarService                 service.WebinarService                 = service.NewWebinarService(webinarRepository)
+	webinarSpeakerService          service.WebinarSpeakerService          = service.NewWebinarSpeakerService(webinarSpeakerRepository)
 	sectorService                  service.SectorService                  = service.NewSectorService(sectorRepository)
 	tagService                     service.TagService                     = service.NewTagService(tagRepository)
 	technicalAnalysisService       service.TechnicalAnalysisService       = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
@@ -73,6 +75,7 @@ var (
 	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
 	webinarCategoryController         controllers.WebinarCategoryController         = controllers.NewWebinarCategoryController(webinarCategoryService, jwtService)
 	webinarController                 controllers.WebinarController                 = controllers.NewWebinarController(webinarService, jwtService)
+	webinarSpeakerController          controllers.WebinarSpeakerController          = controllers.NewWebinarSpeakerController(webinarSpeakerService, jwtService)
 	sectorController                  controllers.SectorController                  = controllers.NewSectorController(sectorService, jwtService)
 	tagController                     controllers.TagController                     = controllers.NewTagController(tagService, jwtService)
 	technicalAnalysisController       controllers.TechnicalAnalysisController       = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
@@ -756,6 +759,12 @@ func main() {
 		webinarApiRoutes.POST("/save", webinarController.Save)
 		webinarApiRoutes.GET("/getById/:id", webinarController.GetById)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)
+	}
+
+	webinarSpeakerApiRoutes := r.Group("api/webinar_speaker")
+	{
+		webinarSpeakerApiRoutes.GET("/getById/:id", webinarSpeakerController.GetById)
+		webinarSpeakerApiRoutes.GET("/getAll", webinarSpeakerController.GetAll)
 	}
 
 	tagApiRoutes := r.Group("api/tag")
