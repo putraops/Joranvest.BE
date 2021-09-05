@@ -127,10 +127,13 @@ func SetupDatabaseConnection() *gorm.DB {
 	var vw_order = entity_view_models.EntityMembershipView{}
 	viewList[vw_order.TableName()] = vw_order.Migration()
 
+	//-- Article, Article Category, Article Tag
 	var vw_article_category = entity_view_models.EntityArticleCategoryView{}
 	viewList[vw_article_category.TableName()] = vw_article_category.Migration()
 	var vw_article = entity_view_models.EntityArticleView{}
 	viewList[vw_article.TableName()] = vw_article.Migration()
+	var vw_article_tag = entity_view_models.EntityArticleTagView{}
+	viewList[vw_article_tag.TableName()] = vw_article_tag.Migration()
 
 	var vw_emiten_category = entity_view_models.EntityEmitenCategoryView{}
 	viewList[vw_emiten_category.TableName()] = vw_emiten_category.Migration()
@@ -161,7 +164,6 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_fundamental_analysis = entity_view_models.EntityFundamentalAnalysisView{}
 	viewList[vw_fundamental_analysis.TableName()] = vw_fundamental_analysis.Migration()
-
 	var vw_fundamental_analysis_tag = entity_view_models.EntityFundamentalAnalysisTagView{}
 	viewList[vw_fundamental_analysis_tag.TableName()] = vw_fundamental_analysis_tag.Migration()
 
