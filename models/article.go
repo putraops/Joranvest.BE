@@ -22,11 +22,12 @@ type Article struct {
 	Title             string `gorm:"type:text; not null" json:"title"`
 	SubTitle          string `gorm:"type:text" json:"sub_title"`
 	Body              string `gorm:"type:text" json:"body"`
-	Source            string `gorm:"type:varchar(200)" json:"name"`
+	Source            string `gorm:"type:varchar(200)" json:"source"`
 	ArticleType       string `gorm:"type:varchar(50);not null" json:"article_type"`
 	ArticleCategoryId string `gorm:"type:varchar(50);not null" json:"article_category_id"`
 	Description       string `gorm:"type:text" json:"description"`
 
+	ArticleTag      []ArticleTag    `gorm:"-" json:"article_tag"`
 	ArticleCategory ArticleCategory `gorm:"foreignkey:ArticleCategoryId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"article_category"`
 }
 

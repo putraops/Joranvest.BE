@@ -31,6 +31,8 @@ var (
 	emitenRepository                  repository.EmitenRepository                  = repository.NewEmitenRepository(db)
 	emitenCategoryRepository          repository.EmitenCategoryRepository          = repository.NewEmitenCategoryRepository(db)
 	articleCategoryRepository         repository.ArticleCategoryRepository         = repository.NewArticleCategoryRepository(db)
+	articleRepository                 repository.ArticleRepository                 = repository.NewArticleRepository(db)
+	articleTagRepository              repository.ArticleTagRepository              = repository.NewArticleTagRepository(db)
 	webinarCategoryRepository         repository.WebinarCategoryRepository         = repository.NewWebinarCategoryRepository(db)
 	webinarRepository                 repository.WebinarRepository                 = repository.NewWebinarRepository(db)
 	webinarSpeakerRepository          repository.WebinarSpeakerRepository          = repository.NewWebinarSpeakerRepository(db)
@@ -54,6 +56,8 @@ var (
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
 	articleCategoryService         service.ArticleCategoryService         = service.NewArticleCategoryService(articleCategoryRepository)
+	articleService                 service.ArticleService                 = service.NewArticleService(articleRepository)
+	articleTagService              service.ArticleTagService              = service.NewArticleTagService(articleTagRepository)
 	webinarCategoryService         service.WebinarCategoryService         = service.NewWebinarCategoryService(webinarCategoryRepository)
 	webinarService                 service.WebinarService                 = service.NewWebinarService(webinarRepository)
 	webinarSpeakerService          service.WebinarSpeakerService          = service.NewWebinarSpeakerService(webinarSpeakerRepository)
@@ -76,6 +80,8 @@ var (
 	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
 	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
 	articleCategoryController         controllers.ArticleCategoryController         = controllers.NewArticleCategoryController(articleCategoryService, jwtService)
+	articleController                 controllers.ArticleController                 = controllers.NewArticleController(articleService, jwtService)
+	articleTagController              controllers.ArticleTagController              = controllers.NewArticleTagController(articleTagService, jwtService)
 	webinarCategoryController         controllers.WebinarCategoryController         = controllers.NewWebinarCategoryController(webinarCategoryService, jwtService)
 	webinarController                 controllers.WebinarController                 = controllers.NewWebinarController(webinarService, jwtService)
 	webinarSpeakerController          controllers.WebinarSpeakerController          = controllers.NewWebinarSpeakerController(webinarSpeakerService, jwtService)
@@ -804,6 +810,20 @@ func main() {
 		articleCategoryApiRoutes.POST("/save", articleCategoryController.Save)
 		articleCategoryApiRoutes.GET("/getById/:id", articleCategoryController.GetById)
 		articleCategoryApiRoutes.DELETE("/deleteById/:id", articleCategoryController.DeleteById)
+	}
+
+	articleApiRoutes := r.Group("api/article")
+	{
+		articleApiRoutes.POST("/getDatatables", articleController.GetDatatables)
+		articleApiRoutes.POST("/save", articleController.Save)
+		articleApiRoutes.GET("/getById/:id", articleController.GetById)
+		articleApiRoutes.DELETE("/deleteById/:id", articleController.DeleteById)
+	}
+
+	articleTagApiRoutes := r.Group("api/article_tag")
+	{
+		articleTagApiRoutes.GET("/getById/:id", articleTagController.GetById)
+		articleTagApiRoutes.GET("/getAll", articleTagController.GetAll)
 	}
 
 	webinarCategoryApiRoutes := r.Group("api/webinar_category")
