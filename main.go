@@ -30,6 +30,7 @@ var (
 	filemasterRepository              repository.FilemasterRepository              = repository.NewFilemasterRepository(db)
 	emitenRepository                  repository.EmitenRepository                  = repository.NewEmitenRepository(db)
 	emitenCategoryRepository          repository.EmitenCategoryRepository          = repository.NewEmitenCategoryRepository(db)
+	articleCategoryRepository         repository.ArticleCategoryRepository         = repository.NewArticleCategoryRepository(db)
 	webinarCategoryRepository         repository.WebinarCategoryRepository         = repository.NewWebinarCategoryRepository(db)
 	webinarRepository                 repository.WebinarRepository                 = repository.NewWebinarRepository(db)
 	webinarSpeakerRepository          repository.WebinarSpeakerRepository          = repository.NewWebinarSpeakerRepository(db)
@@ -52,6 +53,7 @@ var (
 	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository)
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
+	articleCategoryService         service.ArticleCategoryService         = service.NewArticleCategoryService(articleCategoryRepository)
 	webinarCategoryService         service.WebinarCategoryService         = service.NewWebinarCategoryService(webinarCategoryRepository)
 	webinarService                 service.WebinarService                 = service.NewWebinarService(webinarRepository)
 	webinarSpeakerService          service.WebinarSpeakerService          = service.NewWebinarSpeakerService(webinarSpeakerRepository)
@@ -73,6 +75,7 @@ var (
 	filemasterController              controllers.FilemasterController              = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
 	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
+	articleCategoryController         controllers.ArticleCategoryController         = controllers.NewArticleCategoryController(articleCategoryService, jwtService)
 	webinarCategoryController         controllers.WebinarCategoryController         = controllers.NewWebinarCategoryController(webinarCategoryService, jwtService)
 	webinarController                 controllers.WebinarController                 = controllers.NewWebinarController(webinarService, jwtService)
 	webinarSpeakerController          controllers.WebinarSpeakerController          = controllers.NewWebinarSpeakerController(webinarSpeakerService, jwtService)
@@ -136,6 +139,10 @@ func createMyRender(view_path string) multitemplate.Renderer {
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 
+	r.AddFromFiles("article_category",
+		view_path+"_base.html", view_path+"admin/article_category/article_category.index.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	r.AddFromFiles("article",
 		view_path+"_base.html", view_path+"admin/article/article.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
@@ -484,6 +491,17 @@ func main() {
 			)
 		})
 
+		adminRoutes.GET("/article_category", func(c *gin.Context) {
+			data := Setup(c, "Article Category", "Article Category", "Article Category", "Article Category", "Article Category")
+			c.HTML(
+				http.StatusOK,
+				"article_category",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+
 		adminRoutes.GET("/webinar_category", func(c *gin.Context) {
 			data := Setup(c, "Webinar Category", "Webinar Category", "Webinar Category", "Webinar Category", "Webinar Category")
 			c.HTML(
@@ -776,6 +794,16 @@ func main() {
 		emitenCategoryApiRoutes.POST("/save", emitenCategoryController.Save)
 		emitenCategoryApiRoutes.GET("/getById/:id", emitenCategoryController.GetById)
 		emitenCategoryApiRoutes.DELETE("/deleteById/:id", emitenCategoryController.DeleteById)
+	}
+
+	articleCategoryApiRoutes := r.Group("api/article_category")
+	{
+		articleCategoryApiRoutes.POST("/getDatatables", articleCategoryController.GetDatatables)
+		articleCategoryApiRoutes.GET("/getTree", articleCategoryController.GetTree)
+		articleCategoryApiRoutes.GET("/lookup", articleCategoryController.Lookup)
+		articleCategoryApiRoutes.POST("/save", articleCategoryController.Save)
+		articleCategoryApiRoutes.GET("/getById/:id", articleCategoryController.GetById)
+		articleCategoryApiRoutes.DELETE("/deleteById/:id", articleCategoryController.DeleteById)
 	}
 
 	webinarCategoryApiRoutes := r.Group("api/webinar_category")
