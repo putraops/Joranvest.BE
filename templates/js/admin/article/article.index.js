@@ -34,7 +34,7 @@
                        </div>`
         },
         ajax: {
-          url: $.helper.baseApiPath("/webinar/getDatatables"),
+          url: $.helper.baseApiPath("/article/getDatatables"),
           type: "POST",
           contentType: "application/json",
           data: function (d) {
@@ -49,17 +49,6 @@
           }
         },
         columns: [
-          // {
-          //   data: "id",
-          //   orderable: false,
-          //   searchable: false,
-          //   class: "text-center",
-          //   render: function (data, type, row, meta) {
-          //     return meta.row + meta.settings._iDisplayStart + 1;
-          //   }
-          // },
-
-
           {
             data: "title",
             name: "title",
@@ -76,139 +65,16 @@
             }
           },
           {
-            data: "webinar_level",
-            name: "webinar_level"
+            data: "article_type",
+            name: "article_type"
           },
           {
-            data: "webinar_first_start_date",
-            name: "webinar_first_start_date",
-            orderable: true,
-            searchable: true,
-            class: "text-left min-date-width",
-            render: function (data, type, row) {
-              var html = `<div class='text-wrap'>`;
-              if (type === 'display') {
-                html  += moment(row.webinar_first_start_date.Time).format('MMM DD, YYYY');
-                html  += "<br/><span>Jam: " + moment(row.webinar_first_start_date.Time).utc().format('HH:mm') + "</span>";
-                if (row.webinar_first_start_date.Time != row.webinar_first_end_date.Time) {
-                  html  += "<span> - " + moment(row.webinar_first_end_date.Time).utc().format('HH:mm') + "</span>";
-                }
-                if (row.webinar_last_start_date.Time != "0001-01-01T00:00:00Z") {
-                  html  += "<br /><span>" + moment(row.webinar_last_start_date.Time).format('MMM DD, YYYY') + "</span>";
-                  html  += "<br/><span>Jam: " + moment(row.webinar_last_start_date.Time).utc().format('HH:mm') + "</span>";
-                  if (row.webinar_last_start_date.Time != row.webinar_last_end_date.Time) {
-                    html  += "<span> - " + moment(row.webinar_first_end_date.Time).utc().format('HH:mm') + "</span>";
-                  }
-                }
-
-                html += "</div>"
-              }
-              return html;
-            }
+            data: "article_type",
+            name: "article_type"
           },
           {
-            data: "organizer_organization_name",
-            name: "organizer_organization_name",
-            orderable: false,
-            searchable: false,
-            render: function (data, type, row) {
-              console.log(row);
-              var html = "";
-              var speaker = "";
-              if (type === 'display') {
-                if(row.organizer_organization_id != "") {
-                  speaker = row.organizer_organization_name;
-                } else {
-                  speaker = row.speaker_name;
-                }
-                html =  `<span class="font-weight-bold" style="font-size: 10pt;">` + speaker + `</span>`;
-              }
-              return html;
-            }
-          },
-          {
-            data: "webinar_level",
-            name: "webinar_level"
-          },
-          {
-            data: "min_age",
-            name: "min_age",
-            orderable: true,
-            searchable: true,
-            class: "text-left",
-            render: function (data, type, row) {
-              var html = "";
-              if (type === 'display') {
-                if (data == 0){
-                  html = `<span class="font-weight-bold" style="font-size: 10pt;">Semua Umur</span>`;
-                } else {
-                  html = `<span class="font-weight-bold" style="font-size: 10pt;">` + data + `</span>`;
-                }
-              }
-              return html;
-            }
-          },          
-          {
-            data: "price",
-            name: "price",
-            orderable: true,
-            searchable: true,
-            class: "text-left",
-            render: function (data, type, row) {
-              var html = thousandSeparatorInteger(data);
-              return html;
-            }
-          },
-          {
-            data: "discount",
-            name: "discount",
-            orderable: true,
-            searchable: true,
-            class: "text-left",
-            render: function (data, type, row) {
-              var html = thousandSeparatorInteger(data);
-              return html;
-            }
-          },
-          {
-            data: "is_certificate",
-            name: "is_certificate",
-            orderable: true,
-            searchable: true,
-            class: "text-left",
-            render: function (data, type, row) {
-              var html = thousandSeparatorInteger(data);
-              if (data) {
-                html = `<span class="badge badge-success font-weight-bold no-radius" style="min-width: 80px; font-weight: 500; font-size: 12px;" >Ya</span>`;
-              } else {
-                html = `<span class="badge badge-warning font-weight-bold no-radius" style="min-width: 80px; font-weight: 500; font-size: 12px;" >Tidak</span>`;
-              }
-              return html;
-            }
-          },
-          {
-            data: "reward",
-            name: "reward",
-            orderable: true,
-            searchable: true,
-            class: "text-left",
-            render: function (data, type, row) {
-              var html = thousandSeparatorInteger(data);
-              return html;
-            }
-          },       
-          {
-            data: "description",
-            name: "r.description",
-            orderable: false,
-            searchable: false,
-            render: function (data, type, row) {
-              var html = "";
-              if (type === 'display') {
-                html  = "<div class='text-wrap width-200'>" + data + "</div>";
-              }
-              return html;
-            }
+            data: "article_type",
+            name: "article_type"
           },
           {
             data: "id",
