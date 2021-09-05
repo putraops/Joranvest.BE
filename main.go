@@ -263,6 +263,7 @@ func main() {
 	r.Use(sessions.Sessions("mysession", store))
 
 	r.Static("/assets", "./assets")
+	r.Static("/upload", "./upload")
 	r.Static("/script", "./templates/js")
 	r.HTMLRender = createMyRender("templates/views/")
 
@@ -795,6 +796,7 @@ func main() {
 
 	filemasterApiRoutes := r.Group("api/filemaster")
 	{
+		filemasterApiRoutes.POST("/single_upload/:id", filemasterController.SingleUpload)
 		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
 		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
 		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)

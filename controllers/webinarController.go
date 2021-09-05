@@ -74,6 +74,9 @@ func (c *webinarController) Save(context *gin.Context) {
 
 		// myDateString := "2018-01-20 00:00:00"
 		//-- Mapping WebinarStartDate
+
+		fmt.Println(recordDto.WebinarFirstStartDate.String())
+		fmt.Println(recordDto.WebinarFirstEndDate.String())
 		firstStartDate, err := time.Parse("2006-01-02 15:04:05 +0000 UTC", recordDto.WebinarFirstStartDate.String())
 		if err != nil {
 			panic(err)
@@ -87,6 +90,9 @@ func (c *webinarController) Save(context *gin.Context) {
 		}
 		newRecord.WebinarFirstEndDate.Time = firstEndDate
 		newRecord.WebinarFirstEndDate.Valid = true
+
+		fmt.Println(newRecord.WebinarFirstStartDate)
+		fmt.Println(newRecord.WebinarFirstEndDate)
 
 		//-- Mapping WebinarEndDate
 		if recordDto.WebinarLastEndDate.String() != "0001-01-01 00:00:00 +0000 UTC" {

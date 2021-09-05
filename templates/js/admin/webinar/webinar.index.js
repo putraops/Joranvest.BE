@@ -75,11 +75,6 @@
               return html;
             }
           },
-          
-          {
-            data: "description",
-            name: "r.description"
-          },
           {
             data: "webinar_level",
             name: "webinar_level"
@@ -94,15 +89,15 @@
               var html = `<div class='text-wrap'>`;
               if (type === 'display') {
                 html  += moment(row.webinar_first_start_date.Time).format('MMM DD, YYYY');
-                html  += "<br/><span>Jam: " + moment(row.webinar_first_start_date.Time).format('HH:mm') + "</span>";
+                html  += "<br/><span>Jam: " + moment(row.webinar_first_start_date.Time).utc().format('HH:mm') + "</span>";
                 if (row.webinar_first_start_date.Time != row.webinar_first_end_date.Time) {
-                  html  += "<span> - " + moment(row.webinar_first_end_date.Time).format('HH:mm') + "</span>";
+                  html  += "<span> - " + moment(row.webinar_first_end_date.Time).utc().format('HH:mm') + "</span>";
                 }
                 if (row.webinar_last_start_date.Time != "0001-01-01T00:00:00Z") {
                   html  += "<br /><span>" + moment(row.webinar_last_start_date.Time).format('MMM DD, YYYY') + "</span>";
-                  html  += "<br/><span>Jam: " + moment(row.webinar_last_start_date.Time).format('HH:mm') + "</span>";
+                  html  += "<br/><span>Jam: " + moment(row.webinar_last_start_date.Time).utc().format('HH:mm') + "</span>";
                   if (row.webinar_last_start_date.Time != row.webinar_last_end_date.Time) {
-                    html  += "<span> - " + moment(row.webinar_first_end_date.Time).format('HH:mm') + "</span>";
+                    html  += "<span> - " + moment(row.webinar_first_end_date.Time).utc().format('HH:mm') + "</span>";
                   }
                 }
 
@@ -201,7 +196,20 @@
               var html = thousandSeparatorInteger(data);
               return html;
             }
-          },          
+          },       
+          {
+            data: "description",
+            name: "r.description",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+              var html = "";
+              if (type === 'display') {
+                html  = "<div class='text-wrap width-200'>" + data + "</div>";
+              }
+              return html;
+            }
+          },
           {
             data: "id",
             name: "id",

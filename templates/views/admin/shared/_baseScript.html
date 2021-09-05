@@ -23,7 +23,6 @@
 
 <script type="text/javascript">
     // var token = {{.data}};
-
     $.ajaxSetup({
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", $('meta[name=x-token]').attr("content"));

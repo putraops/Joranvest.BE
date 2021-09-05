@@ -8,6 +8,7 @@ import (
 
 type FilemasterService interface {
 	GetAll(filter map[string]interface{}) []models.Filemaster
+	SingleUpload(record models.Filemaster) helper.Response
 	Insert(record models.Filemaster) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
 }
@@ -25,6 +26,10 @@ func NewFilemasterService(repo repository.FilemasterRepository) FilemasterServic
 
 func (service *filemasterService) GetAll(filter map[string]interface{}) []models.Filemaster {
 	return service.repo.GetAll(filter)
+}
+
+func (service *filemasterService) SingleUpload(record models.Filemaster) helper.Response {
+	return service.repo.SingleUpload(record)
 }
 
 func (service *filemasterService) Insert(record models.Filemaster) helper.Response {

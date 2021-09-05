@@ -1,10 +1,64 @@
 (function ($) {
   'use strict';
-  var $form = $('#form-main');
+  var $formInformation = $('#form-information');
+  var $formSpeaker = $('#form-speaker');
+  var $formTime = $('#form-time');
+  var $formPriceReward = $('#form-priceReward');
   var $btnSave = $("#btn-save");
   var $recordId = $("#recordId");
+  var $btnNavNext = $(".btnNav-next");
+  var $btnNavPrevious = $(".btnNav-previous");
 
   var pageFunction = function () {
+    // $('#myTab a').on('click', function (event) {
+    //   event.preventDefault()
+    // })
+    
+    $(".nav").click(function() {
+      // var next = $('.nav.nav-tabs > li > .active');
+      // console.log(next);
+      //  return false;
+    });
+    $btnNavNext.on("click", function (){
+      var tabPane = $(this).closest('.tab-pane');
+      var tabId = ($(tabPane).attr("id"));
+
+      var form = $(this).closest('.needs-validation');
+      var isvalidate = form[0].checkValidity();
+      if (isvalidate) {
+        var next = $("[aria-controls="+ tabId +"]").parent().next('li');
+        if(next.length > 0) {
+          next.find("a").removeClass("disabled");
+          next.find('a').trigger('click');
+        }
+      } else {
+        toastr.error("Silahkan Periksa kembali Form", "Peringatan!")
+        form.addClass('was-validated');
+      }
+    });
+    $btnNavPrevious.on("click", function (){
+      var tabPane = $(this).closest('.tab-pane');
+      var tabId = ($(tabPane).attr("id"));
+      
+      var next = $("[aria-controls="+ tabId +"]").parent().prev('li');
+      if(next.length > 0) {
+        next.find('a').trigger('click');
+      }
+    });
+    
+
+    // $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    //   var next = $('.nav-tabs > li > .active').parent().next('li');
+    //   console.log(next);
+    //   if(next.length){
+    //     next.find('a').trigger('click');
+    //   }else{
+    //     //jQuery('#myTabs a:first').tab('show');
+    //   }
+    //   e.target // activated tab
+    //   e.relatedTarget // previous tab
+    // })
+
     $(".input-date").datepicker({
       format: 'yyyy-mm-dd',
       autoHide: true
@@ -30,7 +84,6 @@
             return req;
           },
           processResults: function (r) {
-            console.log(r);
             return r.data;
           },
         },
@@ -38,7 +91,6 @@
           return markup;
         },
         templateResult: function (data) {
-          console.log("templateResult", data);
           var _description = data.description == undefined ? "-" : data.description;
           var html = `<div class="" style="font-size: 10pt;">
                         <span class="fw-700">` + data.text + `</span>
@@ -97,10 +149,17 @@
         
         $("#validation-organizer_user_id").css("display", "none");
         $("#validation-organization_id").css("display", "none");
+        $("#organizer_organization_id").removeAttr("required");
+        $("#organizer_user_id").removeAttr("required");
+        
         if (value.text.toLowerCase() == "personal") {
           $("#section-speaker-user").removeClass("d-none");
+          $("#organizer_user_id").attr("required", "");
+          $("#validation-organizer_user_id").css("display", "block");
         } else {
           $("#section-speaker-organization").removeClass("d-none");
+          $("#organizer_organization_id").attr("required", "");
+          $("#validation-organization_id").css("display", "block");
         }
       });
       $('#speaker_type').val(null).trigger('change');
@@ -193,32 +252,15 @@
     var loadDetail = function () {
       if ($recordId.val() != "") {
         getById($recordId.val());
+        loadAttachments();
       }
     }
 
     $btnSave.on("click", function (event) {
       var title = "Apakah yakin ingin menambah Webinar?";
       if ($recordId.val() != "") title = "Apakah yakin ingin mengubah Webinar";
-
-      var isvalidate = $form[0].checkValidity();
-
-      if ($('#speaker_type').val() != null) {
-        if (($('#speaker_type').val()).toLowerCase() == "personal") {
-          if ($('#organizer_user_id').val() == "") {
-            isvalidate = false;
-            $("#validation-organizer_user_id").css("display", "block");
-          }
-        } else {
-          if ($('#organizer_organization_id').val() == null || $('#organizer_organization_id').val() == "") {
-            isvalidate = false;
-            $("#validation-organization_id").css("display", "block");
-          }
-        }
-      }
-
+      var isvalidate = $formPriceReward[0].checkValidity();
       if (isvalidate) {
-        //SaveOrUpdate(event);
-        //return;
 
         Swal.fire({
           title: title,
@@ -238,12 +280,14 @@
         toastr.error("Silahkan Periksa kembali Form", "Peringatan!")
         event.preventDefault();
         event.stopPropagation();
-        $form.addClass('was-validated');
+        $formPriceReward.addClass('was-validated');
       }
     });
 
     var SaveOrUpdate = function (e) {
-      var record = $form.serializeToJSON();
+      var record = {};
+      $.extend(record, $formInformation.serializeToJSON(), $formSpeaker.serializeToJSON(), $formTime.serializeToJSON(), $formPriceReward.serializeToJSON());
+      console.log(record);
       console.log("record.webinar_first_start_date: ", record.webinar_first_start_date);
       console.log("record.webinar_first_start_time: ", $("#webinar_first_start_time").val());
       console.log("record.webinar_first_end_time: ", $("#webinar_first_end_time").val());
@@ -316,9 +360,21 @@
         success: function (r) {
           console.log("getById", r);
           if (r.status) {
-            $form.find('input').val(function () {
+            $(".nav-link").removeClass("disabled");
+            $formInformation.find('input').val(function () {
               return r.data[this.name];
             });
+            $formSpeaker.find('input').val(function () {
+              return r.data[this.name];
+            });
+            $formTime.find('input').val(function () {
+              return r.data[this.name];
+            });
+            $formPriceReward.find('input').val(function () {
+              return r.data[this.name];
+            });
+
+
             $("textarea[name=description]").val(r.data.description);
             
             $('#webinar_level').val(r.data.webinar_level).trigger('change');
@@ -353,19 +409,19 @@
 
             //-- Date Configuration
             $("input[name=webinar_first_start_date]").val(moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));
+            $("input[name=webinar_last_start_date]").val('');
             $("#date-start").datepicker('setDate', moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));    
-            $("#webinar_first_start_time").val(moment(r.data.webinar_first_start_date.Time).format('HH:mm'));
-            $("#webinar_first_end_time").val(moment(r.data.webinar_first_end_date.Time).format('HH:mm'));
+            $("#webinar_first_start_time").val(moment(r.data.webinar_first_start_date.Time).utc().format('HH:mm'));
+            $("#webinar_first_end_time").val(moment(r.data.webinar_first_end_date.Time).utc().format('HH:mm'));
             if (r.data.webinar_last_start_date.Time != "0001-01-01T00:00:00Z") {
               $("#section-range-end").removeClass("d-none");
               $('#event_range').prop('checked', true);
               
               $("input[name=webinar_last_start_date]").val(moment(r.data.webinar_last_start_date.Time).format('YYYY-MM-DD'));
               $("#date-end").datepicker('setDate', moment(r.data.webinar_last_start_date.Time).format('YYYY-MM-DD'));    
-              $("#webinar_last_start_time").val(moment(r.data.webinar_last_start_date.Time).format('HH:mm'));
-              $("#webinar_last_end_time").val(moment(r.data.webinar_last_end_date.Time).format('HH:mm'));
+              $("#webinar_last_start_time").val(moment(r.data.webinar_last_start_date.Time).utc().format('HH:mm'));
+              $("#webinar_last_end_time").val(moment(r.data.webinar_last_end_date.Time).utc().format('HH:mm'));
             }
-
 
             // $("#section-speaker-organization").addClass("d-none");
             // $("#section-speaker-user").addClass("d-none");
@@ -457,6 +513,73 @@
             $('#organizer_organization_id').append(newOption).trigger('change');
           } else {
             toastr.error(r.status.message, "Warning!");
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
+    Dropzone.autoDiscover = false;
+    var myDropzone = new Dropzone("div#my-dropzone", { 
+      paramName: "file", 
+      maxFilesize: 2, //-- 2Mb
+      headers:
+      {
+        "Authorization": $('meta[name=x-token]').attr("content")
+      },
+      accept: function(file, done) {
+        console.log(file);
+        if (!file.type.match('\.jpeg')  && !file.type.match('\.jpg') && !file.type.match('\.png'))
+                    // && !file.type.match('\.xls')
+                    // && !file.type.match('\.docx')
+                    // && !file.type.match('\.xlsx')
+                    // && !(file.type == 'application/vnd.ms-excel')
+                    // && !(file.type == 'application/msword')
+                    // && !(allowedFileFormat.includes(fileExtension))
+                    {
+                    Swal.fire('Hanya file .jpeg / .jpg / .png yang diizinkan.', "", 'error');
+                    myDropzone.removeAllFiles();
+                    return;
+                }
+                if ($recordId.val() == '' || $recordId.val() == undefined) {
+                    myDropzone.removeAllFiles();
+                    alert('Please save activity, and try again');
+                    done('Please save activity, and try again');
+                }
+        else { done(); }
+      },
+      init: function (file) {
+        console.log(file)
+        var checkFile = false;
+        this.on("error", function (file, response) {
+            toastr.error("error upload : ", response, "Peringatan")
+            //loadAttachment();
+            this.removeAllFiles();
+        });
+        this.on("processing", function (file) {
+            this.options.url = $.helper.baseApiPath("/filemaster/single_upload/") + $recordId.val();
+        });
+      }
+    });
+    myDropzone.on("complete", function(file) {
+      loadAttachments();
+      myDropzone.removeFile(file);
+    });
+
+    var loadAttachments = function () {
+      $.ajax({
+        url: $.helper.baseApiPath("/filemaster/getAll?record_id=" + $recordId.val()),
+        type: 'GET',
+        success: function (r) {
+          console.log("loadAttachments", r);
+          if (r.status) {
+            var data = r.data[0];
+            if (r.data != null && r.data.length > 0) {
+              var img = `<img src="/upload/`+ data.record_id +`/`+ data.filename +`" title="` + data.filename + `" class="mr-1" style="width: 100%;"/>`;
+              $("#section-cover-image").html(img);
+            }
           }
         },
         error: function (r) {

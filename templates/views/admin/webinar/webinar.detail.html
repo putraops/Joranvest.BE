@@ -1,5 +1,21 @@
 {{define "_content"}}
 
+<style>
+    input[type="checkbox"]:checked::before{
+        background-color: #4e73df !important;
+        border-color: #4e73df;
+    }
+    .input-group {
+        flex-wrap: nowrap;
+    }
+    .input-group-prepend, .input-group-append {
+        display: block;
+    }
+    .dropzone {
+        min-height: 0 !important;
+    }
+</style>
+
 <div class="container-fluid text-dark">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb pb-2">
@@ -9,241 +25,419 @@
         </ol>
     </nav>
 
-    <div class="row">
+    <div class="row">       
+        <div class="col-md-12 d-none">
+            <div class="wizard-container">
+                <div class="card wizard-card pb-3" data-color="primary" id="wizard">
+                    <form action="" method="">
+                        <div class="wizard-header">
+                            <h3 class="wizard-title">
+                                List Your Place
+                            </h3>
+                            <h5>This information will let us know more about your place.</h5>
+                        </div>
+                        <div class="wizard-navigation">
+                            <ul>
+                                <li><a href="#informasi" data-toggle="tab">Informasi</a></li>
+                                <li><a href="#facilities" data-toggle="tab">Facilities</a></li>
+                                <li><a href="#description" data-toggle="tab">Description</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-content">
+                            <div class="tab-pane" id="informasi">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <h4 class="info-text"> Let's start with the basic details</h4>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="facilities">
+                                <h4 class="info-text">Tell us more about facilities. </h4>
+                                <div class="row">
+                                   
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="description">
+                                <div class="row">
+                                    <h4 class="info-text"> Drop us a small description. </h4>
+                                    <div class="col-sm-6 col-sm-offset-1">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">Place description</label>
+                                            <textarea class="form-control" placeholder="" rows="9"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">Example</label>
+                                            <p class="description">"The place is really nice. We use it every sunday when we go fishing. It is so awesome."</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wizard-footer">
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type='button' class='btn btn-previous btn-fill btn-danger no-radius' name='previous' value='Previous' />
+                                </div>
+                                <div class="col-6 text-right">
+                                    <input type='button' class='btn btn-next btn-fill btn-primary no-radius' name='next' value='Next' />
+                                    <input type='button' class='btn btn-finish btn-fill btn-primary no-radius' name='finish' value='Finish' />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="col-md-12">
             <div class="card o-hidden border-0 shadow-lg">
                 <div class="card-body p-0">
-                    <!-- Nested Row within Card Body -->
                     <div class="row">
                         <div class="col-12">
                             <div class="p-4">
                                 <div class="text-center">
                                     <h1 class="h4 text-gray-900 mb-4">Form Webinar</h1>
                                 </div>
-                                <hr />
-                                <div class="alert alert-warning no-radius p-2" role="alert">
+                                <div class="alert alert-danger no-radius p-2" role="alert">
                                     <span class="text-danger">*</span> <span style="font-size: 14px;">Wajib diisi dan tidak boleh kosong.</span>
                                 </div>
-                                <form id="form-main">
-                                    <input type="hidden" name="id" id="recordId" value={{.data.id}}>
-
-                                    <div class="card no-radius mt-2">
-                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
-                                          Informasi
-                                        </div>
-                                        <div class="card-body p-3">
-                                            <div class="form-group mb-1">
-                                                <label class="mb-1">Webinar <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" name="title" required="">
-                                            </div>
-        
-                                            <div class="form-group mb-1">
-                                                <label class="mb-1">Description </label>
-                                                <textarea class="form-control" name="description"></textarea>
-                                            </div>
-
-                                            <div class="form-group mb-1">
-                                                <label class="mb-1 input-title">Kategori <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="webinar_category_id" name="webinar_category_id">
-                                                </select>                                       
-                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-webinar_category_id">Kategori tidak boleh kosong.</small>
-                                            </div>
-
-                                            <div class="form-group mb-2">
-                                                <label class="mb-1 input-title">Level <span class="text-danger">*</span></label>
-                                                <select class="form-control" name="webinar_level" data-field="webinar_level" id="webinar_level" required>
-                                                    <option value="Pemula">Pemula</option>
-                                                    <option value="Lanjutan">Lanjutan</option>
-                                                </select>
-                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Webinar Level tidak boleh kosong.</small>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-lg-6 col-xl-4">
-                                                    <label class="mb-1 input-title">Batasan Umur <span class="text-danger">*</span></label>
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                            <div class="input-group-text">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox" value="" id="cbx-min-age" style="margin-top: 7px;">
-                                                                    <label class="form-check-label" for="defaultCheck1">
-                                                                        <label class="input-title mb-0">Semua Umur</label> 
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <input type="text" class="form-control numeric" name="min_age" data-inputmask="'alias': 'currency'" im-insert="true" required="" value="18">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card no-radius mt-2">
-                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
-                                          Pembicara
-                                        </div>
-                                        <div class="card-body p-3">
-                                            <div class="form-group mb-2">
-                                                <label class="mb-1 input-title">Speaker <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="speaker_type" required>
-                                                    <option value="Personal">Personal</option>
-                                                    <option value="Organisasi">Organisasi</option>
-                                                </select>
-                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Webinar Level tidak boleh kosong.</small>
-                                            </div>
-
-                                            <div class="form-group mb-1 d-none" id="section-speaker-organization">
-                                                <label class="mb-1 input-title">Organisasi <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="organizer_organization_id" name="organizer_organization_id">
-                                                </select>                                       
-                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organization_id">Pembicara tidak boleh kosong.</small>
-                                            </div>
-
-                                            <div class="form-group mb-1 d-none" id="section-speaker-user">
-                                                <label class="mb-1 input-title">Pembicara <span class="text-danger">*</span></label>
-                                                <select class="form-control" id="organizer_user_id" name="webinar_speaker" multiple="multiple">
-                                                </select>                                       
-                                                <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organizer_user_id">Pembicara tidak boleh kosong.</small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card no-radius mt-2">
-                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
-                                          Tanggal & Waktu
-                                        </div>
-                                        <div class="card-body p-3">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="form-group mb-0">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" value="" id="event_range" style="margin-top: 7px;">
-                                                            <label class="form-check-label" for="defaultCheck1">
-                                                                <label class="input-title">Acara Lebih dari 1 hari</label> 
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-6">
-                                                    <label class="input-title">Mulai</label> 
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="input-group mb-1">
-                                                                <div class="input-group-prepend">
-                                                                    <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger no-radius" disabled="">
-                                                                    <i class="far fa-calendar-alt" aria-hidden="true"></i>
-                                                                    </button>
-                                                                </div>
-                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_first_start_date" id="date-start" placeholder="Pilih Tanggal" autocomplete="off" required="">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="input-group mb-1">
-                                                                <input type="time" class="form-control" id="webinar_first_start_time" name="" required="">
-                                                                <input type="time" class="form-control" id="webinar_first_end_time" name="">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-6 d-none" id="section-range-end">
-                                                    <label class="input-title">Selesai</label> 
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="input-group mb-1">
-                                                                <div class="input-group-prepend">
-                                                                    <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger no-radius" disabled="">
-                                                                    <i class="far fa-calendar-alt" aria-hidden="true"></i>
-                                                                    </button>
-                                                                </div>
-                                                                <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_last_start_date" id="date-end" placeholder="Pilih Tanggal" autocomplete="off" readonly="">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="input-group mb-1">
-                                                                <input type="time" class="form-control" id="webinar_last_start_time" name="">
-                                                                <input type="time" class="form-control" id="webinar_last_end_time" name="">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-7 col-lg-7">
+                                <hr />
+                                <!-- Nav tabs -->
+                                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link pl-5 pr-5 fw-400 no-radius active" id="information-tab" data-toggle="tab" href="#information" role="tab" aria-controls="information" aria-selected="true">Informasi</a>
+                                    </li>
+                                    <li class="nav-item disabled" role="presentation">
+                                        <a class="nav-link pl-5 pr-5 fw-400 no-radius disabled" id="speaker-tab" data-toggle="tab" href="#speaker" role="tab" aria-controls="speaker" aria-selected="false">Pembicara</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link pl-5 pr-5 fw-400 no-radius disabled" id="time-tab" data-toggle="tab" href="#time" role="tab" aria-controls="time" aria-selected="false">Tanggal & Waktu</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link pl-5 pr-5 fw-400 no-radius disabled" id="priceAndReward-tab" data-toggle="tab" href="#priceAndReward" role="tab" aria-controls="priceAndReward" aria-selected="false">Biaya & Reward</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link pl-5 pr-5 fw-400 no-radius disabled" id="attachments-tab" data-toggle="tab" href="#attachments" role="tab" aria-controls="attachments" aria-selected="false">Webinar Cover</a>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Tab panes -->
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="information" role="tabpanel" aria-labelledby="information-tab">
+                                        <form id="form-information" class="needs-validation" novalidate>
+                                            <input type="hidden" name="id" id="recordId" value={{.data.id}}>
                                             <div class="card no-radius mt-2">
                                                 <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
-                                                  Biaya Webinar
+                                                    Informasi
+                                                </div>
+                                                <div class="card-body p-3">
+                                                    <div class="form-group mb-1">
+                                                        <label class="mb-1">Webinar <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="title" required="">
+                                                    </div>
+                
+                                                    <div class="form-group mb-1">
+                                                        <label class="mb-1">Description </label>
+                                                        <textarea class="form-control" name="description"></textarea>
+                                                    </div>
+
+                                                    <div class="form-group mb-1">
+                                                        <label class="mb-1 input-title">Kategori <span class="text-danger">*</span></label>
+                                                        <select class="form-control" id="webinar_category_id" name="webinar_category_id" required>
+                                                        </select>                                       
+                                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-webinar_category_id">Kategori tidak boleh kosong.</small>
+                                                    </div>
+
+                                                    <div class="form-group mb-2">
+                                                        <label class="mb-1 input-title">Level <span class="text-danger">*</span></label>
+                                                        <select class="form-control" name="webinar_level" data-field="webinar_level" id="webinar_level" required>
+                                                            <option value="Pemula">Pemula</option>
+                                                            <option value="Lanjutan">Lanjutan</option>
+                                                        </select>
+                                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Webinar Level tidak boleh kosong.</small>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <div class="col-lg-6 col-xl-4">
+                                                            <label class="mb-1 input-title">Batasan Umur <span class="text-danger">*</span></label>
+                                                            <div class="input-group">
+                                                                <div class="input-group-prepend">
+                                                                    <div class="input-group-text">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" value="" id="cbx-min-age" style="margin-top: 7px;">
+                                                                            <label class="form-check-label" for="defaultCheck1">
+                                                                                <label class="input-title mb-0">Semua Umur</label> 
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <input type="text" class="form-control numeric" name="min_age" data-inputmask="'alias': 'currency'" im-insert="true" required="" value="18">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-12 text-right ">
+                                                            <hr class="mb-0" />
+                                                            <button type="button" class="btn btn-info mt-3 pl-5 pr-5 no-radius btnNav-next">
+                                                                Lanjut
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane" id="speaker" role="tabpanel" aria-labelledby="speaker-tab">
+                                        <form id="form-speaker" class="needs-validation" novalidate>
+                                            <div class="card no-radius mt-2">
+                                                <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
+                                                Pembicara
+                                                </div>
+                                                <div class="card-body p-3">
+                                                    <div class="form-group mb-2">
+                                                        <label class="mb-1 input-title">Speaker <span class="text-danger">*</span></label>
+                                                        <select class="form-control" id="speaker_type" required>
+                                                            <option value="Personal">Personal</option>
+                                                            <option value="Organisasi">Organisasi</option>
+                                                        </select>
+                                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;">Webinar Level tidak boleh kosong.</small>
+                                                    </div>
+        
+                                                    <div class="form-group mb-1 d-none" id="section-speaker-organization">
+                                                        <label class="mb-1 input-title">Organisasi <span class="text-danger">*</span></label>
+                                                        <select class="form-control" id="organizer_organization_id" name="organizer_organization_id">
+                                                        </select>                                       
+                                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organization_id">Pembicara tidak boleh kosong.</small>
+                                                    </div>
+        
+                                                    <div class="form-group mb-1 d-none" id="section-speaker-user">
+                                                        <label class="mb-1 input-title">Pembicara <span class="text-danger">*</span></label>
+                                                        <select class="form-control" id="organizer_user_id" name="webinar_speaker" multiple="multiple">
+                                                        </select>                                       
+                                                        <small class="invalid-feedback form-text font-weight-normal text-danger" style="font-weight: 500 !important;" id="validation-organizer_user_id">Pembicara tidak boleh kosong.</small>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-12 text-right ">
+                                                            <hr class="mb-0" />
+                                                            <button type="button" class="btn btn-secondary mt-3 pl-5 pr-5 no-radius btnNav-previous">
+                                                                Kembali
+                                                            </button>
+                                                            <button type="button" class="btn btn-info mt-3 pl-5 pr-5 no-radius btnNav-next">
+                                                                Lanjut
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane" id="time" role="tabpanel" aria-labelledby="time-tab">
+                                        <form id="form-time" class="needs-validation" novalidate>
+                                            <div class="card no-radius mt-2">
+                                                <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
+                                                Tanggal & Waktu
                                                 </div>
                                                 <div class="card-body p-3">
                                                     <div class="row">
                                                         <div class="col-12">
                                                             <div class="form-group mb-0">
                                                                 <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox" value="" id="cbx-event-charge" style="margin-top: 7px;">
+                                                                    <input class="form-check-input" type="checkbox" value="" id="event_range" style="margin-top: 7px;">
                                                                     <label class="form-check-label" for="defaultCheck1">
-                                                                        <label class="input-title">Gratis</label> 
+                                                                        <label class="input-title">Acara Lebih dari 1 hari</label> 
                                                                     </label>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div class="col-lg-6">
-                                                            <label class="mb-1 input-title">Biaya</label> 
-                                                            <div class="form-row mb-0">
-                                                                <div class="col">
-                                                                <input type="text" class="form-control text-right numeric" name="price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                            <label class="input-title">Mulai</label> 
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="input-group mb-1">
+                                                                        <div class="input-group-prepend">
+                                                                            <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger no-radius" disabled="">
+                                                                            <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                        <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_first_start_date" id="date-start" placeholder="Pilih Tanggal" autocomplete="off" required="">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="input-group mb-1">
+                                                                        <input type="time" class="form-control" id="webinar_first_start_time" name="" required="">
+                                                                        <input type="time" class="form-control" id="webinar_first_end_time" name="">
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
-                                                            <label class="mb-1 input-title">Potongan Harga</label> 
-                                                            <div class="form-row mb-0">
-                                                                <div class="col">
-                                                                <input type="text" class="form-control text-right numeric" name="discount" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                        <div class="col-lg-6 d-none" id="section-range-end">
+                                                            <label class="input-title">Selesai</label> 
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="input-group mb-1">
+                                                                        <div class="input-group-prepend">
+                                                                            <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger no-radius" disabled="">
+                                                                            <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                        <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_last_start_date" id="date-end" placeholder="Pilih Tanggal" autocomplete="off" readonly="">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="input-group mb-1">
+                                                                        <input type="time" class="form-control" id="webinar_last_start_time" name="">
+                                                                        <input type="time" class="form-control" id="webinar_last_end_time" name="">
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-        
-                                        </div>
-                                        <div class="col-md-5 col-lg-5">
-                                            <div class="card no-radius mt-2">
-                                                <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
-                                                  Reward
-                                                </div>
-                                                <div class="card-body p-3">
                                                     <div class="row">
-                                                        <div class="col-12">
-                                                            <div class="form-group mb-0">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox" value="" name="is_certificate" id="is_certificate" style="margin-top: 7px;">
-                                                                    <label class="form-check-label" for="defaultCheck1">
-                                                                        <label class="input-title">Dapat Sertifikat</label> 
-                                                                    </label>
-                                                                </div>
-                                                            </div>
+                                                        <div class="col-md-12 text-right ">
+                                                            <hr class="mb-0" />
+                                                            <button type="button" class="btn btn-secondary mt-3 pl-5 pr-5 no-radius btnNav-previous">
+                                                                Kembali
+                                                            </button>
+                                                            <button type="button" class="btn btn-info mt-3 pl-5 pr-5 no-radius btnNav-next">
+                                                                Lanjut
+                                                            </button>
                                                         </div>
-                                                        <div class="col-12">
-                                                            <label class="mb-1 input-title">Point</label> 
-                                                            <div class="form-row mb-0">
-                                                                <div class="col">
-                                                                    <input type="text" class="form-control numeric" name="reward" data-inputmask="'alias': 'currency'" im-insert="true">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane" id="priceAndReward" role="tabpanel" aria-labelledby="priceAndReward-tab">
+                                        <form id="form-priceReward" class="needs-validation" novalidate>
+                                            <div class="row">
+                                                <div class="col-md-7 col-lg-7">
+                                                    <div class="card no-radius mt-2">
+                                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
+                                                        Biaya Webinar
+                                                        </div>
+                                                        <div class="card-body p-3">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <div class="form-group mb-0">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" value="" id="cbx-event-charge" style="margin-top: 7px;">
+                                                                            <label class="form-check-label" for="defaultCheck1">
+                                                                                <label class="input-title">Gratis</label> 
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <label class="mb-1 input-title">Biaya</label> 
+                                                                    <div class="form-row mb-0">
+                                                                        <div class="col">
+                                                                        <input type="text" class="form-control text-right numeric" name="price" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <label class="mb-1 input-title">Potongan Harga</label> 
+                                                                    <div class="form-row mb-0">
+                                                                        <div class="col">
+                                                                        <input type="text" class="form-control text-right numeric" name="discount" data-inputmask="'alias': 'currency'" im-insert="true" required="">
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-5 col-lg-5">
+                                                    <div class="card no-radius mt-2">
+                                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
+                                                        Reward
+                                                        </div>
+                                                        <div class="card-body p-3">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <div class="form-group mb-0">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" value="" name="is_certificate" id="is_certificate" style="margin-top: 7px;">
+                                                                            <label class="form-check-label" for="defaultCheck1">
+                                                                                <label class="input-title">Dapat Sertifikat</label> 
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <label class="mb-1 input-title">Point</label> 
+                                                                    <div class="form-row mb-0">
+                                                                        <div class="col">
+                                                                            <input type="text" class="form-control numeric" name="reward" data-inputmask="'alias': 'currency'" im-insert="true">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12 text-right ">
+                                                    <!-- <button type="button" class="btn btn-primary mt-3 pl-5 pr-5 no-radius">
+                                                        Lanjut
+                                                    </button> -->
+                                                    <button type="button" class="btn btn-primary mt-3 pl-5 pr-5 no-radius" id="btn-save">
+                                                        Simpan & Lanjut
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </form>
                                     </div>
-                                </form>
-                                <button class="btn btn-primary btn-block mt-3" id="btn-save">
-                                    Simpan
-                                </button>
+                                    <div class="tab-pane" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
+                                        <form id="form-attachment`" class="needs-validation" novalidate>
+                                            <div class="row">
+                                                <div class="col-lg-8">
+                                                    <div class="card no-radius mt-2">
+                                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
+                                                            Upload
+                                                        </div>
+                                                        <div class="card-body p-3">
+                                                            <div id="my-dropzone" action="#" class="dropzone pt-3 pb-0">
+                                                                <div class="dz-default dz-message mb-0 mt-0">
+                                                                    <div class="dz-icon">
+                                                                        <i class="demo-pli-upload-to-cloud icon-5x" aria-hidden="true"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span class="dz-text">Browse files to upload</span>
+                                                                        <p class="text-sm text-muted">or click to pick manually</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="fallback">
+                                                                    <input id="file" name="file" type="file" multiple="">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="card no-radius mt-2">
+                                                        <div class="card-header bg-primary text-white no-radius pt-2 pb-2">
+                                                            Cover
+                                                        </div>
+                                                        <div class="card-body p-0" id="section-cover-image">
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12 text-right ">
+                                                    <!-- <button type="button" class="btn btn-primary mt-3 pl-5 pr-5 no-radius">
+                                                        Lanjut
+                                                    </button> -->
+                                                    <button type="button" class="btn btn-primary mt-3 pl-5 pr-5 no-radius" id="btn-submit">
+                                                        Submit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
