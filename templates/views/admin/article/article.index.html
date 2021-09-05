@@ -1,0 +1,57 @@
+{{define "_content"}}
+
+<style type="text/css">
+    .min-date-width {
+        min-width: 150px;
+    }
+
+</style>
+
+<div class="container-fluid text-dark">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pb-2">
+          <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{.data.subnav}}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Daftar</h6>
+                </div>
+                <div class="card-body">
+                    <a type="button" href="/admin/webinar/detail" class="btn btn-primary btn-sm" id="btn-addNew"
+                        style="min-width: 150px;">Tambah Baru</a>
+                    <div class="mt-4">
+                        <hr class="mt-2 mb-3" />
+                        <table id="dtBasic" class="display nowrap w-100" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Kategori</th>
+                                    <th>Tanggal</th>
+                                    <th>Pembicara</th>
+                                    <th>Webinar Level</th>
+                                    <th>Batasan Umur</th>
+                                    <th>Price</th>
+                                    <th>Discount</th>
+                                    <th>Certification</th>
+                                    <th>Reward</th>
+                                    <th>Description</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "_baseScript" .}}
+<script src="/script/admin/article/article.index.js?t={{.data.timenow}}"></script>
+{{end}}

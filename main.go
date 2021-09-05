@@ -136,6 +136,15 @@ func createMyRender(view_path string) multitemplate.Renderer {
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
 		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 
+	r.AddFromFiles("article",
+		view_path+"_base.html", view_path+"admin/article/article.index.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+	r.AddFromFiles("article_detail",
+		view_path+"_base.html", view_path+"admin/article/article.detail.html",
+		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
+		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
+
 	r.AddFromFiles("application_menu",
 		view_path+"_base.html", view_path+"admin/application_menu/application_menu.index.html",
 		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
@@ -505,6 +514,31 @@ func main() {
 			c.HTML(
 				http.StatusOK,
 				"webinar_detail",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+
+		adminRoutes.GET("/article", func(c *gin.Context) {
+			data := Setup(c, "Article", "Article", "Article", "Article", "Article")
+			c.HTML(
+				http.StatusOK,
+				"article",
+				gin.H{
+					"data": data,
+				},
+			)
+		})
+		adminRoutes.GET("/article/detail", func(c *gin.Context) {
+			data := Setup(c, "Article Detail", "Article Detail", "Article Detail", "Article Detail", "Article Detail")
+			qry := c.Request.URL.Query()
+			if _, found := qry["id"]; found {
+				data["id"] = fmt.Sprint(qry["id"][0])
+			}
+			c.HTML(
+				http.StatusOK,
+				"article_detail",
 				gin.H{
 					"data": data,
 				},
