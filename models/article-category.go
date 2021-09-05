@@ -17,6 +17,7 @@ type ArticleCategory struct {
 	ApprovedBy  string       `gorm:"type:varchar(50)" json:"approved_by"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 	Name        string       `gorm:"type:varchar(50);unique" json:"name"`
+	ParentId    string       `gorm:"type:varchar(50);" json:"parent_id"`
 	Description string       `gorm:"type:text" json:"description"`
 }
 
