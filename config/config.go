@@ -129,6 +129,8 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_article_category = entity_view_models.EntityArticleCategoryView{}
 	viewList[vw_article_category.TableName()] = vw_article_category.Migration()
+	var vw_article = entity_view_models.EntityArticleView{}
+	viewList[vw_article.TableName()] = vw_article.Migration()
 
 	var vw_emiten_category = entity_view_models.EntityEmitenCategoryView{}
 	viewList[vw_emiten_category.TableName()] = vw_emiten_category.Migration()

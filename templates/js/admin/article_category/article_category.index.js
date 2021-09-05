@@ -122,7 +122,7 @@
             var obj = JSON.parse(r.responseText);
             $.each(obj.errors, function (index, value) {
               if (value.includes("unique index 'uk_name_entity'") || value.includes("kunci ganda")) {
-                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar Webinar Category.", 'Peringatan!');
+                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar Article Category.", 'Peringatan!');
               } else {
                 toastr.error(value, 'Error!');
               }

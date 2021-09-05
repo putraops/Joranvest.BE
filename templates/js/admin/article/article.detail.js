@@ -35,6 +35,48 @@
       ]
     });
 
+    var initArticleCategoryLookup = function () {
+      var url = $.helper.baseApiPath("/article_category/lookup");
+      $("#article_category_id").select2({
+        ajax: {
+          url: url,
+          dataType: 'json',
+          delay: 250,
+          type: "GET",
+          contentType: "application/json",
+          data: function (params) {
+            var field = JSON.stringify(["name"]);
+            var req = {
+              q: params.term, // search term
+              page: params.page,
+              field: field
+            };
+
+            return req;
+          },
+          processResults: function (r) {
+            return r.data;
+          },
+        },
+        escapeMarkup: function (markup) {
+          return markup;
+        },
+        templateResult: function (data) {
+          var _description = data.description == undefined ? "-" : data.description;
+          var html = `<div class="" style="font-size: 10pt;">
+                        <span class="fw-700">` + data.text + `</span>
+                      </div>`
+          return html;
+        },
+        cache: true,
+        placeholder: "Pilih Kategori",
+        minimumInputLength: 0,
+        allowClear: true,
+      }).on('select2:select', function (e) {
+        $("#validation-article_category_id").css("display", "none");
+      });
+    }
+
     var initTagLookup = function () {
       var url = $.helper.baseApiPath("/tag/lookup");
       $("#tagLookup").select2({
@@ -101,6 +143,7 @@
     }
     return {
       init: function () {
+        initArticleCategoryLookup();
         initTagLookup();
         initArticleTypeLookup();
         loadDetail();
