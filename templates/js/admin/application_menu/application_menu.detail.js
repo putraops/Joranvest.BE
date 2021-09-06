@@ -74,6 +74,7 @@
         console.log(e);
         console.log(e.parentNode);
 
+        console.log(data);
         var newOrder =  data.old_position < data.position ? data.position + 1 : data.position;
         console.log(data.node.id);
         console.log(data.parent);
@@ -248,10 +249,7 @@
                 $("#section-category").removeClass("d-none");
                 $("#parent_name").text(r.data.parent_name);
               }
-  
             }
-
-            
             $modalForm.modal("show");
           }
         },
