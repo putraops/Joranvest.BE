@@ -21,6 +21,7 @@ type ApplicationMenuRepository interface {
 	GetAll(filter map[string]interface{}) []models.ApplicationMenu
 	GetTree() []commons.JStreeResponse
 	GetTreeByRoleId(roleId string) []commons.JStreeResponse
+	OrderTree(recordId string, parentId string, orderIndex int) helper.Response
 	Insert(t models.ApplicationMenu) helper.Response
 	Update(record models.ApplicationMenu) helper.Response
 	GetById(recordId string) helper.Response
@@ -146,7 +147,7 @@ func (db *applicationMenuConnection) GetDatatables(request commons.DataTableRequ
 func (db *applicationMenuConnection) GetTree() []commons.JStreeResponse {
 	var res []commons.JStreeResponse
 	var records []models.ApplicationMenu
-	db.connection.Where("parent_id = ?", "").Find(&records)
+	db.connection.Where("parent_id = ? OR parent_id IS NULL", "").Order("order_index ASC").Find(&records)
 
 	if len(records) > 0 {
 		for _, s := range records {
@@ -160,7 +161,7 @@ func (db *applicationMenuConnection) GetTree() []commons.JStreeResponse {
 			item.JStreeState.Checked = false
 
 			var childrenModel []models.ApplicationMenu
-			db.connection.Where("parent_id = ?", item.Id).Find(&childrenModel)
+			db.connection.Where("parent_id = ?", item.Id).Order("order_index ASC").Find(&childrenModel)
 			if len(childrenModel) > 0 {
 				var children []commons.JStreeResponse
 				for _, c := range childrenModel {
@@ -269,11 +270,22 @@ func (db *applicationMenuConnection) GetAll(filter map[string]interface{}) []mod
 func (db *applicationMenuConnection) Insert(record models.ApplicationMenu) helper.Response {
 	tx := db.connection.Begin()
 
-	fmt.Println(record.ParentId)
-	fmt.Println(record.ParentId)
-	fmt.Println(record.ParentId)
-	fmt.Println(record.ParentId)
+	var lastIndex int
+	var qry string
+	if record.ParentId == "" {
+		qry = "SELECT COALESCE(order_index, 0) + 1 FROM application_menu WHERE COALESCE(parent_id, '') = '' ORDER BY order_index DESC LIMIT 1"
+	} else {
+		qry = fmt.Sprintf("SELECT COALESCE(order_index, 0) + 1 FROM application_menu WHERE parent_id = '%v' ORDER BY order_index DESC LIMIT 1", record.ParentId)
+	}
+	if errLastIndex := db.connection.Raw(qry).
+		Scan(&lastIndex).Error; errLastIndex != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", errLastIndex), fmt.Sprintf("%v,", errLastIndex), helper.EmptyObj{})
+	}
+
+	fmt.Println("lastIndex")
+	fmt.Println(lastIndex)
 	record.Id = uuid.New().String()
+	record.OrderIndex = lastIndex
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
@@ -333,4 +345,12 @@ func (db *applicationMenuConnection) DeleteById(recordId string) helper.Response
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 	}
+}
+
+func (db *applicationMenuConnection) OrderTree(recordId string, parentId string, orderIndex int) helper.Response {
+	res := db.connection.Exec("SELECT set_application_menu_order(?, ?, ?)", recordId, parentId, orderIndex)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }

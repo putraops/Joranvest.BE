@@ -19,6 +19,7 @@ type ApplicationMenuController interface {
 	GetDatatables(context *gin.Context)
 	GetTree(context *gin.Context)
 	GetTreeByRoleId(context *gin.Context)
+	OrderTree(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -69,6 +70,17 @@ func (c *applicationMenuController) GetTree(context *gin.Context) {
 func (c *applicationMenuController) GetTreeByRoleId(context *gin.Context) {
 	roleId := context.Param("roleId")
 	var result = c.applicationMenuService.GetTreeByRoleId(roleId)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *applicationMenuController) OrderTree(context *gin.Context) {
+	var dto dto.OrderTreeDto
+	err := context.Bind(&dto)
+	if err != nil {
+		res := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.applicationMenuService.OrderTree(dto.RecordId, dto.ParentId, dto.OrderIndex)
 	context.JSON(http.StatusOK, result)
 }
 

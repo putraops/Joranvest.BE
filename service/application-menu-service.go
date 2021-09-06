@@ -13,6 +13,7 @@ type ApplicationMenuService interface {
 	GetAll(filter map[string]interface{}) []models.ApplicationMenu
 	GetTree() []commons.JStreeResponse
 	GetTreeByRoleId(roleId string) []commons.JStreeResponse
+	OrderTree(recordId string, parentId string, orderIndex int) helper.Response
 	Insert(record models.ApplicationMenu) helper.Response
 	Update(record models.ApplicationMenu) helper.Response
 	GetById(recordId string) helper.Response
@@ -81,6 +82,10 @@ func (service *applicationMenuService) GetTree() []commons.JStreeResponse {
 
 func (service *applicationMenuService) GetTreeByRoleId(roleId string) []commons.JStreeResponse {
 	return service.applicationMenuRepository.GetTreeByRoleId(roleId)
+}
+
+func (service *applicationMenuService) OrderTree(recordId string, parentId string, orderIndex int) helper.Response {
+	return service.applicationMenuRepository.OrderTree(recordId, parentId, orderIndex)
 }
 
 func (service *applicationMenuService) GetAll(filter map[string]interface{}) []models.ApplicationMenu {

@@ -70,6 +70,39 @@
           state: { "key": "id" },
           plugins: ["dnd", "state", "types", "contextmenu"]
       });
+      $tree.bind("move_node.jstree rename_node.jstree", function (e, data) {
+        console.log(e);
+        console.log(e.parentNode);
+
+        var newOrder =  data.old_position < data.position ? data.position + 1 : data.position;
+        console.log(data.node.id);
+        console.log(data.parent);
+        console.log(newOrder);
+        if (e.type == "move_node") {
+          $.ajax({
+            url: $.helper.baseApiPath("/application_menu/orderTree"),
+            type: 'POST',
+            data: {
+              record_id: data.node.id,
+              parent_id: data.parent,
+              order_index: data.old_position < data.position ? data.position + 1 : data.position,
+            },
+            success: function (r) {
+              toastr.success("", "Berhasil");
+            },
+            error: function(r) {
+              var obj = JSON.parse(r.responseText);
+              $.each(obj.errors, function (index, value) {
+                if (value.includes("unique index 'uk_name_entity'") || value.includes("kunci ganda")) {
+                  toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar Menu.", 'Peringatan!');
+                } else {
+                  toastr.error(value, 'Error!');
+                }
+              });
+            }
+          })
+        }
+      });
     }
 
   
