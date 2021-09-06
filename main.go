@@ -48,6 +48,7 @@ var (
 	roleMemberRepository              repository.RoleMemberRepository              = repository.NewRoleMemberRepository(db)
 	roleMenuRepository                repository.RoleMenuRepository                = repository.NewRoleMenuRepository(db)
 	organizationRepository            repository.OrganizationRepository            = repository.NewOrganizationRepository(db)
+	ratingMasterRepository            repository.RatingMasterRepository            = repository.NewRatingMasterRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
@@ -73,6 +74,7 @@ var (
 	roleMemberService              service.RoleMemberService              = service.NewRoleMemberService(roleMemberRepository)
 	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
+	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -97,6 +99,7 @@ var (
 	roleMemberController              controllers.RoleMemberController              = controllers.NewRoleMemberController(roleMemberService, jwtService)
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
+	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
 )
 
 func createMyRender(view_path string) multitemplate.Renderer {
@@ -948,6 +951,14 @@ func main() {
 		organizationApiRoutes.POST("/save", organizationController.Save)
 		organizationApiRoutes.GET("/getById/:id", organizationController.GetById)
 		organizationApiRoutes.DELETE("/deleteById/:id", organizationController.DeleteById)
+	}
+
+	ratingMasterApiRoutes := r.Group("api/rating_master")
+	{
+		ratingMasterApiRoutes.POST("/getAll", ratingMasterController.GetAll)
+		ratingMasterApiRoutes.POST("/save", ratingMasterController.Save)
+		ratingMasterApiRoutes.GET("/getById/:id", ratingMasterController.GetById)
+		ratingMasterApiRoutes.DELETE("/deleteById/:id", ratingMasterController.DeleteById)
 	}
 
 	// url := ginSwagger.URL("http://localhost:10000/swagger/doc.json") // The url pointing to API definition
