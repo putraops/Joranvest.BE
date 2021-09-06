@@ -117,9 +117,7 @@ func (db *roleMemberConnection) GetAll(filter map[string]interface{}) []models.R
 
 func (db *roleMemberConnection) GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView {
 	records := []entity_view_models.EntityRoleMemberView{}
-	db.connection.Find(&records)
-	// Where("id IN (?)", db.connection.Where("role_id = ? ", roleId).Table("role_member").
-	// 	Select("application_user_id")).Find(&records)
+	db.connection.Where("role_id = ?", roleId).Find(&records)
 	return records
 }
 
