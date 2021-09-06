@@ -98,6 +98,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.FundamentalAnalysis{},
 		&models.FundamentalAnalysisTag{},
 
+		&models.RatingMaster{},
 		&models.Order{},
 	)
 
@@ -166,6 +167,9 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_fundamental_analysis.TableName()] = vw_fundamental_analysis.Migration()
 	var vw_fundamental_analysis_tag = entity_view_models.EntityFundamentalAnalysisTagView{}
 	viewList[vw_fundamental_analysis_tag.TableName()] = vw_fundamental_analysis_tag.Migration()
+
+	var vw_rating_master = entity_view_models.EntityRatingMasterView{}
+	viewList[vw_rating_master.TableName()] = vw_rating_master.Migration()
 
 	if len(viewList) > 0 {
 		for _, detail := range viewList {
