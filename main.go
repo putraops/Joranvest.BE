@@ -290,6 +290,7 @@ func main() {
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("mysession", store))
 
+	r.Use(CORSMiddleware())
 	r.Static("/assets", "./assets")
 	r.Static("/upload", "./upload")
 	r.Static("/script", "./templates/js")
@@ -372,6 +373,7 @@ func main() {
 
 	r.POST("/login", func(c *gin.Context) {
 		c.Request.ParseForm()
+		username := c.PostFormArray("username")[0]
 		email := c.PostFormArray("email")[0]
 		password := c.PostFormArray("password")[0]
 		var err = ""
@@ -386,7 +388,7 @@ func main() {
 			err = "Password tidak boleh kosong."
 		} else {
 			err = "Nice"
-			isVerified, _isAdmin, token, message := authController.LoginForm(c, email, password)
+			isVerified, _isAdmin, token, message := authController.LoginForm(c, username, email, password)
 
 			if isVerified {
 				session := sessions.Default(c)
@@ -964,7 +966,38 @@ func main() {
 	// url := ginSwagger.URL("http://localhost:10000/swagger/doc.json") // The url pointing to API definition
 	//r.GET("/swagger/*any", ginSwagger.DisablingWrapHandler(swaggerFiles.Handler, "NAME_OF_ENV_VARIABLE"))
 	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	// r.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"http://localhost:10000"},
+	// 	AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT"},
+	// 	AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	AllowOriginFunc:  func(origin string) bool { return true },
+	// 	MaxAge:           86400,
+	// }))
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":10000")
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fmt.Println("tes")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
+		// c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		fmt.Println(c.Request.Method)
+
+		if c.Request.Method == "OPTIONS" {
+			fmt.Println("OPTIONS")
+			c.AbortWithStatus(200)
+		} else {
+			c.Next()
+		}
+	}
 }

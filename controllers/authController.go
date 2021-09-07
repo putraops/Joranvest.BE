@@ -15,7 +15,7 @@ import (
 
 type AuthController interface {
 	Login(ctx *gin.Context)
-	LoginForm(ctx *gin.Context, email string, password string) (bool, bool, string, string)
+	LoginForm(ctx *gin.Context, username string, email string, password string) (bool, bool, string, string)
 	Logout(ctx *gin.Context)
 	Register(ctx *gin.Context)
 	RegisterForm(ctx *gin.Context)
@@ -42,14 +42,26 @@ func NewAuthController(authService service.AuthService, jwtService service.JWTSe
 }
 
 func (c *authController) Login(ctx *gin.Context) {
-	var loginDTO dto.LoginDTO
-	err := ctx.ShouldBind(&loginDTO)
+	fmt.Println("masok")
+	var loginDto dto.LoginDto
+	err := ctx.ShouldBind(&loginDto)
+	fmt.Println(loginDto)
 	if err != nil {
 		response := helper.BuildErrorResponse("Failed to request login", err.Error(), helper.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	authResult := c.authService.VerifyCredential(loginDTO.Credential, loginDTO.Password)
+	authResult := c.authService.VerifyCredential(loginDto.Username, loginDto.Email, loginDto.Password)
+	if authResult == nil {
+		response := helper.BuildResponse(false, "User not found", helper.EmptyObj{})
+		ctx.JSON(http.StatusOK, response)
+		return
+	} else if authResult == false {
+		response := helper.BuildResponse(false, "Wrong Password", helper.EmptyObj{})
+		ctx.JSON(http.StatusOK, response)
+		return
+	}
+
 	if v, ok := authResult.(models.ApplicationUser); ok {
 		// generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(v.ID, 10))
 		generatedToken := c.jwtService.GenerateToken(v.Id, v.EntityId)
@@ -64,11 +76,11 @@ func (c *authController) Login(ctx *gin.Context) {
 	ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 }
 
-func (c *authController) LoginForm(ctx *gin.Context, email string, password string) (bool, bool, string, string) {
+func (c *authController) LoginForm(ctx *gin.Context, username string, email string, password string) (bool, bool, string, string) {
 	println("==========================")
 	println("==========================")
 	println("==========================")
-	authResult := c.authService.VerifyCredential(email, password)
+	authResult := c.authService.VerifyCredential(username, email, password)
 
 	if authResult != nil {
 		if v, ok := authResult.(models.ApplicationUser); ok {

@@ -17,7 +17,7 @@ import (
 
 //AuthService is a contract about something that this service can do
 type AuthService interface {
-	VerifyCredential(email string, password string) interface{}
+	VerifyCredential(username string, email string, password string) interface{}
 	CreateUser(user dto.ApplicationUserRegisterDto) (models.ApplicationUser, error)
 	GetByEmail(email string) models.ApplicationUser
 	IsDuplicateEmail(email string) bool
@@ -35,11 +35,14 @@ func NewAuthService(appUserRepo repository.ApplicationUserRepository) AuthServic
 	}
 }
 
-func (service *authService) VerifyCredential(email string, password string) interface{} {
-	res := service.appUserRepo.VerifyCredential(email, password)
+func (service *authService) VerifyCredential(username string, email string, password string) interface{} {
+	res := service.appUserRepo.GetUserByUsernameOrEmail(username, email)
+	if res == nil {
+		return nil
+	}
 	if v, ok := res.(models.ApplicationUser); ok {
 		comparedPassword := comparePassword(v.Password, []byte(password))
-		if (v.Email == email || v.Username == email) && comparedPassword {
+		if (v.Email == email || v.Username == username) && comparedPassword {
 			return res
 		}
 		return false

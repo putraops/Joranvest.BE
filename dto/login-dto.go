@@ -1,7 +1,8 @@
 package dto
 
 //LoginDTO is a model that used by client when POST from /login url
-type LoginDTO struct {
-	Credential string `json:"credential" form:"credential" binding:"required"`
-	Password   string `json:"password" form:"password" binding:"required"`
+type LoginDto struct {
+	Username string `json:"username" form:"username"`
+	Email    string `json:"email" form:"email"`
+	Password string `json:"password" form:"password" binding:"required"`
 }

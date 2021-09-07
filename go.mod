@@ -8,6 +8,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.9.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/structs v1.1.0
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/location v0.0.2
 	github.com/gin-contrib/multitemplate v0.0.0-20200916052041-666a7309d230
 	github.com/gin-contrib/sessions v0.0.3

@@ -15,9 +15,10 @@ import (
 type ApplicationUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	Lookup(req map[string]interface{}) []models.ApplicationUser
+	GetUserByUsernameOrEmail(username string, email string) interface{}
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
-	VerifyCredential(credential string, password string) interface{}
+	VerifyCredential(username string, email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
 	UserProfile(applicationUserId string) models.ApplicationUser
@@ -142,6 +143,15 @@ func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models
 	return records
 }
 
+func (db *applicationUserConnection) GetUserByUsernameOrEmail(username string, email string) interface{} {
+	var record models.ApplicationUser
+	res := db.connection.Where("username = ?", username).Or("email = ?", email).Take(&record)
+	if res.Error == nil {
+		return record
+	}
+	return nil
+}
+
 func (db *applicationUserConnection) Insert(record models.ApplicationUser) (models.ApplicationUser, error) {
 	record.Id = uuid.New().String()
 	record.CreatedBy = record.Id
@@ -168,9 +178,9 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 	return record
 }
 
-func (db *applicationUserConnection) VerifyCredential(credential string, password string) interface{} {
+func (db *applicationUserConnection) VerifyCredential(username string, email string, password string) interface{} {
 	var record models.ApplicationUser
-	res := db.connection.Where("username = ?", credential).Or("email = ?", credential).Take(&record)
+	res := db.connection.Where("username = ?", username).Or("email = ?", email).Take(&record)
 	if res.Error == nil {
 		return record
 	}
