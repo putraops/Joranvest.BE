@@ -897,11 +897,13 @@ func main() {
 	{
 		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
+		applicationUserApiRoutes.POST("/register", authController.RegisterForm)
 	}
 
 	technicalAnalysisApiRoutes := r.Group("api/technical_analysis")
 	{
 		technicalAnalysisApiRoutes.POST("/getDatatables", technicalAnalysisController.GetDatatables)
+		technicalAnalysisApiRoutes.POST("/getPagination", technicalAnalysisController.GetPagination)
 		technicalAnalysisApiRoutes.POST("/save", technicalAnalysisController.Save)
 		technicalAnalysisApiRoutes.GET("/getById/:id", technicalAnalysisController.GetById)
 		technicalAnalysisApiRoutes.DELETE("/deleteById/:id", technicalAnalysisController.DeleteById)

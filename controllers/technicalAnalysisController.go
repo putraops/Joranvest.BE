@@ -16,6 +16,7 @@ import (
 
 type TechnicalAnalysisController interface {
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -41,6 +42,17 @@ func (c *technicalAnalysisController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.technicalAnalysisService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *technicalAnalysisController) GetPagination(context *gin.Context) {
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.technicalAnalysisService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

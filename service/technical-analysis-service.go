@@ -9,6 +9,7 @@ import (
 
 type TechnicalAnalysisService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.TechnicalAnalysis
 	Insert(record models.TechnicalAnalysis) helper.Response
 	Update(record models.TechnicalAnalysis) helper.Response
@@ -29,6 +30,10 @@ func NewTechnicalAnalysisService(repo repository.TechnicalAnalysisRepository) Te
 
 func (service *technicalAnalysisService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.technicalAnalysisRepository.GetDatatables(request)
+}
+
+func (service *technicalAnalysisService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.technicalAnalysisRepository.GetPagination(request)
 }
 
 func (service *technicalAnalysisService) GetAll(filter map[string]interface{}) []models.TechnicalAnalysis {

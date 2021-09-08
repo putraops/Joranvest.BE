@@ -17,6 +17,7 @@ import (
 
 type TechnicalAnalysisRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.TechnicalAnalysis
 	Insert(t models.TechnicalAnalysis) helper.Response
 	Update(record models.TechnicalAnalysis) helper.Response
@@ -102,6 +103,36 @@ func (db *technicalAnalysisConnection) GetDatatables(request commons.DataTableRe
 		res.DataRow = []entity_view_models.EntityTechnicalAnalysisView{}
 	}
 	return res
+}
+
+func (db *technicalAnalysisConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityTechnicalAnalysisView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+	db.connection.Offset(offset).Limit(pageSize).Find(&records)
+
+	var sqlCount strings.Builder
+	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
+	sqlCount.WriteString("WHERE 1=1")
+	// sqlCount.WriteString(conditions)
+	db.connection.Raw(sqlCount.String()).Scan(&response.Total)
+
+	response.Data = records
+	return response
 }
 
 func (db *technicalAnalysisConnection) GetAll(filter map[string]interface{}) []models.TechnicalAnalysis {
