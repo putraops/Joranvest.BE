@@ -93,6 +93,13 @@ func (c *emitenController) Save(context *gin.Context) {
 	}
 }
 
+// @Tags Emiten
+// @Summary Get Emiten by Id
+// @Description Get Emiten By Id
+// @Param id path string true "User Id"
+// @Success 200 {object} models.Emiten
+// @Failure 400,404 {object} object
+// @Router /emiten/getById/{id} [get]
 func (c *emitenController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -109,6 +116,13 @@ func (c *emitenController) GetById(context *gin.Context) {
 	}
 }
 
+// @Tags Emiten
+// @Summary Delete Emiten By Id
+// @Param id path string true "id"
+// @Router /emiten/deleteById [delete]
+// @Success 200 {object} helper.Response
+// @Failure 400,404 {object} object
+// @Router /emiten/getById/{id} [get]
 func (c *emitenController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {

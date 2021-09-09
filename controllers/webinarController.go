@@ -19,6 +19,13 @@ import (
 type WebinarController interface {
 	GetDatatables(context *gin.Context)
 	GetById(context *gin.Context)
+	// @Tags Webinar
+	// @Summary Get Webinar By Id
+	// @Param id path string true "id"
+	// @Router /webinar/getById [delete]
+	// @Success 200 {object} helper.Response
+	// @Failure 400,404 {object} object
+	// @Router /webinar/getById/{id} [get]
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
 }
@@ -146,6 +153,13 @@ func (c *webinarController) GetById(context *gin.Context) {
 	}
 }
 
+// @Tags Webinar
+// @Summary Delete Webinar By Id
+// @Param id path string true "id"
+// @Router /webinar/deleteById [delete]
+// @Success 200 {object} helper.Response
+// @Failure 400,404 {object} object
+// @Router /webinar/getById/{id} [get]
 func (c *webinarController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
