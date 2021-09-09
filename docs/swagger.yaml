@@ -1,4 +1,219 @@
+definitions:
+  helper.Response:
+    properties:
+      data:
+        type: object
+      errors:
+        type: object
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+  models.Emiten:
+    properties:
+      approved_at:
+        $ref: '#/definitions/sql.NullTime'
+      approved_by:
+        type: string
+      created_at:
+        $ref: '#/definitions/sql.NullTime'
+      created_by:
+        type: string
+      current_price:
+        type: number
+      description:
+        type: string
+      emiten_category:
+        $ref: '#/definitions/models.EmitenCategory'
+      emiten_category_id:
+        type: string
+      emiten_code:
+        type: string
+      emiten_name:
+        type: string
+      entity_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      sector:
+        $ref: '#/definitions/models.Sector'
+      sector_id:
+        type: string
+      updated_at:
+        $ref: '#/definitions/sql.NullTime'
+      updated_by:
+        type: string
+    type: object
+  models.EmitenCategory:
+    properties:
+      approved_at:
+        $ref: '#/definitions/sql.NullTime'
+      approved_by:
+        type: string
+      created_at:
+        $ref: '#/definitions/sql.NullTime'
+      created_by:
+        type: string
+      description:
+        type: string
+      entity_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        $ref: '#/definitions/sql.NullTime'
+      updated_by:
+        type: string
+    type: object
+  models.Sector:
+    properties:
+      approved_at:
+        $ref: '#/definitions/sql.NullTime'
+      approved_by:
+        type: string
+      created_at:
+        $ref: '#/definitions/sql.NullTime'
+      created_by:
+        type: string
+      description:
+        type: string
+      entity_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        $ref: '#/definitions/sql.NullTime'
+      updated_by:
+        type: string
+    type: object
+  sql.NullTime:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /emiten/deleteById:
+    delete:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Delete Emiten By Id
+      tags:
+      - Emiten
+  /emiten/getById/{id}:
+    get:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Delete Emiten By Id
+      tags:
+      - Emiten
+  /webinar/deleteById:
+    delete:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Delete Webinar By Id
+      tags:
+      - Webinar
+  /webinar/getById/{id}:
+    get:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Delete Webinar By Id
+      tags:
+      - Webinar
 swagger: "2.0"

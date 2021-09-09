@@ -22,7 +22,337 @@ var doc = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/emiten/deleteById": {
+            "delete": {
+                "tags": [
+                    "Emiten"
+                ],
+                "summary": "Delete Emiten By Id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/emiten/getById/{id}": {
+            "get": {
+                "tags": [
+                    "Emiten"
+                ],
+                "summary": "Delete Emiten By Id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/webinar/deleteById": {
+            "delete": {
+                "tags": [
+                    "Webinar"
+                ],
+                "summary": "Delete Webinar By Id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/webinar/getById/{id}": {
+            "get": {
+                "tags": [
+                    "Webinar"
+                ],
+                "summary": "Delete Webinar By Id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "helper.Response": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object"
+                },
+                "errors": {
+                    "type": "object"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Emiten": {
+            "type": "object",
+            "properties": {
+                "approved_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "approved_by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "current_price": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "emiten_category": {
+                    "$ref": "#/definitions/models.EmitenCategory"
+                },
+                "emiten_category_id": {
+                    "type": "string"
+                },
+                "emiten_code": {
+                    "type": "string"
+                },
+                "emiten_name": {
+                    "type": "string"
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "is_locked": {
+                    "type": "boolean"
+                },
+                "sector": {
+                    "$ref": "#/definitions/models.Sector"
+                },
+                "sector_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.EmitenCategory": {
+            "type": "object",
+            "properties": {
+                "approved_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "approved_by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "is_locked": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Sector": {
+            "type": "object",
+            "properties": {
+                "approved_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "approved_by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "is_locked": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "$ref": "#/definitions/sql.NullTime"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "sql.NullTime": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        }
+    }
 }`
 
 type swaggerInfo struct {
