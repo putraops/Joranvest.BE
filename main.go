@@ -863,6 +863,7 @@ func main() {
 	webinarApiRoutes := r.Group("api/webinar")
 	{
 		webinarApiRoutes.POST("/getDatatables", webinarController.GetDatatables)
+		webinarApiRoutes.POST("/getPagination", webinarController.GetPagination)
 		webinarApiRoutes.POST("/save", webinarController.Save)
 		webinarApiRoutes.GET("/getById/:id", webinarController.GetById)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)

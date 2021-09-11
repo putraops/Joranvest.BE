@@ -128,7 +128,6 @@ func (db *technicalAnalysisConnection) GetPagination(request commons.PaginationR
 	var sqlCount strings.Builder
 	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
 	sqlCount.WriteString("WHERE 1=1")
-	// sqlCount.WriteString(conditions)
 	db.connection.Raw(sqlCount.String()).Scan(&response.Total)
 
 	response.Data = records

@@ -17,6 +17,7 @@ import (
 
 type WebinarRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Webinar
 	Insert(t models.Webinar) helper.Response
 	Update(record models.Webinar) helper.Response
@@ -102,6 +103,35 @@ func (db *webinarConnection) GetDatatables(request commons.DataTableRequest) com
 		res.DataRow = []entity_view_models.EntityWebinarView{}
 	}
 	return res
+}
+
+func (db *webinarConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityWebinarView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+	db.connection.Offset(offset).Limit(pageSize).Find(&records)
+
+	var sqlCount strings.Builder
+	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCountByPublic(db.viewQuery, db.tableName))
+	sqlCount.WriteString("WHERE 1=1")
+	db.connection.Raw(sqlCount.String()).Scan(&response.Total)
+
+	response.Data = records
+	return response
 }
 
 func (db *webinarConnection) GetAll(filter map[string]interface{}) []models.Webinar {
@@ -195,7 +225,7 @@ func (db *webinarConnection) Update(record models.Webinar) helper.Response {
 }
 
 func (db *webinarConnection) GetById(recordId string) helper.Response {
-	var record models.Webinar
+	var record entity_view_models.EntityWebinarView
 	db.connection.Preload("WebinarCategory").First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})

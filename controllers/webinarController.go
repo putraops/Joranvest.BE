@@ -18,15 +18,9 @@ import (
 
 type WebinarController interface {
 	GetDatatables(context *gin.Context)
-	GetById(context *gin.Context)
-	// @Tags Webinar
-	// @Summary Get Webinar By Id
-	// @Param id path string true "id"
-	// @Router /webinar/getById [delete]
-	// @Success 200 {object} helper.Response
-	// @Failure 400,404 {object} object
-	// @Router /webinar/getById/{id} [get]
+	GetPagination(context *gin.Context)
 	DeleteById(context *gin.Context)
+	GetById(context *gin.Context)
 	Save(context *gin.Context)
 }
 
@@ -50,6 +44,24 @@ func (c *webinarController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.webinarService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+// @Tags Webinar
+// @Summary Get Pagination
+// @Param id path string true "id"
+// @Router /webinar/getPagination [post]
+// @Success 200 {obsject} object
+// @Failure 400,404 {object} object
+// @Router /webinar/getPagination [get]
+func (c *webinarController) GetPagination(context *gin.Context) {
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.webinarService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 
@@ -137,6 +149,13 @@ func (c *webinarController) Save(context *gin.Context) {
 	}
 }
 
+// @Tags Webinar
+// @Summary Get Webinar By Id
+// @Param id path string true "id"
+// @Router /webinar/getById [delete]
+// @Success 200 {object} helper.Response
+// @Failure 400,404 {object} object
+// @Router /webinar/getById/{id} [get]
 func (c *webinarController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {

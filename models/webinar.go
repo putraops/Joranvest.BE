@@ -36,7 +36,6 @@ type Webinar struct {
 
 	WebinarSpeaker  []WebinarSpeaker `gorm:"-" json:"webinar_speaker"`
 	WebinarCategory WebinarCategory  `gorm:"foreignkey:WebinarCategoryId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar_category"`
-	Organization    Organization     `gorm:"foreignkey:OrganizerOrganizationId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"organization"`
 }
 
 func (Webinar) TableName() string {
