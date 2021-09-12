@@ -287,31 +287,12 @@
     var SaveOrUpdate = function (e) {
       var record = {};
       $.extend(record, $formInformation.serializeToJSON(), $formSpeaker.serializeToJSON(), $formTime.serializeToJSON(), $formPriceReward.serializeToJSON());
-      console.log(record);
-      console.log("record.webinar_first_start_date: ", record.webinar_first_start_date);
-      console.log("record.webinar_first_start_time: ", $("#webinar_first_start_time").val());
-      console.log("record.webinar_first_end_time: ", $("#webinar_first_end_time").val());
 
-      if (record.webinar_first_start_date){
-        if ($("#webinar_first_end_time").val() != "") {
-          record.webinar_first_end_date = record.webinar_first_start_date + "T"+ $("#webinar_first_end_time").val() + ":00Z";
-        }
-        record.webinar_first_start_date += "T"+ $("#webinar_first_start_time").val() + ":00Z";
-        if ($("#webinar_first_end_time").val() == "") {
-          record.webinar_first_end_date = record.webinar_first_start_date;
-        }
+      if (record.webinar_end_date == "") {
+        record.webinar_end_date = record.webinar_start_date;
       }
-      if (record.webinar_last_start_date){
-        if ($("#webinar_last_end_time").val() != "") {
-          record.webinar_last_end_date = record.webinar_last_start_date + "T"+ $("#webinar_last_end_time").val() + ":00Z";
-        }
-        record.webinar_last_start_date += "T"+ $("#webinar_last_start_time").val() + ":00Z";
-        if ($("#webinar_last_end_time").val() == "") {
-          record.webinar_last_end_date = record.webinar_last_start_date;
-        }
-      }
-      console.log(record);
-
+      record.webinar_end_date += "T"+ $("#end_time").val() + ":00Z";
+      record.webinar_start_date += "T"+ $("#start_time").val() + ":00Z";
       record.webinar_speaker = JSON.stringify(record.webinar_speaker);
 
       $.ajax({

@@ -252,28 +252,42 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
-                                                            <label class="input-title">Mulai</label> 
+                                                        <div class="col-lg-12">
                                                             <div class="row">
                                                                 <div class="col-md-6">
+                                                                    <label class="input-title">Mulai</label> 
                                                                     <div class="input-group mb-1">
                                                                         <div class="input-group-prepend">
                                                                             <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger no-radius" disabled="">
                                                                             <i class="far fa-calendar-alt" aria-hidden="true"></i>
                                                                             </button>
                                                                         </div>
-                                                                        <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_first_start_date" id="date-start" placeholder="Pilih Tanggal" autocomplete="off" required="">
+                                                                        <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_start_date" id="date-start" placeholder="Pilih Tanggal" autocomplete="off" required="">
                                                                     </div>
                                                                 </div>
+                                                                <div class="col-md-6 d-none" id="section-range-end">
+                                                                    <label class="input-title">Selesai</label>
+                                                                    <div class="input-group mb-1"> 
+                                                                        <div class="input-group-prepend">
+                                                                            <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger no-radius" disabled="">
+                                                                            <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                        <input type="text" class="form-control input-date bg-white cursor-pointer" name="webinar_end_date" id="date-end" placeholder="Pilih Tanggal" autocomplete="off" readonly="">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
                                                                 <div class="col-md-6">
+                                                                    <label class="input-title">Jam</label> 
                                                                     <div class="input-group mb-1">
-                                                                        <input type="time" class="form-control" id="webinar_first_start_time" name="" required="">
-                                                                        <input type="time" class="form-control" id="webinar_first_end_time" name="">
+                                                                        <input type="time" class="form-control" id="start_time" name="" required="">
+                                                                        <input type="time" class="form-control" id="end_time" name="" required="">
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 d-none" id="section-range-end">
+                                                        <!-- <div class="col-lg-6 d-none" id="section-range-end">
                                                             <label class="input-title">Selesai</label> 
                                                             <div class="row">
                                                                 <div class="col-md-6">
@@ -293,7 +307,7 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                        </div> -->
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-md-12 text-right ">

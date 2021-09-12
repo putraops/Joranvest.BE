@@ -22,10 +22,8 @@ type Webinar struct {
 	OrganizerOrganizationId string       `gorm:"type:varchar(50);" json:"organizer_organization_id"`
 	Title                   string       `gorm:"type:text;not null" json:"title"`
 	Description             string       `gorm:"type:text" json:"description"`
-	WebinarFirstStartDate   sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_first_start_date"`
-	WebinarFirstEndDate     sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_first_end_date"`
-	WebinarLastStartDate    sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_last_start_date"`
-	WebinarLastEndDate      sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_last_end_date"`
+	WebinarStartDate        sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_start_date"`
+	WebinarEndDate          sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_end_date"`
 	MinAge                  int          `gorm:"type:int" json:"min_age"`
 	WebinarLevel            string       `gorm:"type:varchar(50)" json:"webinar_level"`
 	Price                   float64      `gorm:"type:decimal(18,2)" json:"price"`

@@ -8,10 +8,8 @@ type WebinarDto struct {
 	WebinarCategoryId       string    `json:"webinar_category_id" form:"webinar_category_id" binding:"required"`
 	Title                   string    `json:"title" form:"title"`
 	Description             string    `json:"description" form:"description"`
-	WebinarFirstStartDate   time.Time `json:"webinar_first_start_date" form:"webinar_first_start_date"`
-	WebinarFirstEndDate     time.Time `json:"webinar_first_end_date" form:"webinar_first_end_date"`
-	WebinarLastStartDate    time.Time `json:"webinar_last_start_date" form:"webinar_last_start_date"`
-	WebinarLastEndDate      time.Time `json:"webinar_last_end_date" form:"webinar_last_end_date"`
+	WebinarStartDate        time.Time `json:"webinar_start_date" form:"webinar_start_date"`
+	WebinarEndDate          time.Time `json:"webinar_end_date" form:"webinar_end_date"`
 	OrganizerOrganizationId string    `json:"organizer_organization_id" form:"organizer_organization_id"`
 	WebinarSpeaker          string    `json:"webinar_speaker" form:"webinar_speaker"`
 	MinAge                  int       `json:"min_age" form:"min_age"`
