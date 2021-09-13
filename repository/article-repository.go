@@ -20,6 +20,7 @@ type ArticleRepository interface {
 	GetAll(filter map[string]interface{}) []models.Article
 	Insert(t models.Article) helper.Response
 	Update(record models.Article) helper.Response
+	Submit(recordId string, userId string) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -189,6 +190,26 @@ func (db *articleConnection) Update(record models.Article) helper.Response {
 	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
 	return helper.ServerResponse(true, "Ok", "", record)
+}
+
+func (db *articleConnection) Submit(recordId string, userId string) helper.Response {
+	tx := db.connection.Begin()
+	var existingRecord models.Article
+	db.connection.First(&existingRecord, "id = ?", recordId)
+	if existingRecord.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	existingRecord.SubmittedBy = userId
+	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	res := tx.Save(&existingRecord)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", existingRecord)
 }
 
 func (db *articleConnection) GetById(recordId string) helper.Response {

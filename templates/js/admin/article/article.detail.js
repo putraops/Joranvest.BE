@@ -2,6 +2,7 @@
   'use strict';
   var $form = $('#form-main');
   var $btnSave = $("#btn-save");
+  var $btnSubmit = $("#btn-submit");
   var $recordId = $("#recordId");
 
   var pageFunction = function () {
@@ -175,6 +176,8 @@
             Swal.fire('Berhasil!', $message, 'success');
             
             $recordId.val(r.data.id)
+            $(".section-uploadAndSubmit").removeClass("d-none");
+            $btnSubmit.removeAttr("disabled");
             history.pushState('', 'ID', location.hash.split('?')[0] + '?id=' + r.data.id);
           } else {
             $.each(r.errors, function (index, value) {
@@ -211,12 +214,17 @@
             $form.find('input').val(function () {
               return r.data[this.name];
             });
-            // $("textarea[name=research_data]").val(r.data.research_data);
             $(".summernote").summernote("code", r.data.body);
             var newOption = new Option(r.data.article_category.name, r.data.article_category_id, true, true);
             $('#article_category_id').append(newOption).trigger('change');
             $('#article_type').val(r.data.article_type).trigger('change');
+            
+            $(".section-uploadAndSubmit").removeClass("d-none");
+            $btnSubmit.removeAttr("disabled");
 
+            if (r.data.submitted_at) {
+              SubmitControlForm(true);
+            }
             getTagByArticleId(r.data.id);
           }
         },
@@ -250,8 +258,137 @@
     var loadDetail = function () {
       if ($recordId.val() != "") {
         getById($recordId.val());
+        loadAttachments();
       }
     }
+
+    $btnSubmit.on("click", function (event) {
+      var title = "Apakah yakin ingin submit Artikel?";
+      var isvalidate = $form[0].checkValidity();
+      if (isvalidate) {
+        Swal.fire({
+          title: title,
+          text: "",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Ya',
+          cancelButtonText: 'Tidak'
+          }).then((result) => {
+            if (result.value) {
+              Submit(event);
+            }
+        });
+      } else {
+        event.preventDefault();
+        event.stopPropagation();
+        $form.addClass('was-validated');
+      }
+    });
+
+    var Submit = function (e) {
+      $.ajax({
+        url: $.helper.baseApiPath("/article/submit/" + $recordId.val()),
+        type: 'POST',
+        success: function (r) {
+          console.log(r);
+          if (r.status) {
+            Swal.fire('Berhasil!', "Berhasil submit Artikel", 'success');
+            SubmitControlForm(true);
+          } else {
+            $.each(r.errors, function (index, value) {
+              console.log(value);
+              if (value.includes(`unique constraint "uk_name"`)) {
+                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar artikel.", 'Peringatan!');
+              } else {
+                toastr.error(value, 'Error!');
+              }
+            });
+          }
+        },
+        error: function (r) {
+          var obj = JSON.parse(r.responseText);
+          $.each(obj.errors, function (index, value) {
+            if (value.includes("unique index 'uk_name_entity'")) {
+              console.log(value);
+              toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar.", 'Peringatan!');
+            } else {
+              toastr.error(value, 'Error!');
+            }
+          });
+        }
+      });
+    }
+
+    var SubmitControlForm = function (isSubmit) {
+      if (isSubmit) {
+        $btnSave.remove();
+        $btnSubmit.remove();
+      }
+    }
+
+    Dropzone.autoDiscover = false;
+    var myDropzone = new Dropzone("div#my-dropzone", { 
+      paramName: "file", 
+      maxFilesize: 2, //-- 2Mb
+      headers:
+      {
+        "Authorization": $('meta[name=x-token]').attr("content")
+      },
+      accept: function(file, done) {
+        console.log(file);
+        if (!file.type.match('\.jpeg')  && !file.type.match('\.jpg') && !file.type.match('\.png'))
+                    {
+                    Swal.fire('Hanya file .jpeg / .jpg / .png yang diizinkan.', "", 'error');
+                    myDropzone.removeAllFiles();
+                    return;
+                }
+                if ($recordId.val() == '' || $recordId.val() == undefined) {
+                    myDropzone.removeAllFiles();
+                    alert('Please save activity, and try again');
+                    done('Please save activity, and try again');
+                }
+        else { done(); }
+      },
+      init: function (file) {
+        console.log(file)
+        var checkFile = false;
+        this.on("error", function (file, response) {
+            toastr.error("error upload : ", response, "Peringatan")
+            //loadAttachment();
+            this.removeAllFiles();
+        });
+        this.on("processing", function (file) {
+            this.options.url = $.helper.baseApiPath("/filemaster/singleUploadByDirectory/article/") + $recordId.val();
+        });
+      }
+    });
+    myDropzone.on("complete", function(file) {
+      loadAttachments();
+      myDropzone.removeFile(file);
+    });
+
+    var loadAttachments = function () {
+      $.ajax({
+        url: $.helper.baseApiPath("/filemaster/getAll?record_id=" + $recordId.val()),
+        type: 'GET',
+        success: function (r) {
+          console.log("loadAttachments", r);
+          if (r.status) {
+            var data = r.data[0];
+            if (r.data != null && r.data.length > 0) {
+              var img = `<img src="/`+ data.filepath +`" title="` + data.filename + `" class="mr-1" style="max-height: 250px;"/>`;
+              $("#section-cover-image").html(img);
+            }
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
     return {
       init: function () {
         initArticleCategoryLookup();

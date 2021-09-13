@@ -840,6 +840,7 @@ func main() {
 	{
 		articleApiRoutes.POST("/getDatatables", articleController.GetDatatables)
 		articleApiRoutes.POST("/save", articleController.Save)
+		articleApiRoutes.POST("/submit/:id", articleController.Submit)
 		articleApiRoutes.GET("/getById/:id", articleController.GetById)
 		articleApiRoutes.DELETE("/deleteById/:id", articleController.DeleteById)
 	}
@@ -904,6 +905,7 @@ func main() {
 	filemasterApiRoutes := r.Group("api/filemaster")
 	{
 		filemasterApiRoutes.POST("/single_upload/:id", filemasterController.SingleUpload)
+		filemasterApiRoutes.POST("/singleUploadByDirectory/:dir/:id", filemasterController.SingleUploadByDirectory)
 		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
 		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
 		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)

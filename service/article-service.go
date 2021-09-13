@@ -12,6 +12,7 @@ type ArticleService interface {
 	GetAll(filter map[string]interface{}) []models.Article
 	Insert(record models.Article) helper.Response
 	Update(record models.Article) helper.Response
+	Submit(recordId string, userId string) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -41,6 +42,10 @@ func (service *articleService) Insert(record models.Article) helper.Response {
 
 func (service *articleService) Update(record models.Article) helper.Response {
 	return service.articleRepository.Update(record)
+}
+
+func (service *articleService) Submit(recordId string, userId string) helper.Response {
+	return service.articleRepository.Submit(recordId, userId)
 }
 
 func (service *articleService) GetById(recordId string) helper.Response {

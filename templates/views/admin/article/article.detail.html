@@ -4,6 +4,12 @@
     .note-editor {
         border-radius: 0px;
     }
+    #btn-save {
+        min-width: 400px;
+    }
+    .dropzone {
+        min-height: 0 !important;
+    }
 </style>
 
 <div class="container-fluid text-dark">
@@ -17,10 +23,11 @@
 
     <div class="row">       
         <div class="col-md-12">
-            <form id="form-main" class="needs-validation" novalidate>
-                <input type="hidden" name="id" id="recordId" value={{.data.id}}>
-                <div class="card no-radius mt-2">
-                    <div class="card-body p-3">
+            <div class="card no-radius mt-2 pb-2">
+                <div class="card-body p-3">
+                    <form id="form-main" class="needs-validation" novalidate>
+                        <input type="hidden" name="id" id="recordId" value={{.data.id}}>
+                      
                         <div class="form-group mb-1">
                             <label class="mb-1 input-title">Kategori <span class="text-danger">*</span></label>
                             <select class="form-control" id="article_category_id" name="article_category_id" required>
@@ -53,18 +60,58 @@
                             <label class="mb-1 input-title">Sumber</label>
                             <input type="text" class="form-control" name="source">
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-12 text-right ">
-                                <hr class="mb-0" />
-                                <button type="button" class="btn btn-primary mt-3 pl-5 pr-5 no-radius" id="btn-save">
-                                    Simpan
-                                </button>
+                    </form>
+                    <div class="row mt-3">
+                        <div class="col-md-12 text-right ">
+                            <button type="button" class="btn btn-info btn-block mt-0 pl-5 pr-5 no-radius" id="btn-save">
+                                Simpan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card no-radius mt-3 d-none section-uploadAndSubmit" id="section-uploadImage">
+                <div class="card-header bg-primary text-white no-radius">
+                    Image
+                </div>
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form id="form-attachment`" class="needs-validation" novalidate>
+                                <div id="my-dropzone" action="#" class="dropzone pt-3 pb-0">
+                                    <div class="dz-default dz-message mb-0 mt-0">
+                                        <div class="dz-icon">
+                                            <i class="demo-pli-upload-to-cloud icon-5x" aria-hidden="true"></i>
+                                        </div>
+                                        <div>
+                                            <span class="dz-text">Browse files to upload</span>
+                                            <p class="text-sm text-muted">or click to pick manually</p>
+                                        </div>
+                                    </div>
+                                    <div class="fallback">
+                                        <input id="file" name="file" type="file" multiple="">
+                                    </div>
+                                </div>
+                            </form> 
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <div class="" id="section-cover-image">
                             </div>
                         </div>
                     </div>
                 </div>
-            </form>
+            </div>
+            <div class="card no-radius mt-2 d-none section-uploadAndSubmit">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-md-12 text-right ">
+                            <button type="button" class="btn btn-primary btn-block mt-0 pl-5 pr-5 no-radius" disabled="" id="btn-submit">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

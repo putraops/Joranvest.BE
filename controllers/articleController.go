@@ -20,6 +20,7 @@ type ArticleController interface {
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
+	Submit(context *gin.Context)
 }
 
 type articleController struct {
@@ -113,6 +114,26 @@ func (c *articleController) DeleteById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	var result = c.articleService.DeleteById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *articleController) Submit(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+
+	authHeader := context.GetHeader("Authorization")
+	userIdentity := c.jwtService.GetUserByToken(authHeader)
+	var result = c.articleService.Submit(id, userIdentity.UserId)
+
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)

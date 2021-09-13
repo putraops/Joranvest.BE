@@ -32,6 +32,7 @@ require (
 	github.com/swaggo/swag v1.7.1
 	github.com/twinj/uuid v1.0.0
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/ydhnwb/golang_api v0.0.0-20210821145656-97a206998698
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f // indirect
 	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect
