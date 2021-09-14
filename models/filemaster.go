@@ -20,6 +20,7 @@ type Filemaster struct {
 	RecordId    string `gorm:"type:varchar(50);not null" json:"record_id"`
 	Filepath    string `gorm:"type:varchar(200)" json:"filepath"`
 	Filename    string `gorm:"type:varchar(200)" json:"filename"`
+	FileType    int    `gorm:"type:int" json:"file_type"`
 	Extension   string `gorm:"type:varchar(10)" json:"extension"`
 	Size        string `gorm:"type:varchar(100)" json:"size"`
 	Description string `gorm:"type:text" json:"description"`

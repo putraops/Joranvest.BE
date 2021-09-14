@@ -17,6 +17,7 @@ import (
 
 type ArticleRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Article
 	Insert(t models.Article) helper.Response
 	Update(record models.Article) helper.Response
@@ -103,6 +104,35 @@ func (db *articleConnection) GetDatatables(request commons.DataTableRequest) com
 		res.DataRow = []entity_view_models.EntityArticleView{}
 	}
 	return res
+}
+
+func (db *articleConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityArticleView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+	db.connection.Offset(offset).Limit(pageSize).Find(&records)
+
+	var sqlCount strings.Builder
+	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCountByPublic(db.viewQuery, db.tableName))
+	sqlCount.WriteString("WHERE 1=1")
+	db.connection.Raw(sqlCount.String()).Scan(&response.Total)
+
+	response.Data = records
+	return response
 }
 
 func (db *articleConnection) GetAll(filter map[string]interface{}) []models.Article {

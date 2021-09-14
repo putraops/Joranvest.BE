@@ -905,7 +905,7 @@ func main() {
 	filemasterApiRoutes := r.Group("api/filemaster")
 	{
 		filemasterApiRoutes.POST("/single_upload/:id", filemasterController.SingleUpload)
-		filemasterApiRoutes.POST("/singleUploadByDirectory/:dir/:id", filemasterController.SingleUploadByDirectory)
+		filemasterApiRoutes.POST("/uploadByType/:module/:filetype/:id", filemasterController.UploadByType)
 		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
 		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
 		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)

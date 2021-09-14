@@ -9,8 +9,10 @@ import (
 type FilemasterService interface {
 	GetAll(filter map[string]interface{}) []models.Filemaster
 	SingleUpload(record models.Filemaster) helper.Response
+	UploadByType(record models.Filemaster) helper.Response
 	Insert(record models.Filemaster) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
+	GetDirectoryConfig(moduleName string, moduleId string, filetype int) string
 }
 
 type filemasterService struct {
@@ -32,10 +34,24 @@ func (service *filemasterService) SingleUpload(record models.Filemaster) helper.
 	return service.repo.SingleUpload(record)
 }
 
+func (service *filemasterService) UploadByType(record models.Filemaster) helper.Response {
+	return service.repo.UploadByType(record)
+}
+
 func (service *filemasterService) Insert(record models.Filemaster) helper.Response {
 	return service.repo.Insert(record)
 }
 
 func (service *filemasterService) DeleteByRecordId(recordId string) helper.Response {
 	return service.repo.DeleteByRecordId(recordId)
+}
+
+func (service *filemasterService) GetDirectoryConfig(moduleName string, moduleId string, filetype int) string {
+	var res = ""
+	if filetype == 1 {
+		res = "upload/" + moduleName + "/" + moduleId + "/cover/"
+	} else if filetype == 2 {
+		res = "upload/" + moduleName + "/" + moduleId + "/files/"
+	}
+	return res
 }

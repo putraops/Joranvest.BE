@@ -360,7 +360,7 @@
             this.removeAllFiles();
         });
         this.on("processing", function (file) {
-            this.options.url = $.helper.baseApiPath("/filemaster/singleUploadByDirectory/article/") + $recordId.val();
+            this.options.url = $.helper.baseApiPath("/filemaster/uploadByType/article/1/") + $recordId.val();
         });
       }
     });

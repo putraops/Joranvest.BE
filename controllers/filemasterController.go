@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"joranvest/helper"
 	"joranvest/models"
@@ -17,7 +18,7 @@ import (
 type FilemasterController interface {
 	GetAll(context *gin.Context)
 	SingleUpload(context *gin.Context)
-	SingleUploadByDirectory(context *gin.Context)
+	UploadByType(context *gin.Context)
 	Insert(context *gin.Context)
 	DeleteByRecordId(context *gin.Context)
 }
@@ -110,9 +111,10 @@ func (c *filemasterController) SingleUpload(context *gin.Context) {
 	}
 }
 
-func (c *filemasterController) SingleUploadByDirectory(context *gin.Context) {
+func (c *filemasterController) UploadByType(context *gin.Context) {
 	id := context.Param("id")
-	dir := context.Param("dir")
+	module := context.Param("module")
+	filetype := context.Param("filetype")
 
 	result := helper.Response{}
 	var record models.Filemaster
@@ -132,7 +134,11 @@ func (c *filemasterController) SingleUploadByDirectory(context *gin.Context) {
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
 		//folderDir := "upload/" + id
-		folderUpload := "upload/" + dir + "/" + id + "/"
+		_filetype, errConvert := strconv.Atoi(filetype)
+		if errConvert != nil {
+			log.Fatal(errConvert)
+		}
+		folderUpload := c.filemasterService.GetDirectoryConfig(module, id, _filetype)
 
 		errRemoveDir := os.RemoveAll(folderUpload)
 		if err != nil {
@@ -162,7 +168,8 @@ func (c *filemasterController) SingleUploadByDirectory(context *gin.Context) {
 		record.Filename = filename
 		record.Extension = filepath.Ext(file.Filename)
 		record.Size = fmt.Sprint(file.Size)
-		result = c.filemasterService.SingleUpload(record)
+		record.FileType = _filetype
+		result = c.filemasterService.UploadByType(record)
 
 		if result.Status {
 			response := helper.BuildResponse(true, "OK", result.Data)

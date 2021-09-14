@@ -15,6 +15,7 @@ import (
 type FilemasterRepository interface {
 	GetAll(filter map[string]interface{}) []models.Filemaster
 	SingleUpload(t models.Filemaster) helper.Response
+	UploadByType(t models.Filemaster) helper.Response
 	Insert(t models.Filemaster) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
 }
@@ -51,6 +52,28 @@ func (db *filemasterConnection) SingleUpload(record models.Filemaster) helper.Re
 	tx := db.connection.Begin()
 
 	if err := tx.Where("record_id = ?", record.RecordId).Delete(&filemasterRecord).Error; err != nil {
+		tx.Rollback()
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	record.Id = uuid.New().String()
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	if err := tx.Create(&record).Error; err != nil {
+		tx.Rollback()
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	} else {
+		tx.Commit()
+		db.connection.Find(&record)
+		return helper.ServerResponse(true, "Ok", "", record)
+	}
+}
+
+func (db *filemasterConnection) UploadByType(record models.Filemaster) helper.Response {
+	var filemasterRecord models.Filemaster
+	tx := db.connection.Begin()
+
+	if err := tx.Where("record_id = ? AND file_type = ?", record.RecordId, record.FileType).Delete(&filemasterRecord).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}

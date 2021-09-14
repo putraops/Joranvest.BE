@@ -17,6 +17,7 @@ import (
 
 type ArticleController interface {
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -43,6 +44,23 @@ func (c *articleController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.articleService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+// @Tags Article
+// @Summary Get Pagination
+// @Param id path string true "id"
+// @Router /article/getPagination [post]
+// @Success 200 {obsject} object
+// @Failure 400,404 {object} object
+func (c *articleController) GetPagination(context *gin.Context) {
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.articleService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

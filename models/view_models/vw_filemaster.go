@@ -32,7 +32,8 @@ func (EntityFilemasterView) ViewModel() string {
 	sql.WriteString("  r.filename,")
 	sql.WriteString("  r.extension,")
 	sql.WriteString("  r.size,")
-	sql.WriteString("  r.description ")
+	sql.WriteString("  r.description,")
+	sql.WriteString("  r.file_type ")
 	sql.WriteString("FROM filemaster r")
 	return sql.String()
 }

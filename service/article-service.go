@@ -9,6 +9,7 @@ import (
 
 type ArticleService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Article
 	Insert(record models.Article) helper.Response
 	Update(record models.Article) helper.Response
@@ -30,6 +31,10 @@ func NewArticleService(repo repository.ArticleRepository) ArticleService {
 
 func (service *articleService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.articleRepository.GetDatatables(request)
+}
+
+func (service *articleService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.articleRepository.GetPagination(request)
 }
 
 func (service *articleService) GetAll(filter map[string]interface{}) []models.Article {
