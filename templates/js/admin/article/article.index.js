@@ -86,7 +86,7 @@
               var html = "";
               if (type == 'display') {
                 // html += `<button type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 detailRow" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Lihat</button>`;
-                html += `<a href="/admin/webinar/detail?id=` + row.id + `" type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Ubah</a>`;
+                html += `<a href="/admin/article/detail?id=` + row.id + `" type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Ubah</a>`;
                 html += `<button type="button" class="btn btn-danger btn-xs font-weight-bold d-sm-inline-block shadow-md deleteRow mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Hapus</button>`;
               }
               return html;
@@ -117,7 +117,7 @@
 
     var deleteById = function (id, name) {
       Swal.fire({
-        title: 'Apakah yakin ingin menghapus webinar ini?',
+        title: 'Apakah yakin ingin menghapus artikel ini?',
         text: "",
         icon: 'warning',
         showCancelButton: true,
@@ -128,7 +128,7 @@
       }).then((result) => {
         if (result.value) {
           $.ajax({
-            url: $.helper.baseApiPath("/webinar/deleteById/" + id),
+            url: $.helper.baseApiPath("/article/deleteById/" + id),
             type: 'DELETE',
             success: function (r) {
               console.log(r);

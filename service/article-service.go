@@ -11,10 +11,12 @@ type ArticleService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Article
+	GetArticleCoverById(recordId string) helper.Response
 	Insert(record models.Article) helper.Response
 	Update(record models.Article) helper.Response
 	Submit(recordId string, userId string) helper.Response
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -41,6 +43,10 @@ func (service *articleService) GetAll(filter map[string]interface{}) []models.Ar
 	return service.articleRepository.GetAll(filter)
 }
 
+func (service *articleService) GetArticleCoverById(recordId string) helper.Response {
+	return service.articleRepository.GetArticleCoverById(recordId)
+}
+
 func (service *articleService) Insert(record models.Article) helper.Response {
 	return service.articleRepository.Insert(record)
 }
@@ -55,6 +61,10 @@ func (service *articleService) Submit(recordId string, userId string) helper.Res
 
 func (service *articleService) GetById(recordId string) helper.Response {
 	return service.articleRepository.GetById(recordId)
+}
+
+func (service *articleService) GetViewById(recordId string) helper.Response {
+	return service.articleRepository.GetViewById(recordId)
 }
 
 func (service *articleService) DeleteById(recordId string) helper.Response {

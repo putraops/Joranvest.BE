@@ -839,9 +839,12 @@ func main() {
 	articleApiRoutes := r.Group("api/article")
 	{
 		articleApiRoutes.POST("/getDatatables", articleController.GetDatatables)
+		articleApiRoutes.POST("/getPagination", articleController.GetPagination)
 		articleApiRoutes.POST("/save", articleController.Save)
 		articleApiRoutes.POST("/submit/:id", articleController.Submit)
 		articleApiRoutes.GET("/getById/:id", articleController.GetById)
+		articleApiRoutes.GET("/getViewById/:id", articleController.GetViewById)
+		articleApiRoutes.GET("/getArticleCoverById/:id", articleController.GetArticleCoverById)
 		articleApiRoutes.DELETE("/deleteById/:id", articleController.DeleteById)
 	}
 

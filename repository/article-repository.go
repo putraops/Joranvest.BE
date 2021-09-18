@@ -19,10 +19,12 @@ type ArticleRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Article
+	GetArticleCoverById(recordId string) helper.Response
 	Insert(t models.Article) helper.Response
 	Update(record models.Article) helper.Response
 	Submit(recordId string, userId string) helper.Response
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -253,6 +255,17 @@ func (db *articleConnection) GetById(recordId string) helper.Response {
 	return res
 }
 
+func (db *articleConnection) GetViewById(recordId string) helper.Response {
+	var record entity_view_models.EntityArticleView
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
 func (db *articleConnection) DeleteById(recordId string) helper.Response {
 	var record models.Article
 	db.connection.First(&record, "id = ?", recordId)
@@ -267,4 +280,13 @@ func (db *articleConnection) DeleteById(recordId string) helper.Response {
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 	}
+}
+
+func (db *articleConnection) GetArticleCoverById(recordId string) helper.Response {
+	var record models.Filemaster
+	db.connection.First(&record, "record_id = ? AND file_type = ?", recordId, 1)
+	if record.Id == "" {
+		return helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+	}
+	return helper.ServerResponse(true, "Ok", "", record)
 }

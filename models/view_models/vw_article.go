@@ -8,8 +8,9 @@ import (
 type EntityArticleView struct {
 	models.Article
 	ArticleCategoryName string `json:"article_category_name"`
-	UserCreate          string `json:"user_create"`
-	UserUpdate          string `json:"user_update"`
+	CreatedByFullname   string `json:"created_by_fullname"`
+	UpdatedByFullname   string `json:"updated_by_fullname"`
+	SubmittedFullname   string `json:"submitted_by_fullname"`
 }
 
 func (EntityArticleView) TableName() string {
@@ -39,12 +40,14 @@ func (EntityArticleView) ViewModel() string {
 	sql.WriteString("  r.article_category_id,")
 	sql.WriteString("  a.name As article_category_name,")
 	sql.WriteString("  r.description,")
-	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
-	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
-	sql.WriteString("FROM article r ")
+	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
+	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")
+	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
+	sql.WriteString("FROM public.article r ")
 	sql.WriteString("LEFT JOIN article_category a ON a.id = r.article_category_id ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
+	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.submitted_by ")
 	return sql.String()
 }
 func (EntityArticleView) Migration() map[string]string {

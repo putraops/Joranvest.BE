@@ -19,6 +19,8 @@ type ArticleController interface {
 	GetDatatables(context *gin.Context)
 	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
+	GetViewById(context *gin.Context)
+	GetArticleCoverById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
 	Submit(context *gin.Context)
@@ -123,6 +125,44 @@ func (c *articleController) GetById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *articleController) GetViewById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.articleService.GetViewById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+// @Tags Article
+// @Summary Get Article Cover by Article Id
+// @Param id path string true "id"
+// @Router /article/getArticleCoverById/{article_id} [get]
+// @Success 200 {obsject} object
+// @Failure 400,404 {object} object
+func (c *articleController) GetArticleCoverById(context *gin.Context) {
+	id := context.Param("id")
+	var response helper.JSONResponse
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.articleService.GetArticleCoverById(id)
+	if !result.Status {
+		response = helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+	} else {
+		response = helper.BuildResponse(true, "Ok", result.Data)
+	}
+	context.JSON(http.StatusOK, response)
 }
 
 func (c *articleController) DeleteById(context *gin.Context) {
