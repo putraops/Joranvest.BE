@@ -21,26 +21,7 @@
     });
 
     var loadDatatables = function () {
-      // var filterOrderStatus = $("#filter-order-status");
-      // var filterPaymentStatus = $("#filter-payment-status");
-      // var default_order = {
-      //   "column": "r.updated_at",
-      //   "dir": "DESC"
-      // }
-
       var filter = [];
-      // if (filterOrderStatus.val() != -1) {
-      //   filter.push({
-      //     "column": filterOrderStatus.data("field"),
-      //     "value": filterOrderStatus.val().toString()
-      //   })
-      // }
-      // if (filterPaymentStatus.val() != -1) {
-      //   filter.push({
-      //     "column": filterPaymentStatus.data("field"),
-      //     "value": filterPaymentStatus.val().toString()
-      //   })
-      // }
 
       $dt = $dtBasic.DataTable({
         destroy: true,
@@ -109,7 +90,34 @@
               return html;
             }
           },
-          
+          {
+            data: "duration",
+            name: "duration",
+            orderable: true,
+            searchable: true,
+            class: "text-left",
+            render: function (data, type, row) {
+              var html = "";
+              if (type === 'display') {
+                return thousandSeparatorInteger(data)
+              }
+              return html;
+            }
+          },
+          {
+            data: "total_saving",
+            name: "total_saving",
+            orderable: true,
+            searchable: true,
+            class: "text-left",
+            render: function (data, type, row) {
+              var html = "";
+              if (type === 'display') {
+                return "Rp " + thousandSeparatorDecimal(data)
+              }
+              return html;
+            }
+          },
           {
             data: "description",
             name: "description"
@@ -123,7 +131,29 @@
             render: function (data, type, row) {
               var html = "";
               if (type == 'display') {
-                html += `<button type="button" class="btn btn-primary btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 editRow" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Lihat</button>`;
+                var lblChecked = "";
+                if (row.is_default) {
+                  lblChecked = "checked";
+                }
+                html += `
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" `+ lblChecked +` class="custom-control-input sw-default" id="sw-`+ row.id + `" data-id="` + row.id + `"">
+                  <label class="custom-control-label" for="sw-`+ row.id + `"></label>
+                </div>`;
+              }
+              return html;
+            }
+          },
+          {
+            data: "id",
+            name: "id",
+            orderable: false,
+            searchable: false,
+            class: "text-left",
+            render: function (data, type, row) {
+              var html = "";
+              if (type == 'display') {
+                html += `<button type="button" class="btn btn-warning btn-xs font-weight-bold d-sm-inline-block shadow-md mr-1 editRow" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Ubah</button>`;
                 html += `<button type="button" class="btn btn-danger btn-xs font-weight-bold d-sm-inline-block shadow-md deleteRow mr-1" data-id="` + data + `" data-name="` + row.name + `" style="min-width: 50px;">Hapus</button>`;
               }
               return html;
@@ -131,9 +161,19 @@
           },
         ],
         initComplete: function (settings, json) {
+          $(this).on('change', '.sw-default', function () {
+            var recordId = $(this).data('id');
+            if($(this).prop("checked") == true){
+              setRecommendation(recordId, true);
+            } else if($(this).prop("checked") == false){
+              console.log("Checkbox is unchecked.");
+              setRecommendation(recordId, false);
+            }
+          });
+
           $(this).on('click', '.editRow', function () {
             var recordId = $(this).data('id');
-            window.location.assign($.helper.basePath("/order/payment?id=") + recordId);
+            getById(recordId);
           });
 
           $(this).on('click', '.deleteRow', function () {
@@ -166,7 +206,7 @@
           data: record,
           success: function (r) {
             if (r.status) {
-              $("#list-products > #pre-content").remove();
+              $dt.ajax.reload();
               $form.trigger("reset");
               $modalForm.modal("hide");
 
@@ -174,7 +214,7 @@
                 toastr.success("Berhasil menambah Membership", 'Information!');
                 $dt.ajax.reload();
               } else {
-                toastr.success("Berhasil mengubah Produk", 'Information!');
+                toastr.success("Berhasil mengubah Membership", 'Information!');
               }
 
               $('[data-toggle="tooltip"]').tooltip();
@@ -182,7 +222,7 @@
               $.each(r.errors, function (index, value) {
                 console.log(value);
                 if (value.includes(`unique constraint "uk_name"`)) {
-                  toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar produk.", 'Peringatan!');
+                  toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar membership.", 'Peringatan!');
                 } else {
                   toastr.error(value, 'Error!');
                 }
@@ -194,7 +234,7 @@
             $.each(obj.errors, function (index, value) {
               if (value.includes("unique index 'uk_name_entity'")) {
                 console.log(value);
-                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar produk 123.", 'Peringatan!');
+                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar membership.", 'Peringatan!');
               } else {
                 toastr.error(value, 'Error!');
               }
@@ -207,6 +247,47 @@
         $form.addClass('was-validated');
       }
     }
+
+    var getById = function (id) {
+      var url = $.helper.baseApiPath("/membership/getById/" + id);
+      $.ajax({
+        url: url,
+        type: 'GET',
+        success: function (r) {
+          if (r.status) {
+            $form.find('input').val(function () {
+              return r.data[this.name];
+            });
+            $modalForm.modal("show");
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
+    var setRecommendation = function (id, is_checked) {
+      var url = $.helper.baseApiPath("/membership/setRecommendation");
+      var data = {};
+      data.id = id;
+      data.is_checked = is_checked;
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: data,
+        success: function (r) {
+          console.log(r);
+          if (r.status) {
+            $dt.ajax.reload();
+          }
+        },
+        error: function (r) {
+          toastr.error(r.responseText, "Warning!");
+        }
+      });
+    }
+
 
     var deleteById = function (id, name) {
       Swal.fire({

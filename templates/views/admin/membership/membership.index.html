@@ -31,13 +31,36 @@
                         </div>
                         <div class="form-group mb-2">
                             <label class="mb-1">Harga <span class="text-danger">*</span></label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control price numeric-money"
+                                    name="price" data-inputmask="'alias': 'currency'"
+                                    required="" value="0" im-insert="true">                          
+                                <div class="input-group-append">
+                                <span class="input-group-text text" style="min-width: 100px;"> per Bulan</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="mb-1">Durasi <span class="text-danger">*</span></label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control price numeric"
+                                    name="duration" data-inputmask="'alias': 'currency'"
+                                    required="" value="0" im-insert="true">                            
+                                <div class="input-group-append">
+                                <span class="input-group-text" style="min-width: 100px;">Bulan</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="mb-1">Hemat <span class="text-danger">*</span></label>
                             <input type="text" class="form-control price numeric-money"
-                                name="price" data-inputmask="'alias': 'currency'"
+                                name="total_saving" data-inputmask="'alias': 'currency'"
                                 required="" value="0" im-insert="true">
                         </div>
                         <div class="form-group mb-2">
                             <label class="mb-1">Keterangan</label>
-                            <input type="text" class="form-control" name="description">
+                            <input type="text" class="form-control" name="description">    
+                            <small class="form-text text-muted">Pembayaran langsung 1 bulan di depan</small>
                         </div>
                     </form>
                 </div>
@@ -67,7 +90,10 @@
                                 <tr>
                                     <th>Nama</th>
                                     <th>Harga</th>
+                                    <th>Durasi</th>
+                                    <th>Hemat</th>
                                     <th>Description</th>
+                                    <th>Rekomendasi</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

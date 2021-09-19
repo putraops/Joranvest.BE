@@ -18,6 +18,8 @@ type MembershipRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.Membership
 	Insert(t models.Membership) helper.Response
+	Update(record models.Membership) helper.Response
+	SetRecomendationById(recordId string, isChecked bool) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -128,6 +130,29 @@ func (db *membershipConnection) Insert(record models.Membership) helper.Response
 	}
 }
 
+func (db *membershipConnection) Update(record models.Membership) helper.Response {
+	tx := db.connection.Begin()
+	var oldRecord models.Membership
+	db.connection.First(&oldRecord, "id = ?", record.Id)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	record.IsActive = oldRecord.IsActive
+	record.CreatedAt = oldRecord.CreatedAt
+	record.CreatedBy = oldRecord.CreatedBy
+	record.EntityId = oldRecord.EntityId
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	res := tx.Save(&record)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", record)
+}
+
 func (db *membershipConnection) GetById(recordId string) helper.Response {
 	var record models.Membership
 	db.connection.First(&record, "id = ?", recordId)
@@ -136,6 +161,33 @@ func (db *membershipConnection) GetById(recordId string) helper.Response {
 		return res
 	}
 	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *membershipConnection) SetRecomendationById(recordId string, isChecked bool) helper.Response {
+	tx := db.connection.Begin()
+
+	if isChecked {
+		update := tx.Exec("UPDATE membership SET is_default = ?", false)
+		if update.RowsAffected == 0 {
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", update.Error), fmt.Sprintf("%v,", update.Error), helper.EmptyObj{})
+		}
+
+		updateRecommendation := tx.Exec("UPDATE membership SET is_default = ? WHERE id = ?", true, recordId)
+		if updateRecommendation.RowsAffected == 0 {
+			tx.Rollback()
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", updateRecommendation.Error), fmt.Sprintf("%v,", updateRecommendation.Error), helper.EmptyObj{})
+		}
+	} else {
+		updateRecommendation := tx.Exec("UPDATE membership SET is_default = ? WHERE id = ?", false, recordId)
+		if updateRecommendation.RowsAffected == 0 {
+			tx.Rollback()
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", updateRecommendation.Error), fmt.Sprintf("%v,", updateRecommendation.Error), helper.EmptyObj{})
+		}
+	}
+
+	tx.Commit()
+	res := helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 	return res
 }
 

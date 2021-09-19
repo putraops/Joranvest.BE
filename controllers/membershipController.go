@@ -19,6 +19,7 @@ type MembershipController interface {
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
+	SetRecommendation(context *gin.Context)
 }
 
 type membershipController struct {
@@ -57,20 +58,16 @@ func (c *membershipController) Save(context *gin.Context) {
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
 		var newRecord = models.Membership{}
-		// newRecord.OrderDetail = []models.OrderDetail{}
 		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
-		// json.Unmarshal([]byte(recordDto.Detail), &newRecord.OrderDetail)
 		newRecord.EntityId = userIdentity.EntityId
 
 		if recordDto.Id == "" {
 			newRecord.CreatedBy = userIdentity.UserId
 			result = c.membershipService.Insert(newRecord)
+		} else {
+			newRecord.UpdatedBy = userIdentity.UserId
+			result = c.membershipService.Update(newRecord)
 		}
-		// else {
-		// 	json.Unmarshal([]byte(recordDto.Detail), &recordDto.OrderDetail)
-		// 	recordDto.UpdatedBy = userIdentity.UserId
-		// 	result = c.orderService.Update(recordDto)
-		// }
 
 		if result.Status {
 			response := helper.BuildResponse(true, "OK", result.Data)
@@ -114,6 +111,28 @@ func (c *membershipController) DeleteById(context *gin.Context) {
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *membershipController) SetRecommendation(context *gin.Context) {
+	var recordRecommendationDto dto.MembershipRecommendationDto
+	errDto := context.Bind(&recordRecommendationDto)
+	if errDto != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDto.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+
+	if recordRecommendationDto.Id == "" {
+		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	var result = c.membershipService.SetRecommendationById(recordRecommendationDto.Id, recordRecommendationDto.IsChecked)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)

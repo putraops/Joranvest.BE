@@ -11,15 +11,14 @@ type MembershipService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.Membership
 	Insert(record models.Membership) helper.Response
+	Update(record models.Membership) helper.Response
+	SetRecommendationById(recordId string, isChecked bool) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
 type membershipService struct {
 	membershipRepository repository.MembershipRepository
-	// orderDetailRepository repository.OrderDetailRepository
-	// paymentRepository     repository.PaymentRepository
-	// entityRepository      repository.EntityRepository
 	helper.AppSession
 }
 
@@ -39,6 +38,14 @@ func (service *membershipService) GetAll(filter map[string]interface{}) []models
 
 func (service *membershipService) Insert(record models.Membership) helper.Response {
 	return service.membershipRepository.Insert(record)
+}
+
+func (service *membershipService) Update(record models.Membership) helper.Response {
+	return service.membershipRepository.Update(record)
+}
+
+func (service *membershipService) SetRecommendationById(recordId string, isChecked bool) helper.Response {
+	return service.membershipRepository.SetRecomendationById(recordId, isChecked)
 }
 
 func (service *membershipService) GetById(recordId string) helper.Response {

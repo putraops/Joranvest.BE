@@ -902,6 +902,7 @@ func main() {
 	{
 		membershipApiRoutes.POST("/getDatatables", membershipController.GetDatatables)
 		membershipApiRoutes.POST("/save", membershipController.Save)
+		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
 		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)
 		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
 	}
