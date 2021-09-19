@@ -869,6 +869,7 @@ func main() {
 		webinarApiRoutes.POST("/getDatatables", webinarController.GetDatatables)
 		webinarApiRoutes.POST("/getPagination", webinarController.GetPagination)
 		webinarApiRoutes.POST("/save", webinarController.Save)
+		webinarApiRoutes.POST("/submit/:id", webinarController.Submit)
 		webinarApiRoutes.GET("/getById/:id", webinarController.GetById)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)
 	}

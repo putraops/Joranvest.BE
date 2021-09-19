@@ -12,6 +12,7 @@ type WebinarService interface {
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Webinar
 	Insert(record models.Webinar) helper.Response
+	Submit(recordId string, userId string) helper.Response
 	Update(record models.Webinar) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
@@ -46,6 +47,10 @@ func (service *webinarService) Insert(record models.Webinar) helper.Response {
 
 func (service *webinarService) Update(record models.Webinar) helper.Response {
 	return service.webinarRepository.Update(record)
+}
+
+func (service *webinarService) Submit(recordId string, userId string) helper.Response {
+	return service.webinarRepository.Submit(recordId, userId)
 }
 
 func (service *webinarService) GetById(recordId string) helper.Response {

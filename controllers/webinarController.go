@@ -22,6 +22,7 @@ type WebinarController interface {
 	DeleteById(context *gin.Context)
 	GetById(context *gin.Context)
 	Save(context *gin.Context)
+	Submit(context *gin.Context)
 }
 
 type webinarController struct {
@@ -165,6 +166,32 @@ func (c *webinarController) DeleteById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	var result = c.webinarService.DeleteById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+// @Tags Webinar
+// @Summary Submit Webinar By Id
+// @Param id path string true "id"
+// @Router /webinar/submit/{id} [post]
+// @Success 200 {object} helper.Response
+// @Failure 400,404 {object} object
+func (c *webinarController) Submit(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+
+	authHeader := context.GetHeader("Authorization")
+	userIdentity := c.jwtService.GetUserByToken(authHeader)
+	var result = c.webinarService.Submit(id, userIdentity.UserId)
+
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)

@@ -5,6 +5,7 @@
   var $formTime = $('#form-time');
   var $formPriceReward = $('#form-priceReward');
   var $btnSave = $("#btn-save");
+  var $btnSubmit = $("#btn-submit");
   var $recordId = $("#recordId");
   var $btnNavNext = $(".btnNav-next");
   var $btnNavPrevious = $(".btnNav-previous");
@@ -262,20 +263,21 @@
       var isvalidate = $formPriceReward[0].checkValidity();
       if (isvalidate) {
 
-        Swal.fire({
-          title: title,
-          text: "",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Ya',
-          cancelButtonText: 'Tidak'
-        }).then((result) => {
-          if (result.value) {
-            SaveOrUpdate(event);
-          }
-        });
+        SaveOrUpdate(event);
+
+        // Swal.fire({
+        //   title: title,
+        //   text: "",
+        //   icon: 'warning',
+        //   showCancelButton: true,
+        //   confirmButtonColor: '#3085d6',
+        //   cancelButtonColor: '#d33',
+        //   confirmButtonText: 'Ya',
+        //   cancelButtonText: 'Tidak'
+        // }).then((result) => {
+        //   if (result.value) {
+        //   }
+        // });
       } else {
         toastr.error("Silahkan Periksa kembali Form", "Peringatan!")
         event.preventDefault();
@@ -285,6 +287,8 @@
     });
 
     var SaveOrUpdate = function (e) {
+      $btnSave.html(`<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Loading...`);
+      $btnSave.attr("disabled", "disabled");
       var record = {};
       $.extend(record, $formInformation.serializeToJSON(), $formSpeaker.serializeToJSON(), $formTime.serializeToJSON(), $formPriceReward.serializeToJSON());
 
@@ -295,6 +299,7 @@
       record.webinar_start_date += "T"+ $("#start_time").val() + ":00Z";
       record.webinar_speaker = JSON.stringify(record.webinar_speaker);
 
+      console.log(record);
       $.ajax({
         url: $.helper.baseApiPath("/webinar/save"),
         type: 'POST',
@@ -308,6 +313,20 @@
             
             $recordId.val(r.data.id)
             history.pushState('', 'ID', location.hash.split('?')[0] + '?id=' + r.data.id);
+
+            {
+              var tabPane = $btnSave.closest('.tab-pane');
+              console.log(tabPane);
+              var tabId = ($(tabPane).attr("id"));
+              console.log(tabId);
+
+              var next = $("[aria-controls="+ tabId +"]").parent().next('li');
+              console.log(next);
+              if(next.length > 0) {
+                next.find("a").removeClass("disabled");
+                next.find('a').trigger('click');
+              }
+            }
           } else {
             $.each(r.errors, function (index, value) {
               console.log(value);
@@ -318,6 +337,9 @@
               }
             });
           }
+          
+          $btnSave.html(`Simpan & Lanjut`);
+          $btnSave.removeAttr("disabled");
         },
         error: function (r) {
           var obj = JSON.parse(r.responseText);
@@ -329,6 +351,67 @@
               toastr.error(value, 'Error!');
             }
           });
+        }
+      });
+    }
+
+    $btnSubmit.on("click", function (event) {
+      var title = "Apakah yakin ingin submit Webinar?";
+      Swal.fire({
+        title: title,
+        text: "",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya',
+        cancelButtonText: 'Tidak'
+        }).then((result) => {
+          if (result.value) {
+            Submit(event);
+          }
+      });
+    });
+
+    var Submit = function (e) {
+      $btnSubmit.html(`<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Loading...`);
+      $btnSubmit.attr("disabled", "disabled");
+
+      $.ajax({
+        url: $.helper.baseApiPath("/webinar/submit/" + $recordId.val()),
+        type: 'POST',
+        success: function (r) {
+          console.log(r);
+          if (r.status) {
+            Swal.fire('Berhasil!', "Berhasil submit Webinar", 'success');
+            //SubmitControlForm(true);
+          } else {
+            $.each(r.errors, function (index, value) {
+              console.log(value);
+              if (value.includes(`unique constraint "uk_name"`)) {
+                toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar artikel.", 'Peringatan!');
+              } else {
+                toastr.error(value, 'Error!');
+              }
+            });
+          }
+          
+          $btnSubmit.html(`Submit`);
+          $btnSubmit.removeAttr("disabled");
+        },
+        error: function (r) {
+          var obj = JSON.parse(r.responseText);
+          $.each(obj.errors, function (index, value) {
+            if (value.includes("unique index 'uk_name_entity'")) {
+              console.log(value);
+              toastr.error(record.name + " sudah terdaftar. Silahkan cek kembali daftar.", 'Peringatan!');
+            } else {
+              toastr.error(value, 'Error!');
+            }
+          });
+          
+          $btnSubmit.html(`Submit`);
+          $btnSubmit.removeAttr("disabled");
         }
       });
     }
@@ -389,20 +472,19 @@
             }
 
             //-- Date Configuration
-            $("input[name=webinar_first_start_date]").val(moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));
-            $("input[name=webinar_last_start_date]").val('');
-            $("#date-start").datepicker('setDate', moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));    
-            $("#webinar_first_start_time").val(moment(r.data.webinar_first_start_date.Time).utc().format('HH:mm'));
-            $("#webinar_first_end_time").val(moment(r.data.webinar_first_end_date.Time).utc().format('HH:mm'));
-            if (r.data.webinar_last_start_date.Time != "0001-01-01T00:00:00Z") {
+            $("input[name=webinar_start_date]").val(moment(r.data.webinar_start_date.Time).format('YYYY-MM-DD'));
+            // $("input[name=webinar_last_start_date]").val('');
+            // $("#date-start").datepicker('setDate', moment(r.data.webinar_first_start_date.Time).format('YYYY-MM-DD'));    
+            $("#start_time").val(moment(r.data.webinar_start_date.Time).utc().format('HH:mm'));
+            $("#end_time").val(moment(r.data.webinar_end_date.Time).utc().format('HH:mm'));
+            if (moment(r.data.webinar_start_date.Time).utc().format('YYYY-MM-DD') == moment(r.data.webinar_end_date.Time).utc().format('YYYY-MM-DD')) {
+              $("input[name=webinar_end_date]").val('');  
+            } else {
+              $("input[name=webinar_end_date]").val(moment(r.data.webinar_end_date.Time).utc().format('YYYY-MM-DD'));
               $("#section-range-end").removeClass("d-none");
               $('#event_range').prop('checked', true);
-              
-              $("input[name=webinar_last_start_date]").val(moment(r.data.webinar_last_start_date.Time).format('YYYY-MM-DD'));
-              $("#date-end").datepicker('setDate', moment(r.data.webinar_last_start_date.Time).format('YYYY-MM-DD'));    
-              $("#webinar_last_start_time").val(moment(r.data.webinar_last_start_date.Time).utc().format('HH:mm'));
-              $("#webinar_last_end_time").val(moment(r.data.webinar_last_end_date.Time).utc().format('HH:mm'));
             }
+              
 
             // $("#section-speaker-organization").addClass("d-none");
             // $("#section-speaker-user").addClass("d-none");
@@ -540,7 +622,7 @@
             this.removeAllFiles();
         });
         this.on("processing", function (file) {
-            this.options.url = $.helper.baseApiPath("/filemaster/single_upload/") + $recordId.val();
+          this.options.url = $.helper.baseApiPath("/filemaster/uploadByType/webinar/1/") + $recordId.val();
         });
       }
     });
@@ -558,7 +640,7 @@
           if (r.status) {
             var data = r.data[0];
             if (r.data != null && r.data.length > 0) {
-              var img = `<img src="/upload/`+ data.record_id +`/`+ data.filename +`" title="` + data.filename + `" class="mr-1" style="width: 100%;"/>`;
+              var img = `<img src="/`+ data.filepath +`" title="` + data.filename + `" title="` + data.filename + `" class="mr-1" style="width: 100%;"/>`;
               $("#section-cover-image").html(img);
             }
           }
