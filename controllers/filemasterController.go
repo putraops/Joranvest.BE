@@ -1,18 +1,27 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 
+	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nfnt/resize"
 )
 
 type FilemasterController interface {
@@ -161,10 +170,23 @@ func (c *filemasterController) UploadByType(context *gin.Context) {
 			return
 		}
 
+		var config commons.TConfig
+		config.Path = folderUpload
+		config.Image.Path = path
+		config.Image.Thumbnail.Path = folderUpload
+		config.Image.Thumbnail.MaxWidth = 250
+		config.Image.Thumbnail.MaxHeight = 250
+
+		path_thumb, errThumb := thumbnailify(config)
+		if err != nil {
+			log.Fatal(errThumb)
+		}
+
 		record.RecordId = id
 		record.EntityId = userIdentity.EntityId
 		record.CreatedBy = userIdentity.UserId
 		record.Filepath = path
+		record.FilepathThumbnail = path_thumb
 		record.Filename = filename
 		record.Extension = filepath.Ext(file.Filename)
 		record.Size = fmt.Sprint(file.Size)
@@ -254,4 +276,75 @@ func (c *filemasterController) DeleteByRecordId(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func thumbnailify(config commons.TConfig) (outputPath string, err error) {
+	var (
+		file     *os.File
+		img      image.Image
+		filename = "thumb_" + path.Base(config.Image.Path)
+	)
+
+	extname := strings.ToLower(path.Ext(config.Image.Path))
+
+	outputPath = path.Join(config.Image.Thumbnail.Path, filename)
+	println("outputPath")
+	println(outputPath)
+
+	//-- Baca File
+	if file, err = os.Open(config.Image.Path); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	defer file.Close()
+
+	// decode jpeg into image.Image
+	switch extname {
+	case ".jpg", ".jpeg":
+		img, err = jpeg.Decode(file)
+		break
+	case ".png":
+		img, err = png.Decode(file)
+		break
+	case ".gif":
+		img, err = gif.Decode(file)
+		break
+	default:
+		err = errors.New("Unsupport file type" + extname)
+		return
+	}
+
+	if img == nil {
+		err = errors.New("Generate thumbnail fail...")
+		return
+
+	}
+
+	m := resize.Thumbnail(uint(config.Image.Thumbnail.MaxWidth), uint(config.Image.Thumbnail.MaxHeight), img, resize.Lanczos3)
+
+	out, err := os.Create(outputPath)
+	if err != nil {
+		return
+	}
+	defer out.Close()
+
+	// write new image to file
+	//decode jpeg/png/gif into image.Image
+	switch extname {
+	case ".jpg", ".jpeg":
+		jpeg.Encode(out, m, nil)
+		break
+	case ".png":
+		png.Encode(out, m)
+		break
+	case ".gif":
+		gif.Encode(out, m, nil)
+		break
+	default:
+		err = errors.New("Unsupport file type" + extname)
+		return
+	}
+
+	return
 }

@@ -29,6 +29,7 @@ func (EntityFilemasterView) ViewModel() string {
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.record_id,")
 	sql.WriteString("  r.filepath,")
+	sql.WriteString("  r.filepath_thumbnail,")
 	sql.WriteString("  r.filename,")
 	sql.WriteString("  r.extension,")
 	sql.WriteString("  r.size,")

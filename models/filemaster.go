@@ -17,13 +17,14 @@ type Filemaster struct {
 	ApprovedBy string       `gorm:"type:varchar(50)" json:"approved_by"`
 	EntityId   string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	RecordId    string `gorm:"type:varchar(50);not null" json:"record_id"`
-	Filepath    string `gorm:"type:varchar(200)" json:"filepath"`
-	Filename    string `gorm:"type:varchar(200)" json:"filename"`
-	FileType    int    `gorm:"type:int" json:"file_type"`
-	Extension   string `gorm:"type:varchar(10)" json:"extension"`
-	Size        string `gorm:"type:varchar(100)" json:"size"`
-	Description string `gorm:"type:text" json:"description"`
+	RecordId          string `gorm:"type:varchar(50);not null" json:"record_id"`
+	Filepath          string `gorm:"type:varchar(200)" json:"filepath"`
+	FilepathThumbnail string `gorm:"type:varchar(200)" json:"filepath_thumbnail"`
+	Filename          string `gorm:"type:varchar(200)" json:"filename"`
+	FileType          int    `gorm:"type:int" json:"file_type"`
+	Extension         string `gorm:"type:varchar(10)" json:"extension"`
+	Size              string `gorm:"type:varchar(100)" json:"size"`
+	Description       string `gorm:"type:text" json:"description"`
 }
 
 func (Filemaster) TableName() string {
