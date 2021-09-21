@@ -901,6 +901,7 @@ func main() {
 	membershipApiRoutes := r.Group("api/membership")
 	{
 		membershipApiRoutes.POST("/getDatatables", membershipController.GetDatatables)
+		membershipApiRoutes.GET("/getAll", membershipController.GetAll)
 		membershipApiRoutes.POST("/save", membershipController.Save)
 		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
 		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)

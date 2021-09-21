@@ -107,9 +107,9 @@ func (db *membershipConnection) GetDatatables(request commons.DataTableRequest) 
 func (db *membershipConnection) GetAll(filter map[string]interface{}) []models.Membership {
 	var records []models.Membership
 	if len(filter) == 0 {
-		db.connection.Find(&records)
+		db.connection.Order("price ASC").Find(&records)
 	} else if len(filter) != 0 {
-		db.connection.Where(filter).Find(&records)
+		db.connection.Where(filter).Order("price ASC").Find(&records)
 	}
 	return records
 }

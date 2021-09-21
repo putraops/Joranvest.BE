@@ -16,6 +16,7 @@ import (
 
 type MembershipController interface {
 	GetDatatables(context *gin.Context)
+	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -43,6 +44,19 @@ func (c *membershipController) GetDatatables(context *gin.Context) {
 	}
 	var result = c.membershipService.GetDatatables(dt)
 	context.JSON(http.StatusOK, result)
+}
+
+func (c *membershipController) GetAll(context *gin.Context) {
+	qry := context.Request.URL.Query()
+	filter := make(map[string]interface{})
+
+	for k, v := range qry {
+		filter[k] = v
+	}
+
+	var result = c.membershipService.GetAll(filter)
+	response := helper.BuildResponse(true, "Ok", result)
+	context.JSON(http.StatusOK, response)
 }
 
 func (c *membershipController) Save(context *gin.Context) {
