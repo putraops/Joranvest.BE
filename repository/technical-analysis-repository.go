@@ -122,13 +122,26 @@ func (db *technicalAnalysisConnection) GetPagination(request commons.PaginationR
 		pageSize = 10
 	}
 
+	// #region asd
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v", k, v)
+		order_total++
+	}
+
 	offset := (page - 1) * pageSize
-	db.connection.Offset(offset).Limit(pageSize).Find(&records)
+	db.connection.Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	var sqlCount strings.Builder
 	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
 	sqlCount.WriteString("WHERE 1=1")
-	db.connection.Raw(sqlCount.String()).Scan(&response.Total)
+	db.connection.Raw(sqlCount.String()).Order(orders).Scan(&response.Total)
 
 	response.Data = records
 	return response

@@ -38,6 +38,7 @@
           type: "POST",
           contentType: "application/json",
           data: function (d) {
+            console.log(d);
             // if (d.draw == 1) {
             //   d.default_order = default_order
             // }

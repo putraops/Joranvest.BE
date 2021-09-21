@@ -1,10 +1,11 @@
 package commons
 
 type PaginationRequest struct {
-	Page   int         `json:"page" form:"page"`
-	Size   int         `json:"size" form:"size"`
-	Search interface{} `json:"search"`
-	Filter interface{} `json:"filter"`
+	Page   int               `json:"page" form:"page"`
+	Size   int               `json:"size" form:"size"`
+	Search interface{}       `json:"search"`
+	Filter interface{}       `json:"filter"`
+	Order  map[string]string `json:"order"`
 }
 
 type PaginationResponse struct {

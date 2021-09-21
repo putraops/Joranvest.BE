@@ -80,8 +80,8 @@
             name: "webinar_level"
           },
           {
-            data: "webinar_first_start_date",
-            name: "webinar_first_start_date",
+            data: "webinar_start_date",
+            name: "webinar_start_date",
             orderable: true,
             searchable: true,
             class: "text-left min-date-width",

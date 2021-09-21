@@ -34,6 +34,7 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.first_name,")
 	sql.WriteString("  r.last_name,")
+	sql.WriteString("  r.title,")
 	sql.WriteString("  r.username,")
 	sql.WriteString("  r.password,")
 	sql.WriteString("  r.address,")
