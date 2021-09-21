@@ -18,6 +18,7 @@ type ApplicationUser struct {
 	EntityId   string       `gorm:"type:varchar(50);null" json:"entity_id"`
 	FirstName  string       `gorm:"type:varchar(50)" json:"first_name"`
 	LastName   string       `gorm:"type:varchar(50)" json:"last_name"`
+	Title      string       `gorm:"type:varchar(200)" json:"title"`
 	Username   string       `gorm:"type:varchar(50);unique" json:"username"`
 	Password   string       `gorm:"->;<-; not null" json:"-"`
 	Address    string       `gorm:"type:text" json:"address"`
