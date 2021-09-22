@@ -4,7 +4,7 @@ type PaginationRequest struct {
 	Page   int               `json:"page" form:"page"`
 	Size   int               `json:"size" form:"size"`
 	Search interface{}       `json:"search"`
-	Filter interface{}       `json:"filter"`
+	Filter map[string]string `json:"filter"`
 	Order  map[string]string `json:"order"`
 }
 

@@ -792,6 +792,7 @@ func main() {
 	{
 		emitenApiRoutes.POST("/getDatatables", emitenController.GetDatatables)
 		emitenApiRoutes.GET("/lookup", emitenController.Lookup)
+		emitenApiRoutes.POST("/emitenLookup", emitenController.EmitenLookup)
 		emitenApiRoutes.POST("/save", emitenController.Save)
 		emitenApiRoutes.GET("/getById/:id", emitenController.GetById)
 		emitenApiRoutes.DELETE("/deleteById/:id", emitenController.DeleteById)

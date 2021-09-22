@@ -39,25 +39,25 @@ func (service *emitenService) GetAll(filter map[string]interface{}) []models.Emi
 func (service *emitenService) Lookup(r helper.Select2Request) helper.Response {
 	var ary helper.Select2Response
 
-	request := make(map[string]interface{})
-	request["qry"] = r.Q
-	request["condition"] = helper.DataFilter{
-		Request: []helper.Operator{
-			{
-				Operator: "like",
-				Field:    r.Field,
-				Value:    r.Q,
-			},
-		},
-	}
+	// request := make(map[string]interface{})
+	// request["qry"] = r.Q
+	// request["condition"] = helper.DataFilter{
+	// 	Request: []helper.Operator{
+	// 		{
+	// 			Operator: "like",
+	// 			Field:    r.Field,
+	// 			Value:    r.Q,
+	// 		},
+	// 	},
+	// }
 
-	result := service.emitenRepository.Lookup(request)
+	result := service.emitenRepository.Lookup(r)
 	if len(result) > 0 {
 		for _, record := range result {
 			var p = helper.Select2Item{
 				Id:          record.Id,
-				Text:        record.EmitenName + " [" + record.EmitenCode + "]",
-				Description: "",
+				Text:        record.EmitenCode,
+				Description: record.EmitenName,
 				Selected:    true,
 				Disabled:    false,
 			}

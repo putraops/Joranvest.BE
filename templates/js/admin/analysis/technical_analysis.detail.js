@@ -34,7 +34,7 @@
         templateResult: function (data) {
           var _description = data.description == undefined ? "-" : data.description;
           var html = `<div class="" style="font-size: 10pt; ">
-                        <span class="fw-700">` + data.text + `</span>
+                        <span class="fw-700">` + _description  + ` [` + data.text + `]</span>
                       </div>`;
           return html;
         },

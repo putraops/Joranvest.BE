@@ -14,6 +14,7 @@ type Select2Item struct {
 type Select2Request struct {
 	Q     string
 	Page  int
+	Size  int
 	Field []string
 }
 

@@ -122,7 +122,7 @@ func (db *technicalAnalysisConnection) GetPagination(request commons.PaginationR
 		pageSize = 10
 	}
 
-	// #region asd
+	// #region order
 	var orders = "COALESCE(submitted_at, created_at) DESC"
 	order_total := 0
 	for k, v := range request.Order {
@@ -131,16 +131,43 @@ func (db *technicalAnalysisConnection) GetPagination(request commons.PaginationR
 		} else {
 			orders += ", "
 		}
-		orders += fmt.Sprintf("%v %v", k, v)
+		orders += fmt.Sprintf("%v %v ", k, v)
 		order_total++
 	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	for k, v := range request.Filter {
+		if v != "" {
+			if total_filter > 0 {
+				filters += "AND "
+			}
+			filters += fmt.Sprintf("%v = '%v' ", k, v)
+			total_filter++
+		}
+		// if total_filter == 0 {
+		// 	filters = ""
+		// } else {
+		// 	filters += "AND "
+		// }
+		// total_filter++
+	}
+	println("filters")
+	println(filters)
+	// #endregion
 
 	offset := (page - 1) * pageSize
-	db.connection.Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	var sqlCount strings.Builder
 	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
-	sqlCount.WriteString("WHERE 1=1")
+	sqlCount.WriteString("WHERE 1=1 ")
+	if filters != "" {
+		sqlCount.WriteString("AND ")
+		sqlCount.WriteString(filters)
+	}
 	db.connection.Raw(sqlCount.String()).Order(orders).Scan(&response.Total)
 
 	response.Data = records

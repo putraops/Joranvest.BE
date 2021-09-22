@@ -38,7 +38,6 @@
           type: "POST",
           contentType: "application/json",
           data: function (d) {
-            console.log(d);
             // if (d.draw == 1) {
             //   d.default_order = default_order
             // }
@@ -90,7 +89,7 @@
             }
           },
           {
-            data: "user_create",
+            data: "created_by_fullname",
             name: "u1.first_name",
             orderable: true,
             searchable: true,

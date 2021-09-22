@@ -17,6 +17,7 @@ import (
 type EmitenController interface {
 	GetDatatables(context *gin.Context)
 	Lookup(context *gin.Context)
+	EmitenLookup(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -53,6 +54,19 @@ func (c *emitenController) Lookup(context *gin.Context) {
 		request.Q = fmt.Sprint(qry["q"][0])
 	}
 	request.Field = helper.StringifyToArray(fmt.Sprint(qry["field"]))
+
+	var result = c.emitenService.Lookup(request)
+	response := helper.BuildResponse(true, "Ok", result.Data)
+	context.JSON(http.StatusOK, response)
+}
+
+func (c *emitenController) EmitenLookup(context *gin.Context) {
+	var request helper.Select2Request
+	errBind := context.Bind(&request)
+	if errBind != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errBind.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
 
 	var result = c.emitenService.Lookup(request)
 	response := helper.BuildResponse(true, "Ok", result.Data)
