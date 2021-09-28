@@ -28,6 +28,7 @@ type ApplicationUser struct {
 	TotalPoint      string       `gorm:"type:int;default:0" json:"total_point"`
 	IsEmailVerified bool         `gorm:"type:bool;default:0" json:"is_email_verified"`
 	IsPhoneVerified bool         `gorm:"type:bool;default:0" json:"is_phone_verified"`
+	IsMembership    bool         `gorm:"type:bool;default:0" json:"is_membership"`
 	IsAdmin         bool         `gorm:"type:bool;default:0" json:"is_admin"`
 	Token           string       `gorm:"-" json:"token,omitempty"`
 }
