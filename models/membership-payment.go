@@ -17,6 +17,7 @@ type MembershipPayment struct {
 	SubmittedBy string       `gorm:"type:varchar(50)" json:"submitted_by"`
 	ApprovedAt  sql.NullTime `gorm:"type:timestamp;default:null" json:"approved_at"`
 	ApprovedBy  string       `gorm:"type:varchar(50)" json:"approved_by"`
+	OwnerId     string       `gorm:"type:varchar(50);null" json:"owner_id"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
 	PaymentDate sql.NullTime `gorm:"type:timestamp" json:"payment_date"`

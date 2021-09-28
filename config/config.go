@@ -88,6 +88,8 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.Article{},
 		&models.ArticleTag{},
 		&models.Membership{},
+		&models.MembershipUser{},
+		&models.MembershipPayment{},
 		&models.Filemaster{},
 
 		&models.WebinarCategory{},
@@ -135,6 +137,13 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_article.TableName()] = vw_article.Migration()
 	var vw_article_tag = entity_view_models.EntityArticleTagView{}
 	viewList[vw_article_tag.TableName()] = vw_article_tag.Migration()
+
+	var vw_membership = entity_view_models.EntityMembershipView{}
+	viewList[vw_membership.TableName()] = vw_membership.Migration()
+	var vw_membership_user = entity_view_models.EntityMembershipUserView{}
+	viewList[vw_membership_user.TableName()] = vw_membership_user.Migration()
+	var vw_membership_payment = entity_view_models.EntityMembershipPaymentView{}
+	viewList[vw_membership_payment.TableName()] = vw_membership_payment.Migration()
 
 	var vw_emiten_category = entity_view_models.EntityEmitenCategoryView{}
 	viewList[vw_emiten_category.TableName()] = vw_emiten_category.Migration()
