@@ -10,6 +10,7 @@ type EntityApplicationUserView struct {
 	RoleName    string `json:"role_name"`
 	FullName    string `json:"full_name"`
 	InitialName string `json:"initial_name"`
+	HasRole     bool   `json:"has_role"`
 	UserCreate  string `json:"user_create"`
 	UserUpdate  string `json:"user_update"`
 }
@@ -45,6 +46,7 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  r.is_email_verified,")
 	sql.WriteString("  r.is_phone_verified,")
 	sql.WriteString("  r.is_membership,")
+	sql.WriteString("  false AS has_role,")
 	sql.WriteString("  r.is_admin,")
 	sql.WriteString("  CONCAT(r.first_name, ' ', r.last_name) AS full_name,")
 	sql.WriteString("  CONCAT(UPPER(LEFT(r.first_name, 1)), '', UPPER(LEFT(r.last_name, 1))) AS initial_name,")
