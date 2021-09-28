@@ -1,20 +1,16 @@
 package entity_view_models
 
 import (
-	"database/sql"
 	"joranvest/models"
 	"strings"
 )
 
 type EntityMembershipPaymentView struct {
 	models.FundamentalAnalysis
-	PaymenyDate        sql.NullTime `json:"payment_date"`
-	PaymentType        string       `json:"payment_type"`
-	CreatedByFullname  string       `json:"created_by_fullname"`
-	UserCreateTitle    string       `json:"user_create_title"`
-	UpdatedByFullname  string       `json:"updated_by_fullname"`
-	SubmittedFullname  string       `json:"submitted_by_fullname"`
-	MembershipFullname string       `json:"membership_user_fullname"`
+	CreatedByFullname string `json:"created_by_fullname"`
+	UserCreateTitle   string `json:"user_create_title"`
+	UpdatedByFullname string `json:"updated_by_fullname"`
+	SubmittedFullname string `json:"submitted_by_fullname"`
 }
 
 func (EntityMembershipPaymentView) TableName() string {
