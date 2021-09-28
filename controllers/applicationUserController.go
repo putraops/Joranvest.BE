@@ -20,6 +20,7 @@ type ApplicationUserController interface {
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
+	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
 }
 
@@ -127,6 +128,22 @@ func (c *applicationUserController) GetById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	result := c.applicationUserService.GetById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *applicationUserController) GetViewById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.applicationUserService.GetViewById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)

@@ -18,6 +18,7 @@ type ApplicationUserService interface {
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
 }
@@ -93,6 +94,10 @@ func (service *applicationUserService) UserProfile(recordId string) models.Appli
 
 func (service *applicationUserService) GetById(recordId string) helper.Response {
 	return service.applicationUserRepository.GetById(recordId)
+}
+
+func (service *applicationUserService) GetViewById(recordId string) helper.Response {
+	return service.applicationUserRepository.GetViewById(recordId)
 }
 
 func (service *applicationUserService) GetAll() []models.ApplicationUser {

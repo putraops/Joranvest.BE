@@ -23,6 +23,7 @@ type ApplicationUserRepository interface {
 	GetByEmail(email string) models.ApplicationUser
 	UserProfile(applicationUserId string) models.ApplicationUser
 	GetById(applicationUserId string) helper.Response
+	GetViewById(applicationUserId string) helper.Response
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
 }
@@ -225,6 +226,18 @@ func (db *applicationUserConnection) DeleteById(applicationUserId string) helper
 
 func (db *applicationUserConnection) GetById(applicationUserId string) helper.Response {
 	var record models.ApplicationUser
+	db.connection.First(&record, "id = ?", applicationUserId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	} else {
+		res := helper.ServerResponse(true, "Ok", "", record)
+		return res
+	}
+}
+
+func (db *applicationUserConnection) GetViewById(applicationUserId string) helper.Response {
+	var record entity_view_models.EntityApplicationUserView
 	db.connection.First(&record, "id = ?", applicationUserId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})

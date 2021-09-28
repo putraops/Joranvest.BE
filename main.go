@@ -924,6 +924,7 @@ func main() {
 		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
 		applicationUserApiRoutes.POST("/register", authController.RegisterForm)
+		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
 	}
 
 	technicalAnalysisApiRoutes := r.Group("api/technical_analysis")
