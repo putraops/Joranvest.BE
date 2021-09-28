@@ -9,6 +9,7 @@ import (
 
 type FundamentalAnalysisService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.FundamentalAnalysis
 	Insert(record models.FundamentalAnalysis) helper.Response
 	Update(record models.FundamentalAnalysis) helper.Response
@@ -29,6 +30,10 @@ func NewFundamentalAnalysisService(repo repository.FundamentalAnalysisRepository
 
 func (service *fundamentalAnalysisService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.fundamentalAnalysisRepository.GetDatatables(request)
+}
+
+func (service *fundamentalAnalysisService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.fundamentalAnalysisRepository.GetPagination(request)
 }
 
 func (service *fundamentalAnalysisService) GetAll(filter map[string]interface{}) []models.FundamentalAnalysis {

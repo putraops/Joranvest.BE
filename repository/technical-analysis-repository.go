@@ -147,15 +147,7 @@ func (db *technicalAnalysisConnection) GetPagination(request commons.PaginationR
 			filters += fmt.Sprintf("%v = '%v' ", k, v)
 			total_filter++
 		}
-		// if total_filter == 0 {
-		// 	filters = ""
-		// } else {
-		// 	filters += "AND "
-		// }
-		// total_filter++
 	}
-	println("filters")
-	println(filters)
 	// #endregion
 
 	offset := (page - 1) * pageSize

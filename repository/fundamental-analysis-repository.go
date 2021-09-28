@@ -17,6 +17,7 @@ import (
 
 type FundamentalAnalysisRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.FundamentalAnalysis
 	Insert(t models.FundamentalAnalysis) helper.Response
 	Update(record models.FundamentalAnalysis) helper.Response
@@ -25,18 +26,20 @@ type FundamentalAnalysisRepository interface {
 }
 
 type fundamentalAnalysisConnection struct {
-	connection        *gorm.DB
-	serviceRepository ServiceRepository
-	tableName         string
-	viewQuery         string
+	connection           *gorm.DB
+	serviceRepository    ServiceRepository
+	filemasterRepository FilemasterRepository
+	tableName            string
+	viewQuery            string
 }
 
 func NewFundamentalAnalysisRepository(db *gorm.DB) FundamentalAnalysisRepository {
 	return &fundamentalAnalysisConnection{
-		connection:        db,
-		tableName:         models.FundamentalAnalysis.TableName(models.FundamentalAnalysis{}),
-		viewQuery:         entity_view_models.EntityFundamentalAnalysisView.ViewModel(entity_view_models.EntityFundamentalAnalysisView{}),
-		serviceRepository: NewServiceRepository(db),
+		connection:           db,
+		tableName:            models.FundamentalAnalysis.TableName(models.FundamentalAnalysis{}),
+		viewQuery:            entity_view_models.EntityFundamentalAnalysisView.ViewModel(entity_view_models.EntityFundamentalAnalysisView{}),
+		serviceRepository:    NewServiceRepository(db),
+		filemasterRepository: NewFilemasterRepository(db),
 	}
 }
 
@@ -102,6 +105,84 @@ func (db *fundamentalAnalysisConnection) GetDatatables(request commons.DataTable
 		res.DataRow = []entity_view_models.EntityFundamentalAnalysisView{}
 	}
 	return res
+}
+
+func (db *fundamentalAnalysisConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityFundamentalAnalysisView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	for k, v := range request.Filter {
+		if v != "" {
+			if total_filter > 0 {
+				filters += "AND "
+			}
+			filters += fmt.Sprintf("%v = '%v' ", k, v)
+			total_filter++
+		}
+	}
+	// #endregion
+
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+
+	var count int64
+	db.connection.Model(&entity_view_models.EntityFundamentalAnalysisView{}).Where(filters).Count(&count)
+
+	// #region Get Attachments
+	var ids []string
+	for _, x := range records {
+		ids = append(ids, x.Id)
+	}
+	var attachments []models.Filemaster
+	if len(ids) > 0 {
+		attachments = db.filemasterRepository.GetAllByRecordIds(ids)
+	}
+
+	if len(attachments) > 0 {
+		for i, data := range records {
+			records[i].Attachments = []models.Filemaster{}
+			for _, attachment := range attachments {
+				if data.Id == attachment.RecordId {
+					records[i].Attachments = append(records[i].Attachments, attachment)
+				}
+			}
+		}
+	}
+	// #endregion
+
+	response.Data = records
+	response.Total = int(count)
+	return response
 }
 
 func (db *fundamentalAnalysisConnection) GetAll(filter map[string]interface{}) []models.FundamentalAnalysis {

@@ -26,6 +26,7 @@ import (
 
 type FilemasterController interface {
 	GetAll(context *gin.Context)
+	GetAllByRecordIds(context *gin.Context)
 	SingleUpload(context *gin.Context)
 	UploadByType(context *gin.Context)
 	Insert(context *gin.Context)
@@ -53,6 +54,19 @@ func (c *filemasterController) GetAll(context *gin.Context) {
 	}
 
 	var result = c.filemasterService.GetAll(filter)
+	response := helper.BuildResponse(true, "Ok", result)
+	context.JSON(http.StatusOK, response)
+}
+
+func (c *filemasterController) GetAllByRecordIds(context *gin.Context) {
+	var request []string
+	errBind := context.Bind(&request)
+	if errBind != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errBind.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+
+	var result = c.filemasterService.GetAllByRecordIds(request)
 	response := helper.BuildResponse(true, "Ok", result)
 	context.JSON(http.StatusOK, response)
 }

@@ -915,6 +915,7 @@ func main() {
 		filemasterApiRoutes.POST("/uploadByType/:module/:filetype/:id", filemasterController.UploadByType)
 		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
 		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
+		filemasterApiRoutes.POST("/getAllByRecordIds", filemasterController.GetAllByRecordIds)
 		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)
 	}
 
@@ -937,6 +938,7 @@ func main() {
 	fundamentalAnalysisApiRoutes := r.Group("api/fundamental_analysis")
 	{
 		fundamentalAnalysisApiRoutes.POST("/getDatatables", fundamentalAnalysisController.GetDatatables)
+		fundamentalAnalysisApiRoutes.POST("/getPagination", fundamentalAnalysisController.GetPagination)
 		fundamentalAnalysisApiRoutes.POST("/save", fundamentalAnalysisController.Save)
 		fundamentalAnalysisApiRoutes.GET("/getById/:id", fundamentalAnalysisController.GetById)
 		fundamentalAnalysisApiRoutes.DELETE("/deleteById/:id", fundamentalAnalysisController.DeleteById)

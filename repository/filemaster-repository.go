@@ -14,6 +14,7 @@ import (
 
 type FilemasterRepository interface {
 	GetAll(filter map[string]interface{}) []models.Filemaster
+	GetAllByRecordIds(ids []string) []models.Filemaster
 	SingleUpload(t models.Filemaster) helper.Response
 	UploadByType(t models.Filemaster) helper.Response
 	Insert(t models.Filemaster) helper.Response
@@ -44,6 +45,12 @@ func (db *filemasterConnection) GetAll(filter map[string]interface{}) []models.F
 		db.connection.Where(filter).Find(&records)
 	}
 
+	return records
+}
+
+func (db *filemasterConnection) GetAllByRecordIds(ids []string) []models.Filemaster {
+	var records []models.Filemaster
+	db.connection.Where("record_id IN ?", ids).Find(&records)
 	return records
 }
 

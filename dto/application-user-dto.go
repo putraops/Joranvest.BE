@@ -10,8 +10,9 @@ type ApplicationUserRegisterDto struct {
 	Password string `json:"password" form:"password" binding:"required"`
 	Email    string `json:"email" form:"email" binding:"required,email"`
 	// Phone    string `json:"phone" form:"phone" binding:"required"`
-	UserType string `json:"user_type" form:"user_type"`
-	IsAdmin  bool   `json:"is_admin" form:"is_admin"`
+	FirebaseId string `json:"firebase_id" form:"firebase_id"`
+	UserType   string `json:"user_type" form:"user_type"`
+	IsAdmin    bool   `json:"is_admin" form:"is_admin"`
 }
 
 type ApplicationUserUpdateDto struct {
