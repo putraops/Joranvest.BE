@@ -21,7 +21,7 @@ type MembershipPayment struct {
 
 	PaymentType       string       `gorm:"type:varchar(50);not null" json:"payment_type"`
 	ApplicationUserId float64      `gorm:"type:varchar(50);not null" json:"total_payment"`
-	ExpiredDate       sql.NullTime `gorm:"type:timestamp" json:"expired_date"`
+	PurchaseDate      sql.NullTime `gorm:"type:timestamp" json:"purchase_date"`
 
 	Membership      Membership      `gorm:"foreignkey:MembershipId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"membership"`
 	ApplicationUser ApplicationUser `gorm:"foreignkey:ApplicationUserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"application_user"`
