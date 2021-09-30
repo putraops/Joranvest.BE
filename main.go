@@ -35,6 +35,7 @@ var (
 	applicationMenuCategoryRepository repository.ApplicationMenuCategoryRepository = repository.NewApplicationMenuCategoryRepository(db)
 	applicationMenuRepository         repository.ApplicationMenuRepository         = repository.NewApplicationMenuRepository(db)
 	membershipRepository              repository.MembershipRepository              = repository.NewMembershipRepository(db)
+	membershipUserRepository          repository.MembershipUserRepository          = repository.NewMembershipUserRepository(db)
 	filemasterRepository              repository.FilemasterRepository              = repository.NewFilemasterRepository(db)
 	emitenRepository                  repository.EmitenRepository                  = repository.NewEmitenRepository(db)
 	emitenCategoryRepository          repository.EmitenCategoryRepository          = repository.NewEmitenCategoryRepository(db)
@@ -61,6 +62,7 @@ var (
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
+	membershipUserService          service.MembershipUserService          = service.NewMembershipUserService(membershipUserRepository)
 	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository)
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
@@ -86,6 +88,7 @@ var (
 	applicationMenuCategoryController controllers.ApplicationMenuCategoryController = controllers.NewApplicationMenuCategoryController(applicationMenuCategoryService, jwtService)
 	applicationMenuController         controllers.ApplicationMenuController         = controllers.NewApplicationMenuController(applicationMenuService, jwtService)
 	membershipController              controllers.MembershipController              = controllers.NewMembershipController(membershipService, jwtService)
+	membershipUserController          controllers.MembershipUserController          = controllers.NewMembershipUserController(membershipUserService, jwtService)
 	filemasterController              controllers.FilemasterController              = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
 	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
@@ -907,6 +910,15 @@ func main() {
 		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
 		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)
 		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
+	}
+
+	membershipUserApiRoutes := r.Group("api/membershipUser")
+	{
+		membershipUserApiRoutes.POST("/getDatatables", membershipUserController.GetDatatables)
+		membershipUserApiRoutes.GET("/getAll", membershipUserController.GetAll)
+		membershipUserApiRoutes.POST("/save", membershipUserController.Save)
+		membershipUserApiRoutes.GET("/getById/:id", membershipUserController.GetById)
+		membershipUserApiRoutes.DELETE("/deleteById/:id", membershipUserController.DeleteById)
 	}
 
 	filemasterApiRoutes := r.Group("api/filemaster")

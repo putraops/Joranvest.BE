@@ -20,8 +20,9 @@ type MembershipPayment struct {
 	OwnerId     string       `gorm:"type:varchar(50);null" json:"owner_id"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	PaymentDate sql.NullTime `gorm:"type:timestamp" json:"payment_date"`
-	PaymentType string       `gorm:"type:varchar(50);not null" json:"payment_type"`
+	PaymentDate   sql.NullTime `gorm:"type:timestamp" json:"payment_date"`
+	PaymentType   string       `gorm:"type:varchar(50);not null" json:"payment_type"`
+	PaymentStatus int          `gorm:"type:int;default:1" json:"payment_status"`
 }
 
 func (MembershipPayment) TableName() string {

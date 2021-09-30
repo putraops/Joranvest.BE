@@ -36,6 +36,7 @@ func (EntityMembershipPaymentView) ViewModel() string {
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.payment_date,")
 	sql.WriteString("  r.payment_type,")
+	sql.WriteString("  r.payment_status,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")
