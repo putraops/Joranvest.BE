@@ -1,18 +1,25 @@
 package entity_view_models
 
 import (
+	"database/sql"
 	"joranvest/models"
 	"strings"
 )
 
 type EntityApplicationUserView struct {
 	models.ApplicationUser
-	RoleName    string `json:"role_name"`
-	FullName    string `json:"full_name"`
-	InitialName string `json:"initial_name"`
-	HasRole     bool   `json:"has_role"`
-	UserCreate  string `json:"user_create"`
-	UserUpdate  string `json:"user_update"`
+	RoleName           string       `json:"role_name"`
+	FullName           string       `json:"full_name"`
+	InitialName        string       `json:"initial_name"`
+	HasRole            bool         `json:"has_role"`
+	IsMembership       bool         `json:"is_membership"`
+	MembershipId       string       `json:"membership_id"`
+	MembershipName     string       `json:"membership_name"`
+	MembershipDuration string       `json:"membership_duration"`
+	MembershipDate     sql.NullTime `json:"membership_date"`
+	MembershipExpired  sql.NullTime `json:"membership_expired"`
+	UserCreate         string       `json:"user_create"`
+	UserUpdate         string       `json:"user_update"`
 }
 
 func (EntityApplicationUserView) TableName() string {
@@ -45,7 +52,15 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  r.total_point,")
 	sql.WriteString("  r.is_email_verified,")
 	sql.WriteString("  r.is_phone_verified,")
-	sql.WriteString("  r.is_membership,")
+	sql.WriteString("  CASE")
+	sql.WriteString("	   WHEN m.membership_id IS NOT NULL THEN TRUE")
+	sql.WriteString("  	   ELSE FALSE")
+	sql.WriteString("  END AS is_membership,")
+	sql.WriteString("  m.membership_id,")
+	sql.WriteString("  m.membership_name,")
+	sql.WriteString("  m.membership_duration,")
+	sql.WriteString("  m.membership_date,")
+	sql.WriteString("  m.membership_expired,")
 	sql.WriteString("  false AS has_role,")
 	sql.WriteString("  r.is_admin,")
 	sql.WriteString("  CONCAT(r.first_name, ' ', r.last_name) AS full_name,")
@@ -53,6 +68,7 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM application_user r ")
+	sql.WriteString("LEFT JOIN LATERAL get_membership_status(r.id) m ON true ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	return sql.String()
