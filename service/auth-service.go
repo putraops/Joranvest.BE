@@ -3,6 +3,7 @@ package service
 import (
 	"joranvest/dto"
 	"joranvest/models"
+	entity_view_models "joranvest/models/view_models"
 	"joranvest/repository"
 	"log"
 
@@ -40,7 +41,7 @@ func (service *authService) VerifyCredential(username string, email string, pass
 	if res == nil {
 		return nil
 	}
-	if v, ok := res.(models.ApplicationUser); ok {
+	if v, ok := res.(entity_view_models.EntityApplicationUserView); ok {
 		comparedPassword := comparePassword(v.Password, []byte(password))
 		if (v.Email == email || v.Username == username) && comparedPassword {
 			return res

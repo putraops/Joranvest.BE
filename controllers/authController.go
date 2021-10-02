@@ -5,6 +5,7 @@ import (
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
+	entity_view_models "joranvest/models/view_models"
 	"joranvest/service"
 	"net/http"
 	"strings"
@@ -42,7 +43,6 @@ func NewAuthController(authService service.AuthService, jwtService service.JWTSe
 }
 
 func (c *authController) Login(ctx *gin.Context) {
-	fmt.Println("masok")
 	var loginDto dto.LoginDto
 	err := ctx.ShouldBind(&loginDto)
 	fmt.Println(loginDto)
@@ -62,7 +62,7 @@ func (c *authController) Login(ctx *gin.Context) {
 		return
 	}
 
-	if v, ok := authResult.(models.ApplicationUser); ok {
+	if v, ok := authResult.(entity_view_models.EntityApplicationUserView); ok {
 		// generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(v.ID, 10))
 		generatedToken := c.jwtService.GenerateToken(v.Id, v.EntityId)
 		v.Token = generatedToken

@@ -145,7 +145,7 @@ func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models
 }
 
 func (db *applicationUserConnection) GetUserByUsernameOrEmail(username string, email string) interface{} {
-	var record models.ApplicationUser
+	var record entity_view_models.EntityApplicationUserView
 	res := db.connection.Where("username = ?", username).Or("email = ?", email).Take(&record)
 	if res.Error == nil {
 		return record
