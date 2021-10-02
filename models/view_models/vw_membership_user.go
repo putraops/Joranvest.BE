@@ -7,7 +7,7 @@ import (
 )
 
 type EntityMembershipUserView struct {
-	models.FundamentalAnalysis
+	models.MembershipUser
 	PaymenyDate        sql.NullTime `json:"payment_date"`
 	PaymentType        string       `json:"payment_type"`
 	CreatedByFullname  string       `json:"created_by_fullname"`
