@@ -7,7 +7,6 @@ import (
 	"joranvest/repository"
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,7 +25,6 @@ type AuthService interface {
 
 type authService struct {
 	appUserRepo repository.ApplicationUserRepository
-	ctx         *gin.Context
 }
 
 //NewAuthService creates a new instance of AuthService
