@@ -199,7 +199,7 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 	// Calculate Expired Date
 	if payment.PaymentStatus == 200 {
 		membershipUser.ExpiredDate = sql.NullTime{
-			Time:  payment.PaymentDate.Time.AddDate(0, 1, 0),
+			Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
 			Valid: true,
 		}
 	}
