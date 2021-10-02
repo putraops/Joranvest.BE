@@ -95,6 +95,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.WebinarCategory{},
 		&models.Webinar{},
 		&models.WebinarSpeaker{},
+		&models.WebinarRegistration{},
 
 		&models.TechnicalAnalysis{},
 		&models.FundamentalAnalysis{},
@@ -159,12 +160,12 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	var vw_webinar_category = entity_view_models.EntityWebinarCategoryView{}
 	viewList[vw_webinar_category.TableName()] = vw_webinar_category.Migration()
-
 	var vw_webinar = entity_view_models.EntityWebinarView{}
 	viewList[vw_webinar.TableName()] = vw_webinar.Migration()
-
 	var vw_webinar_speaker = entity_view_models.EntityWebinarSpeakerView{}
 	viewList[vw_webinar_speaker.TableName()] = vw_webinar_speaker.Migration()
+	var vw_webinar_registration = entity_view_models.EntityWebinarRegistrationView{}
+	viewList[vw_webinar_registration.TableName()] = vw_webinar_registration.Migration()
 
 	var vw_tag = entity_view_models.EntityTagView{}
 	viewList[vw_tag.TableName()] = vw_tag.Migration()
