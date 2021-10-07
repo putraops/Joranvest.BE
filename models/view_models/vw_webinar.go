@@ -9,6 +9,7 @@ type EntityWebinarView struct {
 	models.Webinar
 	OrganizerOrganizationName string `json:"organizer_organization_name"`
 	SpeakerName               string `json:"speaker_name"`
+	WebinarCategoryName       string `json:"webinar_category_name"`
 	CreatedByFullname         string `json:"created_by_fullname"`
 	UpdatedByFullname         string `json:"updated_by_fullname"`
 	SubmittedFullname         string `json:"submitted_by_fullname"`
@@ -34,6 +35,7 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.webinar_category_id,")
+	sql.WriteString("  c.name AS webinar_category_name,")
 	sql.WriteString("  r.organizer_organization_id,")
 	sql.WriteString("  o.name AS organizer_organization_name,")
 	sql.WriteString("  (SELECT s.speaker FROM (SELECT ws.webinar_id, string_agg(ws.speaker_full_name, ', ') AS speaker FROM vw_webinar_speaker ws WHERE ws.webinar_id = r.id GROUP BY 1) AS s) AS speaker_name,")
