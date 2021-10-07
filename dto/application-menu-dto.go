@@ -4,7 +4,7 @@ package dto
 type ApplicationMenuDto struct {
 	Id                        string `json:"id" form:"id"`
 	Name                      string `json:"name" form:"name"`
-	OrderIndex                string `json:"order_index" form:"order_index"`
+	OrderIndex                int    `json:"order_index" form:"order_index"`
 	ActionUrl                 string `json:"action_url" form:"action_url"`
 	IconClass                 string `json:"icon_class" form:"icon_class"`
 	ParentId                  string `json:"parent_id" form:"parent_id"`

@@ -48,22 +48,15 @@ func (service *sectorService) Lookup(r helper.Select2Request) helper.Response {
 		for _, record := range result {
 			var p = helper.Select2Item{
 				Id:          record.Id,
+				Value:       record.Id,
 				Text:        record.Name,
+				Label:       record.Name,
 				Description: "",
 				Selected:    true,
 				Disabled:    false,
 			}
 			ary.Results = append(ary.Results, p)
 		}
-	} else {
-		var p = helper.Select2Item{
-			Id:          "",
-			Text:        "No result found",
-			Description: "",
-			Selected:    true,
-			Disabled:    true,
-		}
-		ary.Results = append(ary.Results, p)
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)

@@ -153,7 +153,9 @@ func (db *applicationMenuConnection) GetTree() []commons.JStreeResponse {
 		for _, s := range records {
 			var item commons.JStreeResponse
 			item.Id = s.Id
+			item.Key = s.Id
 			item.Text = s.Name
+			item.Title = s.Name
 			item.Description = s.Description
 			item.JStreeState.Opened = true
 			item.JStreeState.Disabled = false
@@ -167,7 +169,9 @@ func (db *applicationMenuConnection) GetTree() []commons.JStreeResponse {
 				for _, c := range childrenModel {
 					var child commons.JStreeResponse
 					child.Id = c.Id
+					child.Key = c.Id
 					child.Text = c.Name
+					child.Title = c.Name
 					child.Description = c.Description
 					child.JStreeState.Opened = true
 					child.JStreeState.Disabled = false

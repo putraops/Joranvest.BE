@@ -2,6 +2,7 @@ package commons
 
 type JStreeResponse struct {
 	Id          string           `json:"id"`
+	Key         string           `json:"key"`
 	Text        string           `json:"text"`
 	Title       string           `json:"title"`
 	Subtitle    string           `json:"subtitle"`

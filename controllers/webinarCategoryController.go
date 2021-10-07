@@ -14,7 +14,7 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-type ArticleCategoryController interface {
+type WebinarCategoryController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
 	GetTree(context *gin.Context)
@@ -23,19 +23,19 @@ type ArticleCategoryController interface {
 	Save(context *gin.Context)
 }
 
-type articleCategoryController struct {
-	articleCategoryService service.ArticleCategoryService
+type webinarCategoryController struct {
+	webinarCategoryService service.WebinarCategoryService
 	jwtService             service.JWTService
 }
 
-func NewArticleCategoryController(articleCategoryService service.ArticleCategoryService, jwtService service.JWTService) ArticleCategoryController {
-	return &articleCategoryController{
-		articleCategoryService: articleCategoryService,
+func NewWebinarCategoryController(webinarCategoryService service.WebinarCategoryService, jwtService service.JWTService) WebinarCategoryController {
+	return &webinarCategoryController{
+		webinarCategoryService: webinarCategoryService,
 		jwtService:             jwtService,
 	}
 }
 
-func (c *articleCategoryController) Lookup(context *gin.Context) {
+func (c *webinarCategoryController) Lookup(context *gin.Context) {
 	var request helper.Select2Request
 	qry := context.Request.URL.Query()
 
@@ -44,30 +44,30 @@ func (c *articleCategoryController) Lookup(context *gin.Context) {
 	}
 	request.Field = helper.StringifyToArray(fmt.Sprint(qry["field"]))
 
-	var result = c.articleCategoryService.Lookup(request)
+	var result = c.webinarCategoryService.Lookup(request)
 	response := helper.BuildResponse(true, "Ok", result.Data)
 	context.JSON(http.StatusOK, response)
 }
 
-func (c *articleCategoryController) GetDatatables(context *gin.Context) {
+func (c *webinarCategoryController) GetDatatables(context *gin.Context) {
 	var dt commons.DataTableRequest
 	errDTO := context.Bind(&dt)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
 	}
-	var result = c.articleCategoryService.GetDatatables(dt)
+	var result = c.webinarCategoryService.GetDatatables(dt)
 	context.JSON(http.StatusOK, result)
 }
 
-func (c *articleCategoryController) GetTree(context *gin.Context) {
-	var result = c.articleCategoryService.GetTree()
+func (c *webinarCategoryController) GetTree(context *gin.Context) {
+	var result = c.webinarCategoryService.GetTree()
 	context.JSON(http.StatusOK, result)
 }
 
-func (c *articleCategoryController) Save(context *gin.Context) {
+func (c *webinarCategoryController) Save(context *gin.Context) {
 	result := helper.Response{}
-	var recordDto dto.ArticleCategoryDto
+	var recordDto dto.WebinarCategoryDto
 
 	errDTO := context.Bind(&recordDto)
 	if errDTO != nil {
@@ -77,16 +77,16 @@ func (c *articleCategoryController) Save(context *gin.Context) {
 		authHeader := context.GetHeader("Authorization")
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
-		var newRecord = models.ArticleCategory{}
+		var newRecord = models.WebinarCategory{}
 		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
 		newRecord.EntityId = userIdentity.EntityId
 
 		if recordDto.Id == "" {
 			newRecord.CreatedBy = userIdentity.UserId
-			result = c.articleCategoryService.Insert(newRecord)
+			result = c.webinarCategoryService.Insert(newRecord)
 		} else {
 			newRecord.UpdatedBy = userIdentity.UserId
-			result = c.articleCategoryService.Update(newRecord)
+			result = c.webinarCategoryService.Update(newRecord)
 		}
 
 		if result.Status {
@@ -99,13 +99,13 @@ func (c *articleCategoryController) Save(context *gin.Context) {
 	}
 }
 
-func (c *articleCategoryController) GetById(context *gin.Context) {
+func (c *webinarCategoryController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
 	}
-	result := c.articleCategoryService.GetById(id)
+	result := c.webinarCategoryService.GetById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)
@@ -115,13 +115,13 @@ func (c *articleCategoryController) GetById(context *gin.Context) {
 	}
 }
 
-func (c *articleCategoryController) DeleteById(context *gin.Context) {
+func (c *webinarCategoryController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
 	}
-	var result = c.articleCategoryService.DeleteById(id)
+	var result = c.webinarCategoryService.DeleteById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)

@@ -33,6 +33,8 @@
               field: field
             };
 
+            console.log(req);
+
             return req;
           },
           processResults: function (r) {
