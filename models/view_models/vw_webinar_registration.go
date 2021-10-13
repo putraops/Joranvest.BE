@@ -7,14 +7,29 @@ import (
 )
 
 type EntityWebinarRegistrationView struct {
-	models.FundamentalAnalysis
-	PaymenyDate        sql.NullTime `json:"payment_date"`
-	PaymentType        string       `json:"payment_type"`
-	CreatedByFullname  string       `json:"created_by_fullname"`
-	UserCreateTitle    string       `json:"user_create_title"`
-	UpdatedByFullname  string       `json:"updated_by_fullname"`
-	SubmittedFullname  string       `json:"submitted_by_fullname"`
-	MembershipFullname string       `json:"membership_user_fullname"`
+	models.WebinarRegistration
+	WebinarTitle        string       `json:"webinar_title"`
+	WebinarDescription  string       `json:"webinar_description"`
+	WebinarCategoryId   string       `json:"webinar_category_id"`
+	WebinarCategoryName string       `json:"webinar_category_name"`
+	WebinarStartDate    sql.NullTime `json:"webinar_start_date"`
+	WebinarEndDate      sql.NullTime `json:"webinar_end_date"`
+	MinAge              int          `json:"min_age"`
+	WebinarLevel        string       `json:"webinar_level"`
+	Price               float64      `json:"price"`
+	Discount            float64      `json:"discount"`
+	IsCertificate       bool         `json:"is_certificate"`
+	Reward              int          `json:"reward"`
+	PaymentDate         sql.NullTime `json:"payment_date"`
+	PaymentType         string       `json:"payment_type"`
+	PaymentStatus       int          `json:"payment_status"`
+	SpeakerTitle        string       `json:"speaker_title"`
+
+	UserFullname      string `json:"user_fullname"`
+	CreatedByFullname string `json:"created_by_fullname"`
+	UserCreateTitle   string `json:"user_create_title"`
+	UpdatedByFullname string `json:"updated_by_fullname"`
+	SubmittedFullname string `json:"submitted_by_fullname"`
 }
 
 func (EntityWebinarRegistrationView) TableName() string {
@@ -58,6 +73,7 @@ func (EntityWebinarRegistrationView) ViewModel() string {
 	sql.WriteString("  w.reward,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
+	sql.WriteString("  u4.title AS speaker_title,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
 	sql.WriteString("FROM webinar_registration r ")

@@ -2,6 +2,7 @@ package service
 
 import (
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
@@ -12,9 +13,11 @@ type WebinarRegistrationService interface {
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	Insert(record models.WebinarRegistration) helper.Response
 	Update(record models.WebinarRegistration) helper.Response
+	UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -49,8 +52,16 @@ func (service *webinarRegistrationService) Update(record models.WebinarRegistrat
 	return service.webinarRegistrationRepository.Update(record)
 }
 
+func (service *webinarRegistrationService) UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response {
+	return service.webinarRegistrationRepository.UpdatePayment(dto)
+}
+
 func (service *webinarRegistrationService) GetById(recordId string) helper.Response {
 	return service.webinarRegistrationRepository.GetById(recordId)
+}
+
+func (service *webinarRegistrationService) GetViewById(recordId string) helper.Response {
+	return service.webinarRegistrationRepository.GetViewById(recordId)
 }
 
 func (service *webinarRegistrationService) IsWebinarRegistered(webinarId string, userId string) helper.Response {

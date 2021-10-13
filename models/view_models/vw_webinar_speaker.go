@@ -7,6 +7,7 @@ import (
 
 type EntityWebinarSpeakerView struct {
 	models.WebinarSpeaker
+	OrganizationName   string `json:"organization_name"`
 	SpeakerFirstName   string `json:"speaker_first_name"`
 	SpeakerLastName    string `json:"speaker_last_name"`
 	SpeakerFullName    string `json:"speaker_full_name"`
@@ -37,6 +38,7 @@ func (EntityWebinarSpeakerView) ViewModel() string {
 	sql.WriteString("  r.webinar_id,")
 	sql.WriteString("  w.title AS webinar_title,")
 	sql.WriteString("  r.speaker_id,")
+	sql.WriteString("  o.name AS organization_name,")
 	sql.WriteString("  u3.first_name AS speaker_first_name,")
 	sql.WriteString("  u3.last_name AS speaker_last_name,")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS speaker_full_name,")
@@ -45,6 +47,7 @@ func (EntityWebinarSpeakerView) ViewModel() string {
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString(" FROM webinar_speaker r ")
 	sql.WriteString("  LEFT JOIN webinar w ON w.id = r.webinar_id")
+	sql.WriteString("  LEFT JOIN organization o ON o.id = r.speaker_id")
 	sql.WriteString("  LEFT JOIN application_user u3 ON u3.id = r.speaker_id")
 	sql.WriteString("  LEFT JOIN application_user u1 ON u1.id = r.created_by")
 	sql.WriteString("  LEFT JOIN application_user u2 ON u2.id = r.updated_by")

@@ -883,6 +883,7 @@ func main() {
 
 	webinarSpeakerApiRoutes := r.Group("api/webinar_speaker")
 	{
+		webinarSpeakerApiRoutes.POST("/save", webinarSpeakerController.Save)
 		webinarSpeakerApiRoutes.GET("/getById/:id", webinarSpeakerController.GetById)
 		webinarSpeakerApiRoutes.GET("/getAll", webinarSpeakerController.GetAll)
 	}
@@ -892,7 +893,9 @@ func main() {
 		webinarRegistrationApiRoutes.POST("/getDatatables", webinarRegistrationController.GetDatatables)
 		webinarRegistrationApiRoutes.POST("/getPagination", webinarRegistrationController.GetPagination)
 		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
+		webinarRegistrationApiRoutes.POST("/updatePayment", webinarRegistrationController.UpdatePayment)
 		webinarRegistrationApiRoutes.GET("/getById/:id", webinarRegistrationController.GetById)
+		webinarRegistrationApiRoutes.GET("/getViewById/:id", webinarRegistrationController.GetViewById)
 		webinarRegistrationApiRoutes.GET("/isWebinarRegistered/:id", webinarRegistrationController.IsWebinarRegistered)
 		webinarRegistrationApiRoutes.DELETE("/deleteById/:id", webinarRegistrationController.DeleteById)
 	}
@@ -1025,16 +1028,19 @@ func main() {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		// c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
+		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:4000")
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		fmt.Println(c.Request.Method)
 		if c.Request.Method == "OPTIONS" {
+			fmt.Println("PUTRA")
 			fmt.Println("OPTIONS")
 			c.AbortWithStatus(200)
 		} else {

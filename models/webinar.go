@@ -20,22 +20,21 @@ type Webinar struct {
 	OwnerId     string       `gorm:"type:varchar(50)" json:"owner_id"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	WebinarCategoryId       string       `gorm:"type:varchar(50);not null" json:"webinar_category_id"`
-	OrganizerOrganizationId string       `gorm:"type:varchar(50);" json:"organizer_organization_id"`
-	Title                   string       `gorm:"type:text;not null" json:"title"`
-	Description             string       `gorm:"type:text" json:"description"`
-	WebinarStartDate        sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_start_date"`
-	WebinarEndDate          sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_end_date"`
-	MinAge                  int          `gorm:"type:int" json:"min_age"`
-	WebinarLevel            string       `gorm:"type:varchar(50)" json:"webinar_level"`
-	Price                   float64      `gorm:"type:decimal(18,2)" json:"price"`
-	Discount                float64      `gorm:"type:decimal(18,2)" json:"discount"`
-	IsCertificate           bool         `gorm:"type:bool;default:0" json:"is_certificate"`
-	Reward                  int          `gorm:"type:int" json:"reward"`
-	Status                  int          `gorm:"type:int" json:"status"`
+	WebinarCategoryId string       `gorm:"type:varchar(50);not null" json:"webinar_category_id"`
+	Title             string       `gorm:"type:text;not null" json:"title"`
+	Description       string       `gorm:"type:text" json:"description"`
+	WebinarStartDate  sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_start_date"`
+	WebinarEndDate    sql.NullTime `gorm:"type:timestamp;default:null" json:"webinar_end_date"`
+	MinAge            int          `gorm:"type:int" json:"min_age"`
+	WebinarLevel      string       `gorm:"type:varchar(50)" json:"webinar_level"`
+	Price             float64      `gorm:"type:decimal(18,2)" json:"price"`
+	Discount          float64      `gorm:"type:decimal(18,2)" json:"discount"`
+	IsCertificate     bool         `gorm:"type:bool;default:0" json:"is_certificate"`
+	Reward            int          `gorm:"type:int" json:"reward"`
+	Status            int          `gorm:"type:int" json:"status"`
+	SpeakerType       int          `gorm:"type:int;" json:"speaker_type"`
 
-	WebinarSpeaker  []WebinarSpeaker `gorm:"-" json:"webinar_speaker"`
-	WebinarCategory WebinarCategory  `gorm:"foreignkey:WebinarCategoryId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar_category"`
+	WebinarSpeaker []WebinarSpeaker `gorm:"-" json:"webinar_speaker"`
 }
 
 func (Webinar) TableName() string {

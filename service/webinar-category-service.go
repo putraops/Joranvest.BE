@@ -56,7 +56,9 @@ func (service *webinarCategoryService) Lookup(r helper.Select2Request) helper.Re
 				}
 				var p = helper.Select2Item{
 					Id:          record.Id,
+					Value:       record.Id,
 					Text:        record.Name,
+					Label:       record.Name,
 					Description: record.Description,
 					ParentId:    record.ParentId,
 					Selected:    false,
@@ -67,15 +69,6 @@ func (service *webinarCategoryService) Lookup(r helper.Select2Request) helper.Re
 				ary.Results = append(ary.Results, p)
 			}
 		}
-	} else {
-		var p = helper.Select2Item{
-			Id:          "",
-			Text:        "No result found",
-			Description: "",
-			Selected:    true,
-			Disabled:    true,
-		}
-		ary.Results = append(ary.Results, p)
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)

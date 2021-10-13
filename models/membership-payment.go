@@ -22,7 +22,7 @@ type MembershipPayment struct {
 
 	PaymentDate   sql.NullTime `gorm:"type:timestamp" json:"payment_date"`
 	PaymentType   string       `gorm:"type:varchar(50);not null" json:"payment_type"`
-	PaymentStatus int          `gorm:"type:int;default:1" json:"payment_status"`
+	PaymentStatus int          `gorm:"type:int" json:"payment_status"`
 }
 
 func (MembershipPayment) TableName() string {

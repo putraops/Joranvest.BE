@@ -50,6 +50,7 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.is_certificate,")
 	sql.WriteString("  r.reward,")
 	sql.WriteString("  r.status,")
+	sql.WriteString("  r.speaker_type,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname, ")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")

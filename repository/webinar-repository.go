@@ -151,25 +151,9 @@ func (db *webinarConnection) Insert(record models.Webinar) helper.Response {
 	record.Id = uuid.New().String()
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
-	for i := 0; i < len(record.WebinarSpeaker); i++ {
-		record.WebinarSpeaker[i].Id = uuid.New().String()
-		record.WebinarSpeaker[i].OwnerId = record.OwnerId
-		record.WebinarSpeaker[i].EntityId = record.EntityId
-		record.WebinarSpeaker[i].CreatedBy = record.CreatedBy
-		record.WebinarSpeaker[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-		record.WebinarSpeaker[i].WebinarId = record.Id
-	}
-
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
-	}
-
-	if len(record.WebinarSpeaker) > 0 {
-		if err := tx.Create(&record.WebinarSpeaker).Error; err != nil {
-			tx.Rollback()
-			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
-		}
 	}
 
 	tx.Commit()
@@ -184,30 +168,6 @@ func (db *webinarConnection) Update(record models.Webinar) helper.Response {
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
-	}
-
-	//-- Delete WebinarSpeaker
-	var speakers models.WebinarSpeaker
-	if err := tx.Where("webinar_id = ?", record.Id).Delete(&speakers).Error; err != nil {
-		tx.Rollback()
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
-	}
-
-	fmt.Println(len(record.WebinarSpeaker))
-	for i := 0; i < len(record.WebinarSpeaker); i++ {
-		fmt.Println(record.WebinarSpeaker[i].WebinarId)
-		record.WebinarSpeaker[i].Id = uuid.New().String()
-		record.WebinarSpeaker[i].OwnerId = record.OwnerId
-		record.WebinarSpeaker[i].EntityId = record.EntityId
-		record.WebinarSpeaker[i].CreatedBy = record.CreatedBy
-		record.WebinarSpeaker[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-		record.WebinarSpeaker[i].WebinarId = record.Id
-	}
-	if len(record.WebinarSpeaker) > 0 {
-		if err := tx.Save(&record.WebinarSpeaker).Error; err != nil {
-			tx.Rollback()
-			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
-		}
 	}
 
 	record.IsActive = oldRecord.IsActive

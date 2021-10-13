@@ -18,8 +18,19 @@ type WebinarDto struct {
 	Discount                float64   `json:"discount" form:"discount"`
 	IsCertificate           bool      `json:"is_certificate" form:"is_certificate"`
 	Reward                  int       `json:"reward" form:"reward"`
-	Status                  string    `json:"status" form:"status"`
+	Status                  int       `json:"status" form:"status"`
+	SpeakerType             int       `json:"speaker_type" form:"speaker_type"`
 
 	EntityId  string `json:"-"`
 	UpdatedBy string
+}
+
+//WebinarDto is a model that client use when updating a book
+type WebinarSepakerDto struct {
+	Id             string `json:"id" form:"id"`
+	WebinarId      string `json:"webinar_id" form:"webinar_id"`
+	WebinarSpeaker string `json:"webinar_speaker" form:"webinar_speaker"`
+	SpeakerType    int    `json:"speaker_type" form:"speaker_type"`
+	EntityId       string `json:"-"`
+	UpdatedBy      string
 }

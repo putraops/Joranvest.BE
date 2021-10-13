@@ -21,8 +21,7 @@ type WebinarSpeaker struct {
 	WebinarId string `gorm:"type:varchar(50);not null" json:"webinar_id"`
 	SpeakerId string `gorm:"type:varchar(50);not null" json:"speaker_id"`
 
-	Webinar Webinar         `gorm:"foreignkey:WebinarId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar"`
-	Speaker ApplicationUser `gorm:"foreignkey:SpeakerId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"speaker"`
+	Webinar Webinar `gorm:"foreignkey:WebinarId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar"`
 }
 
 func (WebinarSpeaker) TableName() string {

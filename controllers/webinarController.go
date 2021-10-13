@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -79,18 +78,8 @@ func (c *webinarController) Save(context *gin.Context) {
 		userIdentity := c.jwtService.GetUserByToken(authHeader)
 
 		var newRecord = models.Webinar{}
-		newRecord.WebinarSpeaker = []models.WebinarSpeaker{}
-
-		var arrtempWebinarSpeakerId []string
 		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
-		json.Unmarshal([]byte(recordDto.WebinarSpeaker), &arrtempWebinarSpeakerId)
-		json.Unmarshal([]byte(recordDto.WebinarSpeaker), &newRecord.WebinarSpeaker)
 		newRecord.EntityId = userIdentity.EntityId
-
-		//-- Mapping Id in array into array of struct of WebinarSpeaker
-		for i := 0; i < len(arrtempWebinarSpeakerId); i++ {
-			newRecord.WebinarSpeaker[i].SpeakerId = arrtempWebinarSpeakerId[i]
-		}
 
 		// myDateString := "2018-01-20 00:00:00"
 		//-- Mapping WebinarStartDate
