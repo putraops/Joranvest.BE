@@ -10,6 +10,7 @@ type Select2Item struct {
 	Disabled    bool        `json:"disabled"`
 	HasChildren bool        `json:"has_children"`
 	Children    interface{} `json:"children"`
+	Options     interface{} `json:"options"`
 	ParentId    string      `json:"parent_id"`
 }
 

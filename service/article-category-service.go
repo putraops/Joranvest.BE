@@ -8,7 +8,7 @@ import (
 )
 
 type ArticleCategoryService interface {
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.ArticleCategory
 	GetTree() []commons.JStreeResponse
@@ -29,8 +29,8 @@ func NewArticleCategoryService(repo repository.ArticleCategoryRepository) Articl
 	}
 }
 
-func (service *articleCategoryService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *articleCategoryService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectGroupResponse
 
 	request := make(map[string]interface{})
 	request["qry"] = r.Q
@@ -50,32 +50,15 @@ func (service *articleCategoryService) Lookup(r helper.Select2Request) helper.Re
 		for _, record := range result {
 			if record.ParentId == "" {
 				children := FindArticleCategoryChildren(record.Id, result)
-				var hasChildren = false
-				if len(children) > 0 {
-					hasChildren = true
-				}
-				var p = helper.Select2Item{
-					Id:          record.Id,
-					Text:        record.Name,
-					Description: record.Description,
-					ParentId:    record.ParentId,
-					Selected:    false,
-					Disabled:    false,
-					HasChildren: hasChildren,
-					Children:    children,
+				var p = helper.ReactSelectItemGroup{
+					Value:    record.Id,
+					Label:    record.Name,
+					ParentId: record.ParentId,
+					Children: children,
 				}
 				ary.Results = append(ary.Results, p)
 			}
 		}
-	} else {
-		var p = helper.Select2Item{
-			Id:          "",
-			Text:        "No result found",
-			Description: "",
-			Selected:    true,
-			Disabled:    true,
-		}
-		ary.Results = append(ary.Results, p)
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)
@@ -109,19 +92,15 @@ func (service *articleCategoryService) DeleteById(recordId string) helper.Respon
 	return service.articleCategoryRepository.DeleteById(recordId)
 }
 
-func FindArticleCategoryChildren(parent_id string, records []models.ArticleCategory) []helper.Select2Item {
-	res := []helper.Select2Item{}
+func FindArticleCategoryChildren(parent_id string, records []models.ArticleCategory) []helper.ReactSelectItemGroup {
+	res := []helper.ReactSelectItemGroup{}
 
 	for _, v := range records {
 		if v.ParentId == parent_id {
-			var p = helper.Select2Item{
-				Id:          v.Id,
-				Text:        v.Name,
-				Description: v.Description,
-				ParentId:    parent_id,
-				Selected:    true,
-				Disabled:    false,
-				Children:    nil,
+			var p = helper.ReactSelectItemGroup{
+				Value:    v.Id,
+				Label:    v.Name,
+				ParentId: parent_id,
 			}
 			res = append(res, p)
 		}

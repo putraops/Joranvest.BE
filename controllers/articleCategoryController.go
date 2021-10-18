@@ -36,7 +36,7 @@ func NewArticleCategoryController(articleCategoryService service.ArticleCategory
 }
 
 func (c *articleCategoryController) Lookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	qry := context.Request.URL.Query()
 
 	if _, found := qry["q"]; found {

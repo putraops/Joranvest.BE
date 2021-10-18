@@ -35,7 +35,7 @@ func NewTagController(tagService service.TagService, jwtService service.JWTServi
 }
 
 func (c *tagController) Lookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	qry := context.Request.URL.Query()
 
 	if _, found := qry["q"]; found {

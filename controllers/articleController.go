@@ -68,7 +68,7 @@ func (c *articleController) GetPagination(context *gin.Context) {
 
 func (c *articleController) Save(context *gin.Context) {
 	result := helper.Response{}
-	var recordDto dto.ArticleCategoryDto
+	var recordDto dto.ArticleDto
 
 	errDTO := context.Bind(&recordDto)
 	if errDTO != nil {

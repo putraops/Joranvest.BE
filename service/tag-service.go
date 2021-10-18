@@ -8,7 +8,7 @@ import (
 )
 
 type TagService interface {
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.Tag
 	Insert(record models.Tag) helper.Response
@@ -28,8 +28,8 @@ func NewTagService(repo repository.TagRepository) TagService {
 	}
 }
 
-func (service *tagService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *tagService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
 	request := make(map[string]interface{})
 	request["qry"] = r.Q
@@ -46,24 +46,12 @@ func (service *tagService) Lookup(r helper.Select2Request) helper.Response {
 	result := service.tagRepository.Lookup(request)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Text:        record.Name,
-				Description: "",
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value: record.Id,
+				Label: record.Name,
 			}
 			ary.Results = append(ary.Results, p)
 		}
-	} else {
-		var p = helper.Select2Item{
-			Id:          "",
-			Text:        "No result found",
-			Description: "",
-			Selected:    true,
-			Disabled:    true,
-		}
-		ary.Results = append(ary.Results, p)
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)
