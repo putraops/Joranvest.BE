@@ -18,7 +18,7 @@ import (
 type EmitenRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.Emiten
-	Lookup(request helper.Select2Request) []models.Emiten
+	Lookup(request helper.ReactSelectRequest) []models.Emiten
 	Insert(t models.Emiten) helper.Response
 	Update(record models.Emiten) helper.Response
 	GetById(recordId string) helper.Response
@@ -115,7 +115,7 @@ func (db *emitenConnection) GetAll(filter map[string]interface{}) []models.Emite
 	return records
 }
 
-func (db *emitenConnection) Lookup(request helper.Select2Request) []models.Emiten {
+func (db *emitenConnection) Lookup(request helper.ReactSelectRequest) []models.Emiten {
 	records := []models.Emiten{}
 	db.connection.Order("emiten_name asc")
 

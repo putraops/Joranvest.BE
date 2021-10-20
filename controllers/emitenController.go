@@ -47,7 +47,7 @@ func (c *emitenController) GetDatatables(context *gin.Context) {
 }
 
 func (c *emitenController) Lookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	qry := context.Request.URL.Query()
 
 	if _, found := qry["q"]; found {
@@ -61,7 +61,7 @@ func (c *emitenController) Lookup(context *gin.Context) {
 }
 
 func (c *emitenController) EmitenLookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	errBind := context.Bind(&request)
 	if errBind != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errBind.Error(), helper.EmptyObj{})

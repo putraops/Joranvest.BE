@@ -10,7 +10,7 @@ import (
 type EmitenService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.Emiten
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	Insert(record models.Emiten) helper.Response
 	Update(record models.Emiten) helper.Response
 	GetById(recordId string) helper.Response
@@ -36,42 +36,19 @@ func (service *emitenService) GetAll(filter map[string]interface{}) []models.Emi
 	return service.emitenRepository.GetAll(filter)
 }
 
-func (service *emitenService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
-
-	// request := make(map[string]interface{})
-	// request["qry"] = r.Q
-	// request["condition"] = helper.DataFilter{
-	// 	Request: []helper.Operator{
-	// 		{
-	// 			Operator: "like",
-	// 			Field:    r.Field,
-	// 			Value:    r.Q,
-	// 		},
-	// 	},
-	// }
+func (service *emitenService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
 	result := service.emitenRepository.Lookup(r)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Text:        record.EmitenCode,
-				Description: record.EmitenName,
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.EmitenName + " [" + record.EmitenCode + "]",
+				ParentId: "",
 			}
 			ary.Results = append(ary.Results, p)
 		}
-	} else {
-		var p = helper.Select2Item{
-			Id:          "",
-			Text:        "No result found",
-			Description: "",
-			Selected:    true,
-			Disabled:    true,
-		}
-		ary.Results = append(ary.Results, p)
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)
