@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"joranvest/commons"
 	"joranvest/dto"
@@ -84,19 +83,6 @@ func (c *fundamentalAnalysisController) Save(context *gin.Context) {
 		for i := 0; i < len(arrtempTagId); i++ {
 			newRecord.FundamentalAnalysisTag[i].TagId = arrtempTagId[i]
 		}
-
-		// myDateString := "2018-01-20 00:00:00"
-		//var temp = time.Time{}
-		fmt.Println("not error")
-		fmt.Println(recordDto.ResearchDate)
-		fmt.Println(recordDto.ResearchDate.String())
-		tempDate, err := time.Parse("2006-01-02 15:04:05 +0000 UTC", recordDto.ResearchDate.String())
-		if err != nil {
-			panic(err)
-		}
-		newRecord.ResearchDate.Time = tempDate
-		newRecord.ResearchDate.Valid = true
-		// record.ResearchDate = "2021-08-20 17:31:54.911026"
 
 		if recordDto.Id == "" {
 			newRecord.CreatedBy = userIdentity.UserId
