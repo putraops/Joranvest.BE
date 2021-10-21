@@ -10,6 +10,7 @@ import (
 type EmitenCategoryService interface {
 	Lookup(request helper.Select2Request) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.EmitenCategory
 	Insert(record models.EmitenCategory) helper.Response
 	Update(record models.EmitenCategory) helper.Response
@@ -64,6 +65,10 @@ func (service *emitenCategoryService) Lookup(r helper.Select2Request) helper.Res
 
 func (service *emitenCategoryService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.emitenCategoryRepository.GetDatatables(request)
+}
+
+func (service *emitenCategoryService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.emitenCategoryRepository.GetPagination(request)
 }
 
 func (service *emitenCategoryService) GetAll(filter map[string]interface{}) []models.EmitenCategory {

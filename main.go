@@ -827,6 +827,7 @@ func main() {
 	emitenCategoryApiRoutes := r.Group("api/emiten_category")
 	{
 		emitenCategoryApiRoutes.POST("/getDatatables", emitenCategoryController.GetDatatables)
+		emitenCategoryApiRoutes.POST("/getPagination", emitenCategoryController.GetPagination)
 		emitenCategoryApiRoutes.GET("/lookup", emitenCategoryController.Lookup)
 		emitenCategoryApiRoutes.POST("/save", emitenCategoryController.Save)
 		emitenCategoryApiRoutes.GET("/getById/:id", emitenCategoryController.GetById)

@@ -17,6 +17,7 @@ import (
 type EmitenCategoryController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -56,6 +57,17 @@ func (c *emitenCategoryController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.emitenCategoryService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *emitenCategoryController) GetPagination(context *gin.Context) {
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.emitenCategoryService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 
