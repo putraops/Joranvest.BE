@@ -26,6 +26,7 @@ type TagController interface {
 type tagController struct {
 	tagService service.TagService
 	jwtService service.JWTService
+	helper.Yuhu
 }
 
 func NewTagController(tagService service.TagService, jwtService service.JWTService) TagController {
@@ -51,8 +52,6 @@ func (c *tagController) Lookup(context *gin.Context) {
 
 func (c *tagController) GetDatatables(context *gin.Context) {
 	commons.Logger()
-	log.Error("tes")
-
 	var dt commons.DataTableRequest
 	errDTO := context.Bind(&dt)
 	if errDTO != nil {
@@ -65,6 +64,7 @@ func (c *tagController) GetDatatables(context *gin.Context) {
 }
 
 func (c *tagController) Save(context *gin.Context) {
+	commons.Logger()
 	result := helper.Response{}
 	var recordDto dto.TagDto
 
