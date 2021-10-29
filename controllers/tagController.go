@@ -51,6 +51,7 @@ func (c *tagController) Lookup(context *gin.Context) {
 
 func (c *tagController) GetDatatables(context *gin.Context) {
 	commons.Logger()
+	log.Info("Datatables")
 	var dt commons.DataTableRequest
 	errDTO := context.Bind(&dt)
 	if errDTO != nil {
