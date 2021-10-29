@@ -26,7 +26,6 @@ type TagController interface {
 type tagController struct {
 	tagService service.TagService
 	jwtService service.JWTService
-	helper.Yuhu
 }
 
 func NewTagController(tagService service.TagService, jwtService service.JWTService) TagController {
