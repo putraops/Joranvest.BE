@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -209,6 +210,7 @@ func (db *tagConnection) GetAll(filter map[string]interface{}) []models.Tag {
 }
 
 func (db *tagConnection) Insert(record models.Tag) helper.Response {
+	commons.Logger()
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
@@ -216,6 +218,7 @@ func (db *tagConnection) Insert(record models.Tag) helper.Response {
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
+		log.Error(fmt.Sprintf("%v,", err))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	} else {
 		tx.Commit()
@@ -225,10 +228,13 @@ func (db *tagConnection) Insert(record models.Tag) helper.Response {
 }
 
 func (db *tagConnection) Update(record models.Tag) helper.Response {
+	commons.Logger()
+
 	var oldRecord models.Tag
 	db.connection.First(&oldRecord, "id = ?", record.Id)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		log.Error("Tag: Record not found")
 		return res
 	}
 
@@ -239,6 +245,7 @@ func (db *tagConnection) Update(record models.Tag) helper.Response {
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
+		log.Error(fmt.Sprintf("%v,", res.Error))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
 	}
 
@@ -267,6 +274,7 @@ func (db *tagConnection) DeleteById(recordId string) helper.Response {
 	} else {
 		res := db.connection.Where("id = ?", recordId).Delete(&record)
 		if res.RowsAffected == 0 {
+			log.Error(fmt.Sprintf("%v,", res.Error))
 			return helper.ServerResponse(false, "Error", fmt.Sprintf("%v", res.Error), helper.EmptyObj{})
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
