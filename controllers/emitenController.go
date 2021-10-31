@@ -12,10 +12,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 )
 
 type EmitenController interface {
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	Lookup(context *gin.Context)
 	EmitenLookup(context *gin.Context)
 	GetById(context *gin.Context)
@@ -43,6 +45,20 @@ func (c *emitenController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.emitenService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *emitenController) GetPagination(context *gin.Context) {
+	commons.Logger()
+
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error(errDTO.Error())
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.emitenService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

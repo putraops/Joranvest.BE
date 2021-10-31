@@ -9,6 +9,7 @@ import (
 
 type EmitenService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Emiten
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Insert(record models.Emiten) helper.Response
@@ -30,6 +31,10 @@ func NewEmitenService(repo repository.EmitenRepository) EmitenService {
 
 func (service *emitenService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.emitenRepository.GetDatatables(request)
+}
+
+func (service *emitenService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.emitenRepository.GetPagination(request)
 }
 
 func (service *emitenService) GetAll(filter map[string]interface{}) []models.Emiten {

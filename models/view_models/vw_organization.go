@@ -26,6 +26,8 @@ func (EntityOrganizationView) ViewModel() string {
 	sql.WriteString("  r.updated_by,")
 	sql.WriteString("  r.approved_at,")
 	sql.WriteString("  r.approved_by,")
+	sql.WriteString("  r.submitted_at,")
+	sql.WriteString("  r.submitted_by,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.name,")
 	sql.WriteString("  r.description,")

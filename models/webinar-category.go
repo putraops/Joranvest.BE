@@ -16,6 +16,8 @@ type WebinarCategory struct {
 	ApprovedAt  sql.NullTime `gorm:"type:timestamp;default:null" json:"approved_at"`
 	ApprovedBy  string       `gorm:"type:varchar(50)" json:"approved_by"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
+	SubmittedAt sql.NullTime `gorm:"type:timestamp" json:"submitted_at"`
+	SubmittedBy string       `gorm:"type:varchar(50)" json:"submitted_by"`
 	Name        string       `gorm:"type:varchar(50);unique" json:"name"`
 	ParentId    string       `gorm:"type:varchar(50);" json:"parent_id"`
 	Description string       `gorm:"type:text" json:"description"`

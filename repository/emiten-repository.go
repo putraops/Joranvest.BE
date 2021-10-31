@@ -17,6 +17,7 @@ import (
 
 type EmitenRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Emiten
 	Lookup(request helper.ReactSelectRequest) []models.Emiten
 	Insert(t models.Emiten) helper.Response
@@ -103,6 +104,62 @@ func (db *emitenConnection) GetDatatables(request commons.DataTableRequest) comm
 		res.DataRow = []entity_view_models.EntityEmitenView{}
 	}
 	return res
+}
+
+func (db *emitenConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityEmitenView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	for k, v := range request.Filter {
+		if v != "" {
+			if total_filter > 0 {
+				filters += "AND "
+			}
+			filters += fmt.Sprintf("%v = '%v' ", k, v)
+			total_filter++
+		}
+	}
+	// #endregion
+
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+
+	var count int64
+	db.connection.Model(&entity_view_models.EntityEmitenView{}).Where(filters).Count(&count)
+
+	response.Data = records
+	response.Total = int(count)
+	return response
 }
 
 func (db *emitenConnection) GetAll(filter map[string]interface{}) []models.Emiten {

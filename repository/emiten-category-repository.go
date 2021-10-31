@@ -16,7 +16,7 @@ import (
 )
 
 type EmitenCategoryRepository interface {
-	Lookup(req map[string]interface{}) []models.EmitenCategory
+	Lookup(request helper.ReactSelectRequest) []models.EmitenCategory
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.EmitenCategory
@@ -42,39 +42,28 @@ func NewEmitenCategoryRepository(db *gorm.DB) EmitenCategoryRepository {
 	}
 }
 
-func (db *emitenCategoryConnection) Lookup(req map[string]interface{}) []models.EmitenCategory {
+func (db *emitenCategoryConnection) Lookup(request helper.ReactSelectRequest) []models.EmitenCategory {
 	records := []models.EmitenCategory{}
 	db.connection.Order("name asc")
 
-	var sqlQuery strings.Builder
-	sqlQuery.WriteString("SELECT * FROM " + db.tableName)
-
-	v, found := req["condition"]
-	if found {
-		sqlQuery.WriteString(" WHERE 1 = 1")
-		requests := v.(helper.DataFilter).Request
-		for _, v := range requests {
-			totalFilter := 0
-			if v.Operator == "like" {
-				for _, valueDetail := range v.Field {
-					if totalFilter == 0 {
-						sqlQuery.WriteString(" AND (LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
-					} else {
-						sqlQuery.WriteString(" OR LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
-					}
-					totalFilter++
-				}
-			}
-
-			if totalFilter > 0 {
-				sqlQuery.WriteString(")")
-			}
+	var orders = "name ASC"
+	var filters = ""
+	totalFilter := 0
+	for _, field := range request.Field {
+		if totalFilter == 0 {
+			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
+		} else {
+			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
 		}
+		totalFilter++
 	}
 
-	fmt.Println("Query: ", sqlQuery.String())
+	if totalFilter > 0 {
+		filters += ")"
+	}
 
-	db.connection.Raw(sqlQuery.String()).Scan(&records)
+	offset := (request.Page - 1) * request.Size
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
 	return records
 }
 

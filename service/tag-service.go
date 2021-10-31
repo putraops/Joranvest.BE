@@ -10,6 +10,7 @@ import (
 type TagService interface {
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Tag
 	Insert(record models.Tag) helper.Response
 	Update(record models.Tag) helper.Response
@@ -59,6 +60,10 @@ func (service *tagService) Lookup(r helper.ReactSelectRequest) helper.Response {
 
 func (service *tagService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.tagRepository.GetDatatables(request)
+}
+
+func (service *tagService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.tagRepository.GetPagination(request)
 }
 
 func (service *tagService) GetAll(filter map[string]interface{}) []models.Tag {

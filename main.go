@@ -797,6 +797,7 @@ func main() {
 	emitenApiRoutes := r.Group("api/emiten")
 	{
 		emitenApiRoutes.POST("/getDatatables", emitenController.GetDatatables)
+		emitenApiRoutes.POST("/getPagination", emitenController.GetPagination)
 		emitenApiRoutes.GET("/lookup", emitenController.Lookup)
 		emitenApiRoutes.POST("/emitenLookup", emitenController.EmitenLookup)
 		emitenApiRoutes.POST("/save", emitenController.Save)
@@ -904,6 +905,7 @@ func main() {
 	tagApiRoutes := r.Group("api/tag")
 	{
 		tagApiRoutes.POST("/getDatatables", tagController.GetDatatables)
+		tagApiRoutes.POST("/getPagination", tagController.GetPagination)
 		tagApiRoutes.GET("/lookup", tagController.Lookup)
 		tagApiRoutes.POST("/save", tagController.Save)
 		tagApiRoutes.GET("/getById/:id", tagController.GetById)
@@ -912,7 +914,7 @@ func main() {
 
 	sectorApiRoutes := r.Group("api/sector")
 	{
-		sectorApiRoutes.POST("/getDatatables", sectorController.GetDatatables)
+		sectorApiRoutes.POST("/getPagination", sectorController.GetPagination)
 		sectorApiRoutes.GET("/lookup", sectorController.Lookup)
 		sectorApiRoutes.POST("/save", sectorController.Save)
 		sectorApiRoutes.GET("/getById/:id", sectorController.GetById)
@@ -1007,7 +1009,7 @@ func main() {
 
 	organizationApiRoutes := r.Group("api/organization")
 	{
-		organizationApiRoutes.POST("/getDatatables", organizationController.GetDatatables)
+		organizationApiRoutes.POST("/getPagination", organizationController.GetPagination)
 		organizationApiRoutes.GET("/lookup", organizationController.Lookup)
 		organizationApiRoutes.POST("/save", organizationController.Save)
 		organizationApiRoutes.GET("/getById/:id", organizationController.GetById)

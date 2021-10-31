@@ -10,6 +10,7 @@ import (
 type OrganizationService interface {
 	Lookup(request helper.Select2Request) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Organization
 	Insert(record models.Organization) helper.Response
 	Update(record models.Organization) helper.Response
@@ -64,6 +65,10 @@ func (service *organizationService) Lookup(r helper.Select2Request) helper.Respo
 
 func (service *organizationService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.organizationRepository.GetDatatables(request)
+}
+
+func (service *organizationService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.organizationRepository.GetPagination(request)
 }
 
 func (service *organizationService) GetAll(filter map[string]interface{}) []models.Organization {

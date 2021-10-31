@@ -8,9 +8,9 @@ import (
 )
 
 type EmitenCategoryService interface {
-	Lookup(request helper.Select2Request) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	GetAll(filter map[string]interface{}) []models.EmitenCategory
 	Insert(record models.EmitenCategory) helper.Response
 	Update(record models.EmitenCategory) helper.Response
@@ -29,38 +29,53 @@ func NewEmitenCategoryService(repo repository.EmitenCategoryRepository) EmitenCa
 	}
 }
 
-func (service *emitenCategoryService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *emitenCategoryService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
-	request := make(map[string]interface{})
-	request["qry"] = r.Q
-	request["condition"] = helper.DataFilter{
-		Request: []helper.Operator{
-			{
-				Operator: "like",
-				Field:    r.Field,
-				Value:    r.Q,
-			},
-		},
-	}
-
-	result := service.emitenCategoryRepository.Lookup(request)
+	result := service.emitenCategoryRepository.Lookup(r)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Value:       record.Id,
-				Text:        record.Name,
-				Label:       record.Name,
-				Description: record.Description,
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.Name,
+				ParentId: "",
 			}
 			ary.Results = append(ary.Results, p)
 		}
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)
+	// var ary helper.Select2Response
+
+	// request := make(map[string]interface{})
+	// request["qry"] = r.Q
+	// request["condition"] = helper.DataFilter{
+	// 	Request: []helper.Operator{
+	// 		{
+	// 			Operator: "like",
+	// 			Field:    r.Field,
+	// 			Value:    r.Q,
+	// 		},
+	// 	},
+	// }
+
+	// result := service.emitenCategoryRepository.Lookup(request)
+	// if len(result) > 0 {
+	// 	for _, record := range result {
+	// 		var p = helper.Select2Item{
+	// 			Id:          record.Id,
+	// 			Value:       record.Id,
+	// 			Text:        record.Name,
+	// 			Label:       record.Name,
+	// 			Description: record.Description,
+	// 			Selected:    true,
+	// 			Disabled:    false,
+	// 		}
+	// 		ary.Results = append(ary.Results, p)
+	// 	}
+	// }
+	// ary.Count = len(result)
+	// return helper.ServerResponse(true, "Ok", "", ary)
 }
 
 func (service *emitenCategoryService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
