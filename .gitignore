@@ -3,3 +3,9 @@
 # assets
 /logs
 /upload
+
+#env
+.env
+
+
+*.env
