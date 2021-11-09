@@ -14,6 +14,7 @@ type MembershipService interface {
 	Update(record models.Membership) helper.Response
 	SetRecommendationById(recordId string, isChecked bool) helper.Response
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -50,6 +51,10 @@ func (service *membershipService) SetRecommendationById(recordId string, isCheck
 
 func (service *membershipService) GetById(recordId string) helper.Response {
 	return service.membershipRepository.GetById(recordId)
+}
+
+func (service *membershipService) GetViewById(recordId string) helper.Response {
+	return service.membershipRepository.GetViewById(recordId)
 }
 
 func (service *membershipService) DeleteById(recordId string) helper.Response {

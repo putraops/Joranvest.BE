@@ -12,12 +12,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 )
 
 type MembershipController interface {
 	GetDatatables(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
+	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
 	SetRecommendation(context *gin.Context)
@@ -108,6 +110,25 @@ func (c *membershipController) GetById(context *gin.Context) {
 	result := c.membershipService.GetById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *membershipController) GetViewById(context *gin.Context) {
+	commons.Logger()
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		log.Error("membershipController: Failed to Get Id")
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.membershipService.GetViewById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		log.Error(response.Errors)
 		context.JSON(http.StatusNotFound, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)

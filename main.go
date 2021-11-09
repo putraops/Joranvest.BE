@@ -111,6 +111,10 @@ var (
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
+
+	paymentController controllers.PaymentController = controllers.NewPaymentController(jwtService)
+
+	//clientest coreapi.ClientTest = coreapi.NewClientTest()
 	// #endregion
 )
 
@@ -290,8 +294,32 @@ func Setup(c *gin.Context, title string, header string, subheader string, nav st
 	return data
 }
 
+// func getCardToken() string {
+// 	//midtrans.ClientKey = "SB-Mid-client-w7QtpoJYMNe_-JVb"
+// 	// resp, err := coreapi.CardToken("4105058689481467", 12, 2021, "123")
+// 	fmt.Println("=================================================")
+// 	fmt.Println("---------------- Configuration ------------------")
+// 	fmt.Println("=================================================")
+
+// 	resp, err := coreapi.CardToken("4811111111111114", 12, 2024, "123")
+
+// 	// fundamentalAnalysisTagRepository  repository.FundamentalAnalysisTagRepository  = repository.NewFundamentalAnalysisTagRepository(db)
+// 	// clientest.getCardToken()
+// 	if err != nil {
+// 		fmt.Println("Error get card token", err.GetMessage())
+// 	}
+// 	fmt.Println("response card token", resp)
+
+// 	fmt.Println("=================================================")
+// 	fmt.Println("--------------------- End -----------------------")
+// 	fmt.Println("=================================================")
+// 	return resp.TokenID
+// }
+
 func main() {
 	defer config.CloseDatabaseConnection(db)
+	//getCardToken()
+
 	r := gin.Default()
 
 	// programatically set swagger info
@@ -928,6 +956,7 @@ func main() {
 		membershipApiRoutes.POST("/save", membershipController.Save)
 		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
 		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)
+		membershipApiRoutes.GET("/getViewById/:id", membershipController.GetViewById)
 		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
 	}
 
@@ -1022,6 +1051,12 @@ func main() {
 		ratingMasterApiRoutes.POST("/save", ratingMasterController.Save)
 		ratingMasterApiRoutes.GET("/getById/:id", ratingMasterController.GetById)
 		ratingMasterApiRoutes.DELETE("/deleteById/:id", ratingMasterController.DeleteById)
+	}
+
+	paymentApiRoutes := r.Group("api/payment")
+	{
+		paymentApiRoutes.POST("/createTokenByCard", paymentController.CreateTokenIdByCard)
+		paymentApiRoutes.POST("/charge", paymentController.Charge)
 	}
 	// #endregion
 

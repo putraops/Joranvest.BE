@@ -17,10 +17,11 @@ import (
 type MembershipRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.Membership
+	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	Insert(t models.Membership) helper.Response
 	Update(record models.Membership) helper.Response
 	SetRecomendationById(recordId string, isChecked bool) helper.Response
-	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -155,6 +156,17 @@ func (db *membershipConnection) Update(record models.Membership) helper.Response
 
 func (db *membershipConnection) GetById(recordId string) helper.Response {
 	var record models.Membership
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *membershipConnection) GetViewById(recordId string) helper.Response {
+	var record entity_view_models.EntityMembershipView
 	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
