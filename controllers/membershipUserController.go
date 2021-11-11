@@ -91,7 +91,7 @@ func (c *membershipUserController) Save(context *gin.Context) {
 		var newMembershipUserRecord = models.MembershipUser{}
 		smapping.FillStruct(&newMembershipUserRecord, smapping.MapFields(&recordDto))
 
-		var newPaymentRecord = models.MembershipPayment{}
+		var newPaymentRecord = models.Payment{}
 		smapping.FillStruct(&newPaymentRecord, smapping.MapFields(&recordDto))
 
 		newMembershipUserRecord.EntityId = userIdentity.EntityId

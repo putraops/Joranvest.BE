@@ -19,7 +19,7 @@ type MembershipUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.MembershipUser
-	Insert(membershipUser models.MembershipUser, payment models.MembershipPayment) helper.Response
+	Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
@@ -175,7 +175,7 @@ func (db *membershipUserConnection) GetAll(filter map[string]interface{}) []mode
 	return records
 }
 
-func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser, payment models.MembershipPayment) helper.Response {
+func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response {
 	tx := db.connection.Begin()
 
 	//-- Payment Record
@@ -205,7 +205,7 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 	}
 
 	membershipUser.Id = uuid.New().String()
-	membershipUser.MembershipPaymentId = payment.Id
+	membershipUser.PaymentId = payment.Id
 	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&membershipUser).Error; err != nil {
 		tx.Rollback()

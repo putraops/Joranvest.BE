@@ -56,6 +56,7 @@ var (
 	roleMenuRepository                repository.RoleMenuRepository                = repository.NewRoleMenuRepository(db)
 	organizationRepository            repository.OrganizationRepository            = repository.NewOrganizationRepository(db)
 	ratingMasterRepository            repository.RatingMasterRepository            = repository.NewRatingMasterRepository(db)
+	paymentRepository                 repository.PaymentRepository                 = repository.NewPaymentRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
@@ -84,6 +85,7 @@ var (
 	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
 	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
+	paymentService                 service.PaymentService                 = service.NewPaymentService(paymentRepository)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -111,8 +113,7 @@ var (
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
-
-	paymentController controllers.PaymentController = controllers.NewPaymentController(jwtService)
+	paymentController                 controllers.PaymentController                 = controllers.NewPaymentController(paymentService, jwtService)
 
 	//clientest coreapi.ClientTest = coreapi.NewClientTest()
 	// #endregion
@@ -1055,8 +1056,12 @@ func main() {
 
 	paymentApiRoutes := r.Group("api/payment")
 	{
+		paymentApiRoutes.POST("/getPagination", paymentController.GetPagination)
 		paymentApiRoutes.POST("/createTokenByCard", paymentController.CreateTokenIdByCard)
+		paymentApiRoutes.GET("/getById/:id", paymentController.GetById)
+		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
 		paymentApiRoutes.POST("/charge", paymentController.Charge)
+		paymentApiRoutes.POST("/save", paymentController.Save)
 	}
 	// #endregion
 

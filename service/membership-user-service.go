@@ -11,7 +11,7 @@ type MembershipUserService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.MembershipUser
-	Insert(record models.MembershipUser, payment models.MembershipPayment) helper.Response
+	Insert(record models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
@@ -40,7 +40,7 @@ func (service *membershipUserService) GetAll(filter map[string]interface{}) []mo
 	return service.membershipUserRepository.GetAll(filter)
 }
 
-func (service *membershipUserService) Insert(record models.MembershipUser, payment models.MembershipPayment) helper.Response {
+func (service *membershipUserService) Insert(record models.MembershipUser, payment models.Payment) helper.Response {
 	return service.membershipUserRepository.Insert(record, payment)
 }
 
