@@ -21,18 +21,21 @@ type Payment struct {
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
 	RecordId           string       `gorm:"type:varchar(50)" json:"record_id"`
+	CouponId           string       `gorm:"type:varchar(50)" json:"coupon_id"`
 	OrderNumber        string       `gorm:"type:varchar(50)" json:"order_number"`
 	PaymentDate        sql.NullTime `gorm:"type:timestamp" json:"payment_date"`
 	PaymentDateExpired sql.NullTime `gorm:"type:timestamp" json:"payment_date_expired"`
 	PaymentType        string       `gorm:"type:varchar(50);not null" json:"payment_type"`
 	PaymentStatus      int          `gorm:"type:int" json:"payment_status"`
 	Price              int          `gorm:"type:int" json:"price"`
+	Currency           string       `gorm:"type:varchar(20)" json:"currency"`
 	UniqueNumber       int          `gorm:"type:int" json:"unique_number"`
 
 	AccountName   string `gorm:"type:varchar(200)" json:"account_name"`
 	AccountNumber string `gorm:"type:varchar(30)" json:"account_number"`
 	BankName      string `gorm:"type:varchar(50)" json:"bank_name"`
 	CardNumber    string `gorm:"type:varchar(30)" json:"card_number"`
+	CardType      string `gorm:"type:varchar(30)" json:"card_type"`
 	ExpMonth      int    `gorm:"type:int" json:"exp_month"`
 	ExpYear       int    `gorm:"type:int" json:"exp_year"`
 }

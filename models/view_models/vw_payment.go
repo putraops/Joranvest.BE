@@ -7,12 +7,13 @@ import (
 
 type EntityPaymentView struct {
 	models.Payment
-	MembershipName    string `json:"membership_name"`
-	WebinarTitle      string `json:"webinar_title"`
-	CreatedByFullname string `json:"created_by_fullname"`
-	UserCreateTitle   string `json:"user_create_title"`
-	UpdatedByFullname string `json:"updated_by_fullname"`
-	SubmittedFullname string `json:"submitted_by_fullname"`
+	MembershipName     string `json:"membership_name"`
+	MembershipDuration string `json:"membership_duration"`
+	WebinarTitle       string `json:"webinar_title"`
+	CreatedByFullname  string `json:"created_by_fullname"`
+	UserCreateTitle    string `json:"user_create_title"`
+	UpdatedByFullname  string `json:"updated_by_fullname"`
+	SubmittedFullname  string `json:"submitted_by_fullname"`
 }
 
 func (EntityPaymentView) TableName() string {
@@ -37,10 +38,13 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.record_id,")
+	sql.WriteString("  r.coupon_id,")
 	sql.WriteString("  r.order_number,")
 	sql.WriteString("  m.name AS membership_name,")
+	sql.WriteString("  m.duration AS membership_duration,")
 	sql.WriteString("  w.title AS webinar_title,")
 	sql.WriteString("  r.price,")
+	sql.WriteString("  r.currency,")
 	sql.WriteString("  r.payment_date,")
 	sql.WriteString("  r.payment_date_expired,")
 	sql.WriteString("  r.payment_type,")
@@ -50,6 +54,7 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("  r.account_number,")
 	sql.WriteString("  r.bank_name,")
 	sql.WriteString("  r.card_number,")
+	sql.WriteString("  r.card_type,")
 	sql.WriteString("  r.exp_month,")
 	sql.WriteString("  r.exp_year,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")

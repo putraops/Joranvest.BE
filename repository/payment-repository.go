@@ -167,7 +167,7 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 
 func (db *paymentConnection) GetById(recordId string) helper.Response {
 	var record models.Payment
-	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
