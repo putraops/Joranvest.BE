@@ -23,6 +23,7 @@ type PaymentController interface {
 	GetUniqueNumber(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
+	UpdatePaymentStatus(context *gin.Context)
 	CreateTokenIdByCard(context *gin.Context)
 	Charge(context *gin.Context)
 }
@@ -82,6 +83,32 @@ func (c *paymentController) Save(context *gin.Context) {
 			newRecord.UpdatedBy = userIdentity.UserId
 			result = c.paymentService.Update(newRecord)
 		}
+
+		if result.Status {
+			response := helper.BuildResponse(true, "OK", result.Data)
+			context.JSON(http.StatusOK, response)
+		} else {
+			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+		}
+	}
+}
+
+func (c *paymentController) UpdatePaymentStatus(context *gin.Context) {
+	result := helper.Response{}
+	var recordDto dto.UpdatePaymentStatusDto
+	fmt.Println(recordDto)
+	errDTO := context.Bind(&recordDto)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	} else {
+		fmt.Println("not error")
+		authHeader := context.GetHeader("Authorization")
+		userIdentity := c.jwtService.GetUserByToken(authHeader)
+
+		recordDto.UpdatedBy = userIdentity.UserId
+		result = c.paymentService.UpdatePaymentStatus(recordDto)
 
 		if result.Status {
 			response := helper.BuildResponse(true, "OK", result.Data)

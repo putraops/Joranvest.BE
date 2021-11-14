@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/view_models"
@@ -20,25 +21,28 @@ type PaymentRepository interface {
 	GetUniqueNumber() int
 	Insert(t models.Payment) helper.Response
 	Update(record models.Payment) helper.Response
+	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
 type paymentConnection struct {
-	connection           *gorm.DB
-	serviceRepository    ServiceRepository
-	filemasterRepository FilemasterRepository
-	tableName            string
-	viewQuery            string
+	connection               *gorm.DB
+	serviceRepository        ServiceRepository
+	membershipUserRepository MembershipUserRepository
+	filemasterRepository     FilemasterRepository
+	tableName                string
+	viewQuery                string
 }
 
 func NewPaymentRepository(db *gorm.DB) PaymentRepository {
 	return &paymentConnection{
-		connection:           db,
-		tableName:            models.Payment.TableName(models.Payment{}),
-		viewQuery:            entity_view_models.EntityPaymentView.ViewModel(entity_view_models.EntityPaymentView{}),
-		serviceRepository:    NewServiceRepository(db),
-		filemasterRepository: NewFilemasterRepository(db),
+		connection:               db,
+		tableName:                models.Payment.TableName(models.Payment{}),
+		viewQuery:                entity_view_models.EntityPaymentView.ViewModel(entity_view_models.EntityPaymentView{}),
+		serviceRepository:        NewServiceRepository(db),
+		membershipUserRepository: NewMembershipUserRepository(db),
+		filemasterRepository:     NewFilemasterRepository(db),
 	}
 }
 
@@ -163,6 +167,47 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
 	return helper.ServerResponse(true, "Ok", "", record)
+}
+
+func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
+	tx := db.connection.Begin()
+	var paymentRecord models.Payment
+	db.connection.First(&paymentRecord, "id = ?", req.Id)
+	if req.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	paymentRecord.PaymentStatus = req.PaymentStatus
+	paymentRecord.UpdatedBy = req.UpdatedBy
+	paymentRecord.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+	paymentRecord.UpdatedAt = paymentRecord.PaymentDate
+
+	var viewRecord entity_view_models.EntityPaymentView
+	db.connection.First(&viewRecord, "id = ?", req.Id)
+	if req.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	if paymentRecord.PaymentStatus == 200 {
+		if viewRecord.MembershipName != "" {
+			res := db.membershipUserRepository.SetMembership(viewRecord.RecordId, paymentRecord)
+			if !res.Status {
+				return res
+			}
+		} else if viewRecord.WebinarTitle != "" {
+			// Do Something for Webinar
+		}
+	}
+
+	res := tx.Save(&paymentRecord)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", paymentRecord)
 }
 
 func (db *paymentConnection) GetById(recordId string) helper.Response {

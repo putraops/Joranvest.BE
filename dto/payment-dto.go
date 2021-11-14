@@ -25,3 +25,9 @@ type PaymentDto struct {
 	EntityId      string    `json:"-"`
 	UpdatedBy     string
 }
+
+type UpdatePaymentStatusDto struct {
+	Id            string `json:"id" form:"id"`
+	PaymentStatus int    `json:"payment_status" form:"payment_status"`
+	UpdatedBy     string
+}

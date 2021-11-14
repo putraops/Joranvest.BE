@@ -1062,6 +1062,7 @@ func main() {
 		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
 		paymentApiRoutes.POST("/charge", paymentController.Charge)
 		paymentApiRoutes.POST("/save", paymentController.Save)
+		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
 	}
 	// #endregion
 

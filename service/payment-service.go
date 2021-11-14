@@ -2,6 +2,7 @@ package service
 
 import (
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
@@ -13,6 +14,7 @@ type PaymentService interface {
 	GetUniqueNumber() int
 	Insert(record models.Payment) helper.Response
 	Update(record models.Payment) helper.Response
+	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -46,6 +48,10 @@ func (service *paymentService) Insert(record models.Payment) helper.Response {
 
 func (service *paymentService) Update(record models.Payment) helper.Response {
 	return service.paymentRepository.Update(record)
+}
+
+func (service *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
+	return service.paymentRepository.UpdatePaymentStatus(req)
 }
 
 func (service *paymentService) GetById(recordId string) helper.Response {
