@@ -18,6 +18,8 @@ type EntityApplicationUserView struct {
 	MembershipDuration string       `json:"membership_duration"`
 	MembershipDate     sql.NullTime `json:"membership_date"`
 	MembershipExpired  sql.NullTime `json:"membership_expired"`
+	Filepath           string       `json:"filepath"`
+	FilepathThumbnail  string       `json:"filepath_thumbnail"`
 	UserCreate         string       `json:"user_create"`
 	UserUpdate         string       `json:"user_update"`
 }
@@ -63,12 +65,16 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  m.membership_expired,")
 	sql.WriteString("  false AS has_role,")
 	sql.WriteString("  r.is_admin,")
+	sql.WriteString("  r.gender,")
+	sql.WriteString("  f.filepath,")
+	sql.WriteString("  f.filepath_thumbnail,")
 	sql.WriteString("  CONCAT(r.first_name, ' ', r.last_name) AS full_name,")
 	sql.WriteString("  CONCAT(UPPER(LEFT(r.first_name, 1)), '', UPPER(LEFT(r.last_name, 1))) AS initial_name,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM application_user r ")
 	sql.WriteString("LEFT JOIN LATERAL get_membership_status(r.id) m ON true ")
+	sql.WriteString("LEFT JOIN filemaster f ON f.record_id = r.id AND f.file_type = 1 ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	return sql.String()

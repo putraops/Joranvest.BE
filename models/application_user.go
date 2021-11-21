@@ -29,6 +29,7 @@ type ApplicationUser struct {
 	IsEmailVerified bool         `gorm:"type:bool;default:0" json:"is_email_verified"`
 	IsPhoneVerified bool         `gorm:"type:bool;default:0" json:"is_phone_verified"`
 	IsAdmin         bool         `gorm:"type:bool;default:0" json:"is_admin"`
+	Gender          bool         `gorm:"type:bool" json:"gender"`
 	Token           string       `gorm:"-" json:"token,omitempty"`
 }
 

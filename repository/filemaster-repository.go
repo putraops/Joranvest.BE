@@ -17,23 +17,26 @@ type FilemasterRepository interface {
 	GetAllByRecordIds(ids []string) []models.Filemaster
 	SingleUpload(t models.Filemaster) helper.Response
 	UploadByType(t models.Filemaster) helper.Response
+	UploadProfilePicture(t models.Filemaster) helper.Response
 	Insert(t models.Filemaster) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
 }
 
 type filemasterConnection struct {
-	connection        *gorm.DB
-	serviceRepository ServiceRepository
-	tableName         string
-	viewQuery         string
+	connection          *gorm.DB
+	serviceRepository   ServiceRepository
+	applicationUserRepo ApplicationUserRepository
+	tableName           string
+	viewQuery           string
 }
 
 func NewFilemasterRepository(db *gorm.DB) FilemasterRepository {
 	return &filemasterConnection{
-		connection:        db,
-		tableName:         models.Filemaster.TableName(models.Filemaster{}),
-		viewQuery:         entity_view_models.EntityFilemasterView.ViewModel(entity_view_models.EntityFilemasterView{}),
-		serviceRepository: NewServiceRepository(db),
+		connection:          db,
+		tableName:           models.Filemaster.TableName(models.Filemaster{}),
+		viewQuery:           entity_view_models.EntityFilemasterView.ViewModel(entity_view_models.EntityFilemasterView{}),
+		serviceRepository:   NewServiceRepository(db),
+		applicationUserRepo: NewApplicationUserRepository(db),
 	}
 }
 
@@ -81,6 +84,28 @@ func (db *filemasterConnection) UploadByType(record models.Filemaster) helper.Re
 	tx := db.connection.Begin()
 
 	if err := tx.Where("record_id = ? AND file_type = ?", record.RecordId, record.FileType).Delete(&filemasterRecord).Error; err != nil {
+		tx.Rollback()
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	record.Id = uuid.New().String()
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	if err := tx.Create(&record).Error; err != nil {
+		tx.Rollback()
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	} else {
+		tx.Commit()
+		db.connection.Find(&record)
+		return helper.ServerResponse(true, "Ok", "", record)
+	}
+}
+
+func (db *filemasterConnection) UploadProfilePicture(record models.Filemaster) helper.Response {
+	var filemasterRecord models.Filemaster
+	tx := db.connection.Begin()
+
+	if err := tx.Where("record_id = ? AND file_type = 1", record.RecordId, record.FileType).Delete(&filemasterRecord).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}

@@ -973,6 +973,7 @@ func main() {
 	{
 		filemasterApiRoutes.POST("/single_upload/:id", filemasterController.SingleUpload)
 		filemasterApiRoutes.POST("/uploadByType/:module/:filetype/:id", filemasterController.UploadByType)
+		filemasterApiRoutes.POST("/uploadProfilePicture/:id", filemasterController.UploadProfilePicture)
 		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
 		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
 		filemasterApiRoutes.POST("/getAllByRecordIds", filemasterController.GetAllByRecordIds)
