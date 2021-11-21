@@ -207,7 +207,7 @@ func (db *webinarConnection) Submit(recordId string, userId string) helper.Respo
 
 func (db *webinarConnection) GetById(recordId string) helper.Response {
 	var record entity_view_models.EntityWebinarView
-	db.connection.Preload("WebinarCategory").First(&record, "id = ?", recordId)
+	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
