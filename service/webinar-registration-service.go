@@ -2,7 +2,6 @@ package service
 
 import (
 	"joranvest/commons"
-	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
@@ -14,10 +13,9 @@ type WebinarRegistrationService interface {
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
-	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	Insert(record models.WebinarRegistration) helper.Response
 	Update(record models.WebinarRegistration) helper.Response
-	UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response
+	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -50,10 +48,6 @@ func (service *webinarRegistrationService) Insert(record models.WebinarRegistrat
 
 func (service *webinarRegistrationService) Update(record models.WebinarRegistration) helper.Response {
 	return service.webinarRegistrationRepository.Update(record)
-}
-
-func (service *webinarRegistrationService) UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response {
-	return service.webinarRegistrationRepository.UpdatePayment(dto)
 }
 
 func (service *webinarRegistrationService) GetById(recordId string) helper.Response {

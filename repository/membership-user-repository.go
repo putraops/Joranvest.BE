@@ -7,6 +7,9 @@ import (
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/view_models"
+
+	log "github.com/sirupsen/logrus"
+
 	"strings"
 	"time"
 
@@ -177,6 +180,7 @@ func (db *membershipUserConnection) GetAll(filter map[string]interface{}) []mode
 }
 
 func (db *membershipUserConnection) SetMembership(membershipId string, payment models.Payment) helper.Response {
+	commons.Logger()
 	tx := db.connection.Begin()
 	// -- Get Membership Record
 	var membershipRecord models.Membership
@@ -203,9 +207,10 @@ func (db *membershipUserConnection) SetMembership(membershipId string, payment m
 
 	if err := tx.Create(&membershipUser).Error; err != nil {
 		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
-
 	tx.Commit()
 	return helper.ServerResponse(true, "Ok", "", membershipUser.Id)
 }
@@ -221,12 +226,16 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 	}
 	if err := tx.Create(&payment).Error; err != nil {
 		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
 
 	// -- Get Membership Record
 	var membershipRecord models.Membership
 	if err := tx.First(&membershipRecord, "id = ?", membershipUser.MembershipId).Error; err != nil || membershipRecord.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		tx.Rollback()
 		return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}

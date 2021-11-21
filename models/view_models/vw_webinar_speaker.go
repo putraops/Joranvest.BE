@@ -12,6 +12,7 @@ type EntityWebinarSpeakerView struct {
 	SpeakerLastName    string `json:"speaker_last_name"`
 	SpeakerFullName    string `json:"speaker_full_name"`
 	SpeakerInitialName string `json:"speaker_initial_name"`
+	SpeakerTitle       string `json:"speaker_title"`
 	UserCreate         string `json:"user_create"`
 	UserUpdate         string `json:"user_update"`
 }
@@ -41,6 +42,7 @@ func (EntityWebinarSpeakerView) ViewModel() string {
 	sql.WriteString("  o.name AS organization_name,")
 	sql.WriteString("  u3.first_name AS speaker_first_name,")
 	sql.WriteString("  u3.last_name AS speaker_last_name,")
+	sql.WriteString("  u3.title AS speaker_title,")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS speaker_full_name,")
 	sql.WriteString("  CONCAT(UPPER(LEFT(u3.first_name, 1)), '', UPPER(LEFT(u3.last_name, 1))) AS speaker_initial_name,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS user_create,")

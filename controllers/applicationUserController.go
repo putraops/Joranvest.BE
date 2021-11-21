@@ -48,7 +48,7 @@ func (c *applicationUserController) GetDatatables(context *gin.Context) {
 }
 
 func (c *applicationUserController) Lookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	qry := context.Request.URL.Query()
 
 	if _, found := qry["q"]; found {

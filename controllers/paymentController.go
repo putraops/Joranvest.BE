@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+
 	"joranvest/commons"
 	"joranvest/dto"
 	"joranvest/helper"
@@ -22,7 +24,8 @@ type PaymentController interface {
 	GetById(context *gin.Context)
 	GetUniqueNumber(context *gin.Context)
 	DeleteById(context *gin.Context)
-	Save(context *gin.Context)
+	MembershipPayment(context *gin.Context)
+	WebinarPayment(context *gin.Context)
 	UpdatePaymentStatus(context *gin.Context)
 	CreateTokenIdByCard(context *gin.Context)
 	Charge(context *gin.Context)
@@ -58,7 +61,7 @@ func (c *paymentController) GetUniqueNumber(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func (c *paymentController) Save(context *gin.Context) {
+func (c *paymentController) MembershipPayment(context *gin.Context) {
 	result := helper.Response{}
 	var recordDto dto.PaymentDto
 	fmt.Println(recordDto)
@@ -74,15 +77,41 @@ func (c *paymentController) Save(context *gin.Context) {
 		var newRecord = models.Payment{}
 		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
 		newRecord.EntityId = userIdentity.EntityId
+		newRecord.CreatedBy = userIdentity.UserId
+		newRecord.OwnerId = userIdentity.UserId
+		result = c.paymentService.MembershipPayment(newRecord)
 
-		if recordDto.Id == "" {
-			newRecord.CreatedBy = userIdentity.UserId
-			newRecord.OwnerId = userIdentity.UserId
-			result = c.paymentService.Insert(newRecord)
+		if result.Status {
+			response := helper.BuildResponse(true, "OK", result.Data)
+			context.JSON(http.StatusOK, response)
 		} else {
-			newRecord.UpdatedBy = userIdentity.UserId
-			result = c.paymentService.Update(newRecord)
+			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
 		}
+	}
+}
+
+func (c *paymentController) WebinarPayment(context *gin.Context) {
+	commons.Logger()
+	result := helper.Response{}
+	var recordDto dto.PaymentDto
+	fmt.Println(recordDto)
+	errDTO := context.Bind(&recordDto)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error("WebinarPayment: Bind Dto")
+		log.Error(fmt.Sprintf("%v,", errDTO.Error()))
+		context.JSON(http.StatusBadRequest, res)
+	} else {
+		authHeader := context.GetHeader("Authorization")
+		userIdentity := c.jwtService.GetUserByToken(authHeader)
+
+		var newRecord = models.Payment{}
+		smapping.FillStruct(&newRecord, smapping.MapFields(&recordDto))
+		newRecord.EntityId = userIdentity.EntityId
+		newRecord.CreatedBy = userIdentity.UserId
+		newRecord.OwnerId = userIdentity.UserId
+		result = c.paymentService.WebinarPayment(newRecord)
 
 		if result.Status {
 			response := helper.BuildResponse(true, "OK", result.Data)

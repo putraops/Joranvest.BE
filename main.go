@@ -923,10 +923,9 @@ func main() {
 	{
 		webinarRegistrationApiRoutes.POST("/getDatatables", webinarRegistrationController.GetDatatables)
 		webinarRegistrationApiRoutes.POST("/getPagination", webinarRegistrationController.GetPagination)
-		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
-		webinarRegistrationApiRoutes.POST("/updatePayment", webinarRegistrationController.UpdatePayment)
 		webinarRegistrationApiRoutes.GET("/getById/:id", webinarRegistrationController.GetById)
 		webinarRegistrationApiRoutes.GET("/getViewById/:id", webinarRegistrationController.GetViewById)
+		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
 		webinarRegistrationApiRoutes.GET("/isWebinarRegistered/:id", webinarRegistrationController.IsWebinarRegistered)
 		webinarRegistrationApiRoutes.DELETE("/deleteById/:id", webinarRegistrationController.DeleteById)
 	}
@@ -1061,7 +1060,8 @@ func main() {
 		paymentApiRoutes.GET("/getById/:id", paymentController.GetById)
 		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
 		paymentApiRoutes.POST("/charge", paymentController.Charge)
-		paymentApiRoutes.POST("/save", paymentController.Save)
+		paymentApiRoutes.POST("/membershipPayment", paymentController.MembershipPayment)
+		paymentApiRoutes.POST("/webinarPayment", paymentController.WebinarPayment)
 		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
 	}
 	// #endregion

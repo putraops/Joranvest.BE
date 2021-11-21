@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"joranvest/commons"
-	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/view_models"
@@ -22,10 +21,9 @@ type WebinarRegistrationRepository interface {
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
-	IsWebinarRegistered(webinarId string, userId string) helper.Response
-	Insert(t models.WebinarRegistration) helper.Response
+	Insert(record models.WebinarRegistration) helper.Response
 	Update(record models.WebinarRegistration) helper.Response
-	UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response
+	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -182,9 +180,6 @@ func (db *webinarRegistrationConnection) Insert(record models.WebinarRegistratio
 
 	record.Id = uuid.New().String()
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	if record.PaymentStatus == 200 {
-		record.PaymentDate = record.CreatedAt
-	}
 
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
@@ -217,35 +212,6 @@ func (db *webinarRegistrationConnection) Update(record models.WebinarRegistratio
 
 	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
-	return helper.ServerResponse(true, "Ok", "", record)
-}
-
-func (db *webinarRegistrationConnection) UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response {
-	tx := db.connection.Begin()
-	var record models.WebinarRegistration
-
-	db.connection.First(&record, "id = ?", dto.Id)
-	if dto.Id == "" {
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-		return res
-	}
-
-	record.PaymentStatus = dto.PaymentStatus
-	record.UpdatedBy = dto.UpdatedBy
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-
-	res := tx.Save(&record)
-	if res.RowsAffected == 0 {
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
-	}
-
-	db.connection.First(&record, "id = ?", dto.Id)
-	if dto.Id == "" {
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-		return res
-	}
-
-	tx.Commit()
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 

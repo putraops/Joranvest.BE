@@ -12,7 +12,8 @@ type PaymentService interface {
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Payment
 	GetUniqueNumber() int
-	Insert(record models.Payment) helper.Response
+	MembershipPayment(record models.Payment) helper.Response
+	WebinarPayment(record models.Payment) helper.Response
 	Update(record models.Payment) helper.Response
 	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
 	GetById(recordId string) helper.Response
@@ -42,8 +43,11 @@ func (service *paymentService) GetUniqueNumber() int {
 	return service.paymentRepository.GetUniqueNumber()
 }
 
-func (service *paymentService) Insert(record models.Payment) helper.Response {
-	return service.paymentRepository.Insert(record)
+func (service *paymentService) MembershipPayment(record models.Payment) helper.Response {
+	return service.paymentRepository.MembershipPayment(record)
+}
+func (service *paymentService) WebinarPayment(record models.Payment) helper.Response {
+	return service.paymentRepository.WebinarPayment(record)
 }
 
 func (service *paymentService) Update(record models.Payment) helper.Response {

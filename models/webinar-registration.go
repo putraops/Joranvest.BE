@@ -20,11 +20,9 @@ type WebinarRegistration struct {
 	OwnerId     string       `gorm:"type:varchar(50)" json:"owner_id"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	WebinarId         string       `gorm:"type:varchar(50);not null" json:"webinar_id"`
-	ApplicationUserId string       `gorm:"type:varchar(50);not null" json:"application_user_id"`
-	PaymentDate       sql.NullTime `gorm:"type:timestamp" json:"payment_date"`
-	PaymentType       string       `gorm:"type:varchar(50);not null" json:"payment_type"`
-	PaymentStatus     int          `gorm:"type:int" json:"payment_status"`
+	WebinarId         string `gorm:"type:varchar(50);not null" json:"webinar_id"`
+	ApplicationUserId string `gorm:"type:varchar(50);not null" json:"application_user_id"`
+	PaymentId         string `gorm:"type:varchar(50);" json:"payment_id"`
 
 	Webinar         Webinar         `gorm:"foreignkey:WebinarId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"webinar"`
 	ApplicationUser ApplicationUser `gorm:"foreignkey:ApplicationUserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"application_user"`

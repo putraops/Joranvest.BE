@@ -7,6 +7,10 @@ import (
 
 type EntityWebinarView struct {
 	models.Webinar
+	Filepath                  string `json:"filepath"`
+	FilepathThumbnail         string `json:"filepath_thumbnail"`
+	Filename                  string `json:"filename"`
+	Extension                 string `json:"extension"`
 	OrganizerOrganizationName string `json:"organizer_organization_name"`
 	SpeakerName               string `json:"speaker_name"`
 	WebinarCategoryName       string `json:"webinar_category_name"`
@@ -51,11 +55,16 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.reward,")
 	sql.WriteString("  r.status,")
 	sql.WriteString("  r.speaker_type,")
+	sql.WriteString("  f.filepath,")
+	sql.WriteString("  f.filepath_thumbnail,")
+	sql.WriteString("  f.filename,")
+	sql.WriteString("  f.extension,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname, ")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
 	sql.WriteString("FROM public.webinar r ")
 	sql.WriteString("  LEFT JOIN webinar_category c ON c.id = r.webinar_category_id")
+	sql.WriteString("  LEFT JOIN filemaster f ON f.record_id = r.id")
 	sql.WriteString("  LEFT JOIN organization o ON o.id = r.organizer_organization_id")
 	sql.WriteString("  LEFT JOIN application_user u1 ON u1.id = r.created_by")
 	sql.WriteString("  LEFT JOIN application_user u2 ON u2.id = r.updated_by")

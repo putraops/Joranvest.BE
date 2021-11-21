@@ -14,7 +14,7 @@ import (
 //-- This is user contract
 type ApplicationUserService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
 	GetById(recordId string) helper.Response
@@ -37,8 +37,8 @@ func (service *applicationUserService) GetDatatables(request commons.DataTableRe
 	return service.applicationUserRepository.GetDatatables(request)
 }
 
-func (service *applicationUserService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *applicationUserService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
 	request := make(map[string]interface{})
 	request["qry"] = r.Q
@@ -55,14 +55,10 @@ func (service *applicationUserService) Lookup(r helper.Select2Request) helper.Re
 	result := service.applicationUserRepository.Lookup(request)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Value:       record.Id,
-				Text:        record.FirstName + " " + record.LastName,
-				Label:       record.FirstName + " " + record.LastName,
-				Description: "",
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.FirstName + " " + record.LastName,
+				ParentId: "",
 			}
 			ary.Results = append(ary.Results, p)
 		}

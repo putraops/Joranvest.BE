@@ -10,6 +10,8 @@ import (
 	entity_view_models "joranvest/models/view_models"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -19,7 +21,8 @@ type PaymentRepository interface {
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Payment
 	GetUniqueNumber() int
-	Insert(t models.Payment) helper.Response
+	MembershipPayment(t models.Payment) helper.Response
+	WebinarPayment(t models.Payment) helper.Response
 	Update(record models.Payment) helper.Response
 	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
 	GetById(recordId string) helper.Response
@@ -30,6 +33,7 @@ type paymentConnection struct {
 	connection               *gorm.DB
 	serviceRepository        ServiceRepository
 	membershipUserRepository MembershipUserRepository
+	webinarRegistrationRepo  WebinarRegistrationRepository
 	filemasterRepository     FilemasterRepository
 	tableName                string
 	viewQuery                string
@@ -42,6 +46,7 @@ func NewPaymentRepository(db *gorm.DB) PaymentRepository {
 		viewQuery:                entity_view_models.EntityPaymentView.ViewModel(entity_view_models.EntityPaymentView{}),
 		serviceRepository:        NewServiceRepository(db),
 		membershipUserRepository: NewMembershipUserRepository(db),
+		webinarRegistrationRepo:  NewWebinarRegistrationRepository(db),
 		filemasterRepository:     NewFilemasterRepository(db),
 	}
 }
@@ -124,7 +129,68 @@ func (db *paymentConnection) GetUniqueNumber() int {
 	return unique_number
 }
 
-func (db *paymentConnection) Insert(record models.Payment) helper.Response {
+func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Response {
+	commons.Logger()
+	tx := db.connection.Begin()
+	// productName := *product
+
+	record.Id = uuid.New().String()
+	if record.PaymentStatus == 200 {
+		record.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+	} else {
+		record.PaymentDateExpired = sql.NullTime{Time: time.Now().AddDate(0, 0, 1), Valid: true}
+	}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+	if err := tx.Save(&record).Error; err != nil {
+		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	// #region Set After Payment Paid
+	if record.PaymentStatus == 200 {
+		var membershipRecord models.Membership
+		if err := tx.First(&membershipRecord, "id = ?", record.RecordId).Error; err != nil || membershipRecord.Id == "" {
+			log.Error(db.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", err))
+			return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+
+		var membershipUser models.MembershipUser
+		membershipUser.Id = uuid.New().String()
+		membershipUser.MembershipId = record.RecordId
+		membershipUser.PaymentId = record.Id
+		if record.UpdatedBy != "" {
+			membershipUser.CreatedBy = record.UpdatedBy
+		} else {
+			membershipUser.CreatedBy = record.CreatedBy
+		}
+		membershipUser.OwnerId = record.OwnerId
+		membershipUser.ApplicationUserId = record.CreatedBy
+		membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		membershipUser.ExpiredDate = sql.NullTime{
+			Time:  record.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
+			Valid: true,
+		}
+
+		if err := tx.Create(&membershipUser).Error; err != nil {
+			tx.Rollback()
+			log.Error(db.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", err))
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+	}
+	// #endregion
+
+	tx.Commit()
+	db.connection.Find(&record)
+	return helper.ServerResponse(true, "Ok", "", record)
+}
+
+func (db *paymentConnection) WebinarPayment(record models.Payment) helper.Response {
+	commons.Logger()
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
@@ -135,10 +201,43 @@ func (db *paymentConnection) Insert(record models.Payment) helper.Response {
 	}
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
-	if err := tx.Create(&record).Error; err != nil {
+	if err := tx.Save(&record).Error; err != nil {
 		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
+
+	//#region Set After Payment Paid
+	if record.PaymentStatus == 200 {
+		var webinarRecord models.Webinar
+		if err := tx.First(&webinarRecord, "id = ?", record.RecordId).Error; err != nil || webinarRecord.Id == "" {
+			log.Error(db.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", err))
+			return helper.ServerResponse(false, "Webinar Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+
+		var webinarRegistrationRecord models.WebinarRegistration
+		webinarRegistrationRecord.Id = uuid.New().String()
+		webinarRegistrationRecord.WebinarId = record.RecordId
+		webinarRegistrationRecord.PaymentId = record.Id
+		if record.UpdatedBy != "" {
+			webinarRegistrationRecord.CreatedBy = record.UpdatedBy
+		} else {
+			webinarRegistrationRecord.CreatedBy = record.CreatedBy
+		}
+		webinarRegistrationRecord.OwnerId = record.OwnerId
+		webinarRegistrationRecord.ApplicationUserId = record.CreatedBy
+		webinarRegistrationRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+		if err := tx.Create(&webinarRegistrationRecord).Error; err != nil {
+			tx.Rollback()
+			log.Error(db.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", err))
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+	}
+	// #endregion
 
 	tx.Commit()
 	db.connection.Find(&record)
@@ -192,12 +291,20 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 	if paymentRecord.PaymentStatus == 200 {
 		if viewRecord.MembershipName != "" {
+			//.. Insert Membership User
 			res := db.membershipUserRepository.SetMembership(viewRecord.RecordId, paymentRecord)
 			if !res.Status {
 				return res
 			}
 		} else if viewRecord.WebinarTitle != "" {
-			// Do Something for Webinar
+			//.. Insert Webinar Registration
+			var webinarRegistrationRecord models.WebinarRegistration
+			webinarRegistrationRecord.ApplicationUserId = paymentRecord.CreatedBy
+			webinarRegistrationRecord.WebinarId = viewRecord.RecordId
+			res := db.webinarRegistrationRepo.Insert(webinarRegistrationRecord)
+			if !res.Status {
+				return res
+			}
 		}
 	}
 
