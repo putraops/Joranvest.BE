@@ -35,7 +35,7 @@ func NewAuthService(appUserRepo repository.ApplicationUserRepository) AuthServic
 }
 
 func (service *authService) VerifyCredential(username string, email string, password string) interface{} {
-	res := service.appUserRepo.GetUserByUsernameOrEmail(username, email)
+	res := service.appUserRepo.GetViewUserByUsernameOrEmail(username, email)
 	if res == nil {
 		return nil
 	}
@@ -55,13 +55,6 @@ func (service *authService) CreateUser(user dto.ApplicationUserRegisterDto) (mod
 	if errMap != nil {
 		log.Fatalf("Failed map %v", errMap)
 	}
-
-	//
-	// //asdasd := userSession.GetAppSession()
-	// println("userSession.GetAppSession().EntityId")
-	// session := sessions.Default(ctx)
-	// println(fmt.Sprintf("%v", session.Get("EntityId")))
-
 	return service.appUserRepo.Insert(userToCreate)
 }
 

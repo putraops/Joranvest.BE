@@ -5,7 +5,9 @@ import (
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
+	entity_view_models "joranvest/models/view_models"
 	"joranvest/repository"
+
 	"log"
 
 	"github.com/mashingan/smapping"
@@ -17,6 +19,7 @@ type ApplicationUserService interface {
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
+	ChangePassword(username string, email string, password string) helper.Response
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
 	GetAll() []models.ApplicationUser
@@ -96,4 +99,25 @@ func (service *applicationUserService) GetAll() []models.ApplicationUser {
 
 func (service *applicationUserService) DeleteById(userId string) helper.Response {
 	return service.applicationUserRepository.DeleteById(userId)
+}
+
+func (service *applicationUserService) ChangePassword(username string, email string, password string) helper.Response {
+	res := service.applicationUserRepository.GetViewUserByUsernameOrEmail(username, email)
+	if res == nil {
+		return helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+	}
+	if v, ok := res.(entity_view_models.EntityApplicationUserView); ok {
+		comparedPassword := comparePassword(v.Password, []byte(password))
+		if (v.Email == email || v.Username == username) && comparedPassword {
+			user := (service.applicationUserRepository.GetById(v.Id).Data).(models.ApplicationUser)
+			user.Password = password
+
+			newUserData := service.applicationUserRepository.Update(user)
+			return helper.ServerResponse(true, "Ok", "", newUserData)
+
+		} else {
+			return helper.ServerResponse(false, "Password is not match", "Error", helper.EmptyObj{})
+		}
+	}
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }

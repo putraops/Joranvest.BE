@@ -7,6 +7,7 @@ import (
 	"joranvest/commons"
 	"joranvest/dto"
 	"joranvest/helper"
+	"joranvest/models"
 	"joranvest/service"
 
 	"github.com/dgrijalva/jwt-go"
@@ -17,6 +18,7 @@ type ApplicationUserController interface {
 	GetDatatables(context *gin.Context)
 	Lookup(context *gin.Context)
 	Update(context *gin.Context)
+	ChangePassword(context *gin.Context)
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
@@ -150,5 +152,30 @@ func (c *applicationUserController) GetViewById(context *gin.Context) {
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *applicationUserController) ChangePassword(context *gin.Context) {
+	var loginDto dto.LoginDto
+	err := context.ShouldBind(&loginDto)
+	fmt.Println(loginDto)
+	if err != nil {
+		response := helper.BuildErrorResponse("Failed to request login", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	result := c.applicationUserService.ChangePassword(loginDto.Username, loginDto.Email, loginDto.Password)
+	if result.Status {
+		if v, ok := (result.Data).(models.ApplicationUser); ok {
+			generatedToken := c.jwtService.GenerateToken(v.Id, v.EntityId)
+			v.Token = generatedToken
+
+			response := helper.BuildResponse(true, "Ok!", v)
+			ctx.JSON(http.StatusOK, response)
+			return
+		}
+	} else {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
 	}
 }
