@@ -9,7 +9,7 @@ import (
 )
 
 type PaymentService interface {
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Payment
 	GetUniqueNumber() int
 	MembershipPayment(record models.Payment) helper.Response
@@ -31,7 +31,7 @@ func NewPaymentService(repo repository.PaymentRepository) PaymentService {
 	}
 }
 
-func (service *paymentService) GetPagination(request commons.PaginationRequest) interface{} {
+func (service *paymentService) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	return service.paymentRepository.GetPagination(request)
 }
 

@@ -18,7 +18,7 @@ import (
 )
 
 type PaymentRepository interface {
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Payment
 	GetUniqueNumber() int
 	MembershipPayment(t models.Payment) helper.Response
@@ -51,7 +51,7 @@ func NewPaymentRepository(db *gorm.DB) PaymentRepository {
 	}
 }
 
-func (db *paymentConnection) GetPagination(request commons.PaginationRequest) interface{} {
+func (db *paymentConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityPaymentView
 
@@ -85,13 +85,20 @@ func (db *paymentConnection) GetPagination(request commons.PaginationRequest) in
 	// #region filter
 	var filters = ""
 	total_filter := 0
-	for k, v := range request.Filter {
-		if v != "" {
-			if total_filter > 0 {
-				filters += "AND "
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
 			}
-			filters += fmt.Sprintf("%v = '%v' ", k, v)
-			total_filter++
 		}
 	}
 	// #endregion

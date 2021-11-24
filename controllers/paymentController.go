@@ -45,7 +45,7 @@ func NewPaymentController(paymentService service.PaymentService, jwtService serv
 }
 
 func (c *paymentController) GetPagination(context *gin.Context) {
-	var req commons.PaginationRequest
+	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})

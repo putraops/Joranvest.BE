@@ -7,8 +7,10 @@ import (
 
 type EntityPaymentView struct {
 	models.Payment
+	MembershipId          string `json:"membership_id"`
 	MembershipName        string `json:"membership_name"`
 	MembershipDuration    string `json:"membership_duration"`
+	WebinarId             string `json:"webinar_id"`
 	WebinarTitle          string `json:"webinar_title"`
 	WebinarRegistrationId string `json:"webinar_registration_id"`
 	CreatedByFullname     string `json:"created_by_fullname"`
@@ -41,8 +43,10 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("  r.record_id,")
 	sql.WriteString("  r.coupon_id,")
 	sql.WriteString("  r.order_number,")
+	sql.WriteString("  m.id AS membership_id,")
 	sql.WriteString("  m.name AS membership_name,")
 	sql.WriteString("  m.duration AS membership_duration,")
+	sql.WriteString("  w.id AS webinar_id,")
 	sql.WriteString("  w.title AS webinar_title,")
 	sql.WriteString("  wr.id AS webinar_registration_id,")
 	sql.WriteString("  r.price,")
