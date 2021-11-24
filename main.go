@@ -985,6 +985,7 @@ func main() {
 		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
+		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
 		applicationUserApiRoutes.POST("/register", authController.RegisterForm)
 		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
 	}

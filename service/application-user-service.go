@@ -19,11 +19,12 @@ type ApplicationUserService interface {
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
-	ChangePassword(username string, email string, password string) helper.Response
+	ChangePassword(recordDto dto.ChangePasswordDto) helper.Response
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
+	RecoverPassword(recordId string, oldPassword string) helper.Response
 }
 
 type applicationUserService struct {
@@ -101,16 +102,16 @@ func (service *applicationUserService) DeleteById(userId string) helper.Response
 	return service.applicationUserRepository.DeleteById(userId)
 }
 
-func (service *applicationUserService) ChangePassword(username string, email string, password string) helper.Response {
-	res := service.applicationUserRepository.GetViewUserByUsernameOrEmail(username, email)
+func (service *applicationUserService) ChangePassword(recordDto dto.ChangePasswordDto) helper.Response {
+	res := service.applicationUserRepository.GetViewUserByUsernameOrEmail(recordDto.Username, recordDto.Email)
 	if res == nil {
-		return helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return helper.ServerResponse(false, "Record not found", "NotFound", helper.EmptyObj{})
 	}
 	if v, ok := res.(entity_view_models.EntityApplicationUserView); ok {
-		comparedPassword := comparePassword(v.Password, []byte(password))
-		if (v.Email == email || v.Username == username) && comparedPassword {
+		comparedPassword := comparePassword(v.Password, []byte(recordDto.OldPassword))
+		if (v.Email == recordDto.Email || v.Username == recordDto.Username) && comparedPassword {
 			user := (service.applicationUserRepository.GetById(v.Id).Data).(models.ApplicationUser)
-			user.Password = password
+			user.Password = recordDto.NewPassword
 
 			newUserData := service.applicationUserRepository.Update(user)
 			return helper.ServerResponse(true, "Ok", "", newUserData)
@@ -120,4 +121,8 @@ func (service *applicationUserService) ChangePassword(username string, email str
 		}
 	}
 	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+}
+
+func (service *applicationUserService) RecoverPassword(recordId string, oldPassword string) helper.Response {
+	return service.applicationUserRepository.RecoverPassword(recordId, oldPassword)
 }

@@ -21,6 +21,7 @@ type ApplicationUserRepository interface {
 	VerifyCredential(username string, email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
+	RecoverPassword(recordId string, oldPassword string) helper.Response
 	UserProfile(applicationUserId string) models.ApplicationUser
 	GetById(applicationUserId string) helper.Response
 	GetViewById(applicationUserId string) helper.Response
@@ -177,6 +178,21 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 
 	db.connection.Save(&record)
 	return record
+}
+
+func (db *applicationUserConnection) RecoverPassword(recordId string, oldPassword string) helper.Response {
+	tx := db.connection.Begin()
+	var user models.ApplicationUser
+	db.connection.Find(&user, recordId)
+	user.Password = helper.HashAndSalt([]byte(oldPassword))
+
+	res := tx.Save(&user)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", user)
 }
 
 func (db *applicationUserConnection) VerifyCredential(username string, email string, password string) interface{} {
