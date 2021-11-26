@@ -7,13 +7,15 @@ import (
 
 type EntityFundamentalAnalysisView struct {
 	models.FundamentalAnalysis
-	EmitenName        string              `json:"emiten_name"`
-	EmitenCode        string              `json:"emiten_code"`
-	Attachments       []models.Filemaster `gorm:"-" json:"attachments"`
-	CreatedByFullname string              `json:"created_by_fullname"`
-	UserCreateTitle   string              `json:"user_create_title"`
-	UpdatedByFullname string              `json:"updated_by_fullname"`
-	SubmittedFullname string              `json:"submitted_by_fullname"`
+	EmitenName                              string              `json:"emiten_name"`
+	EmitenCode                              string              `json:"emiten_code"`
+	Attachments                             []models.Filemaster `gorm:"-" json:"attachments"`
+	CreatedByFullname                       string              `json:"created_by_fullname"`
+	AnalysisProfilePictureFilepath          string              `json:"analysis_profile_picture_filepath"`
+	AnalysisProfilePictureFilepathThumbnail string              `json:"analysis_profile_picture_filepath_thumbnail"`
+	UserCreateTitle                         string              `json:"user_create_title"`
+	UpdatedByFullname                       string              `json:"updated_by_fullname"`
+	SubmittedFullname                       string              `json:"submitted_by_fullname"`
 }
 
 func (EntityFundamentalAnalysisView) TableName() string {
@@ -47,12 +49,15 @@ func (EntityFundamentalAnalysisView) ViewModel() string {
 	sql.WriteString("  r.research_data,")
 	sql.WriteString("  r.status,")
 	sql.WriteString("  r.description,")
+	sql.WriteString("  f.filepath AS analysis_profile_picture_filepath,")
+	sql.WriteString("  f.filepath_thumbnail AS analysis_profile_picture_filepath_thumbnail,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
 	sql.WriteString("FROM fundamental_analysis r ")
 	sql.WriteString("LEFT JOIN emiten e ON e.id = r.emiten_id ")
+	sql.WriteString("LEFT JOIN filemaster f ON f.record_id = r.created_by AND f.file_type = 1 ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.submitted_by ")
