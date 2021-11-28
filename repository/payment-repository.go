@@ -54,6 +54,7 @@ func NewPaymentRepository(db *gorm.DB) PaymentRepository {
 func (db *paymentConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityPaymentView
+	var recordsUnfilter []entity_view_models.EntityPaymentView
 
 	page := request.Page
 	if page == 0 {
@@ -106,11 +107,15 @@ func (db *paymentConnection) GetPagination(request commons.Pagination2ndRequest)
 	offset := (page - 1) * pageSize
 	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
-	var count int64
-	db.connection.Model(&entity_view_models.EntityPaymentView{}).Where(filters).Count(&count)
+	// #region Get Total Data for Pagination
+	result := db.connection.Where(filters).Find(&recordsUnfilter)
+	if result.Error != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", result.Error), fmt.Sprintf("%v,", result.Error), helper.EmptyObj{})
+	}
+	response.Total = int(result.RowsAffected)
+	// #endregion
 
 	response.Data = records
-	response.Total = int(count)
 	return response
 }
 
