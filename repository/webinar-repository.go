@@ -17,7 +17,7 @@ import (
 
 type WebinarRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Webinar
 	Insert(t models.Webinar) helper.Response
 	Submit(recordId string, userId string) helper.Response
@@ -106,9 +106,10 @@ func (db *webinarConnection) GetDatatables(request commons.DataTableRequest) com
 	return res
 }
 
-func (db *webinarConnection) GetPagination(request commons.PaginationRequest) interface{} {
+func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityWebinarView
+	var recordsUnfilter []entity_view_models.EntityWebinarView
 
 	page := request.Page
 	if page == 0 {
@@ -124,12 +125,55 @@ func (db *webinarConnection) GetPagination(request commons.PaginationRequest) in
 	}
 
 	offset := (page - 1) * pageSize
-	db.connection.Offset(offset).Limit(pageSize).Find(&records)
 
-	var sqlCount strings.Builder
-	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCountByPublic(db.viewQuery, db.tableName))
-	sqlCount.WriteString("WHERE 1=1")
-	db.connection.Raw(sqlCount.String()).Scan(&response.Total)
+	// #region Ordering
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	if len(request.Order) > 0 {
+		order_total := 0
+		for k, v := range request.Order {
+			if order_total == 0 {
+				orders = ""
+			} else {
+				orders += ", "
+			}
+			orders += fmt.Sprintf("%v %v ", k, v)
+			order_total++
+		}
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	if len(request.Filter) > 0 {
+		total_filter := 0
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
+			}
+		}
+	}
+	// #endregion
+
+	if err := db.connection.Where(filters).Offset(offset).Order(orders).Limit(pageSize).Find(&records).Error; err != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	// #region Get Total Data for Pagination
+	result := db.connection.Where(filters).Find(&recordsUnfilter)
+	if result.Error != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", result.Error), fmt.Sprintf("%v,", result.Error), helper.EmptyObj{})
+	}
+	response.Total = int(result.RowsAffected)
+	// #endregion
 
 	response.Data = records
 	return response

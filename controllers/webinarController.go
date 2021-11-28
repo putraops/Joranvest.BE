@@ -55,7 +55,7 @@ func (c *webinarController) GetDatatables(context *gin.Context) {
 // @Failure 400,404 {object} object
 // @Router /webinar/getPagination [get]
 func (c *webinarController) GetPagination(context *gin.Context) {
-	var req commons.PaginationRequest
+	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
