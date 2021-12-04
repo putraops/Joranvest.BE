@@ -574,8 +574,6 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		fmt.Println(c.Request.Method)
 		if c.Request.Method == "OPTIONS" {
-			fmt.Println("PUTRA")
-			fmt.Println("OPTIONS")
 			c.AbortWithStatus(200)
 		} else {
 			c.Next()
