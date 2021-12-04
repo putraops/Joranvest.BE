@@ -19,6 +19,7 @@ type FilemasterRepository interface {
 	UploadByType(t models.Filemaster) helper.Response
 	UploadProfilePicture(t models.Filemaster) helper.Response
 	Insert(t models.Filemaster) helper.Response
+	DeleteById(recordId string) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
 }
 
@@ -134,13 +135,29 @@ func (db *filemasterConnection) Insert(record models.Filemaster) helper.Response
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	} else {
 		tx.Commit()
-		db.connection.Find(&record)
 		return helper.ServerResponse(true, "Ok", "", record)
+	}
+}
+func (db *filemasterConnection) DeleteById(id string) helper.Response {
+	var filepath string
+	var record models.Filemaster
+	db.connection.First(&record, "id = ?", id)
+
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	} else {
+		filepath = record.Filepath
+		res := db.connection.Delete(&record)
+		if res.RowsAffected == 0 {
+			return helper.ServerResponse(false, "Error", fmt.Sprintf("%v", res.Error), helper.EmptyObj{})
+		}
+		return helper.ServerResponse(true, "Ok", "", filepath)
 	}
 }
 
 func (db *filemasterConnection) DeleteByRecordId(recordId string) helper.Response {
-	var record models.Tag
+	var record models.Filemaster
 	db.connection.First(&record, "record_id = ?", recordId)
 
 	if record.Id == "" {

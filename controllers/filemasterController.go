@@ -29,8 +29,10 @@ type FilemasterController interface {
 	GetAllByRecordIds(context *gin.Context)
 	SingleUpload(context *gin.Context)
 	UploadByType(context *gin.Context)
+	UploadPDFDocuments(context *gin.Context)
 	UploadProfilePicture(context *gin.Context)
 	Insert(context *gin.Context)
+	DeleteById(context *gin.Context)
 	DeleteByRecordId(context *gin.Context)
 }
 
@@ -218,6 +220,78 @@ func (c *filemasterController) UploadByType(context *gin.Context) {
 	}
 }
 
+func (c *filemasterController) UploadPDFDocuments(context *gin.Context) {
+	id := context.Param("id")
+	module := context.Param("module")
+
+	result := helper.Response{}
+	var record models.Filemaster
+
+	file, errFile := context.FormFile("file")
+	if errFile != nil {
+		response := helper.BuildResponse(false, fmt.Sprintf("get form err: %s", errFile.Error()), helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	err := context.Bind(&record)
+	if err != nil {
+		response := helper.BuildResponse(false, err.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		authHeader := context.GetHeader("Authorization")
+		userIdentity := c.jwtService.GetUserByToken(authHeader)
+
+		folderUpload := "upload/" + module + "/" + id + "/supported_files/"
+		//-- Create folder if not exist
+		_, errStat := os.Stat(folderUpload)
+		if os.IsNotExist(errStat) {
+			errDir := os.MkdirAll(folderUpload, 0755)
+			if errDir != nil {
+				log.Fatal(errStat)
+			}
+		}
+		filename := filepath.Base(file.Filename)
+		extension := filepath.Ext(file.Filename)
+		if extension != ".pdf" {
+			response := helper.BuildResponse(false, "Only allow file .pdf to upload.", helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+			return
+		}
+
+		path := folderUpload + filename
+		errRemoveDir := os.RemoveAll(path)
+		if err != nil {
+			log.Fatal(errRemoveDir)
+		}
+
+		if err := context.SaveUploadedFile(file, path); err != nil {
+			response := helper.BuildResponse(false, fmt.Sprintf("Upload File Error: %s", err.Error()), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+			return
+		}
+		record.RecordId = id
+		record.EntityId = userIdentity.EntityId
+		record.CreatedBy = userIdentity.UserId
+		record.Filepath = path
+		// record.FilepathThumbnail = path_thumb
+		record.Filename = filename
+		record.Extension = filepath.Ext(file.Filename)
+		record.Size = fmt.Sprint(file.Size)
+		record.FileType = 3 //-- Documents
+		result = c.filemasterService.Insert(record)
+
+		if result.Status {
+			response := helper.BuildResponse(result.Status, "OK", result.Data)
+			context.JSON(http.StatusOK, response)
+		} else {
+			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+		}
+	}
+}
+
 func (c *filemasterController) Insert(context *gin.Context) {
 	id := context.Param("id")
 	is_multiple := context.Param("is_multiple")
@@ -274,6 +348,27 @@ func (c *filemasterController) Insert(context *gin.Context) {
 			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
 			context.JSON(http.StatusOK, response)
 		}
+	}
+}
+
+func (c *filemasterController) DeleteById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	var result = c.filemasterService.DeleteById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		errRemoveDir := os.RemoveAll(result.Data.(string))
+		if errRemoveDir != nil {
+			log.Fatal(errRemoveDir)
+		}
+
+		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
 	}
 }
 

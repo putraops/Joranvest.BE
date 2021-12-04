@@ -20,6 +20,7 @@ type FundamentalAnalysisController interface {
 	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
+	Submit(context *gin.Context)
 	Save(context *gin.Context)
 }
 
@@ -100,6 +101,26 @@ func (c *fundamentalAnalysisController) Save(context *gin.Context) {
 			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
 			context.JSON(http.StatusOK, response)
 		}
+	}
+}
+
+func (c *fundamentalAnalysisController) Submit(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+
+	authHeader := context.GetHeader("Authorization")
+	userIdentity := c.jwtService.GetUserByToken(authHeader)
+	var result = c.fundamentalAnalysisService.Submit(id, userIdentity.UserId)
+
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
 	}
 }
 

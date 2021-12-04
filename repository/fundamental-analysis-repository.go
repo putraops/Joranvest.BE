@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -19,6 +20,7 @@ type FundamentalAnalysisRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.FundamentalAnalysis
+	Submit(recordId string, userId string) helper.Response
 	Insert(t models.FundamentalAnalysis) helper.Response
 	Update(record models.FundamentalAnalysis) helper.Response
 	GetById(recordId string) helper.Response
@@ -272,6 +274,31 @@ func (db *fundamentalAnalysisConnection) Update(record models.FundamentalAnalysi
 	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
 	return helper.ServerResponse(true, "Ok", "", record)
+}
+
+func (db *fundamentalAnalysisConnection) Submit(recordId string, userId string) helper.Response {
+	commons.Logger()
+	tx := db.connection.Begin()
+	var existingRecord models.FundamentalAnalysis
+	db.connection.First(&existingRecord, "id = ?", recordId)
+	if existingRecord.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", "Record not found"))
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	existingRecord.SubmittedBy = userId
+	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	res := tx.Save(&existingRecord)
+	if res.RowsAffected == 0 {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", fmt.Sprintf("%v,", res.Error)))
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", existingRecord)
 }
 
 func (db *fundamentalAnalysisConnection) GetById(recordId string) helper.Response {

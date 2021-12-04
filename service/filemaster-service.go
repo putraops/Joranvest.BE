@@ -13,6 +13,7 @@ type FilemasterService interface {
 	UploadByType(record models.Filemaster) helper.Response
 	UploadProfilePicture(record models.Filemaster) helper.Response
 	Insert(record models.Filemaster) helper.Response
+	DeleteById(recordId string) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
 	GetDirectoryConfig(moduleName string, moduleId string, filetype int) string
 }
@@ -50,6 +51,10 @@ func (service *filemasterService) UploadProfilePicture(record models.Filemaster)
 
 func (service *filemasterService) Insert(record models.Filemaster) helper.Response {
 	return service.repo.Insert(record)
+}
+
+func (service *filemasterService) DeleteById(id string) helper.Response {
+	return service.repo.DeleteById(id)
 }
 
 func (service *filemasterService) DeleteByRecordId(recordId string) helper.Response {
