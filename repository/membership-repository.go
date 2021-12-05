@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -166,9 +167,12 @@ func (db *membershipConnection) GetById(recordId string) helper.Response {
 }
 
 func (db *membershipConnection) GetViewById(recordId string) helper.Response {
+	commons.Logger()
 	var record entity_view_models.EntityMembershipView
 	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", "Record not found"))
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
 	}

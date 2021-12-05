@@ -129,7 +129,7 @@ func (c *membershipController) GetViewById(context *gin.Context) {
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		log.Error(response.Errors)
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusOK, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
@@ -145,7 +145,7 @@ func (c *membershipController) DeleteById(context *gin.Context) {
 	var result = c.membershipService.DeleteById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusOK, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
