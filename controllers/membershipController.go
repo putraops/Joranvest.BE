@@ -110,7 +110,7 @@ func (c *membershipController) GetById(context *gin.Context) {
 	result := c.membershipService.GetById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusBadRequest, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)

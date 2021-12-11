@@ -20,6 +20,7 @@ import (
 	"joranvest/service"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
@@ -202,7 +203,7 @@ func main() {
 	defer config.CloseDatabaseConnection(db)
 	//getCardToken()
 
-	r := gin.Default()
+	r := gin.New()
 
 	// programatically set swagger info
 	docs.SwaggerInfo.Title = "Swagger Example API"
@@ -211,17 +212,30 @@ func main() {
 	docs.SwaggerInfo.Host = "localhost:10000"
 	docs.SwaggerInfo.BasePath = "/api"
 
-	r.Use(location.New(location.Config{
-		Scheme:  "http",
-		Host:    "foo.com",
-		Base:    "/base",
-		Headers: location.Headers{Scheme: "X-Forwarded-Proto", Host: "X-Forwarded-For"},
-	}))
+	// r.Use(location.New(location.Config{
+	// 	Scheme:  "http",
+	// 	Host:    "foo.com",
+	// 	Base:    "/base",
+	// 	Headers: location.Headers{Scheme: "X-Forwarded-Proto", Host: "X-Forwarded-For"},
+	// }))
 
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("mysession", store))
 
-	r.Use(CORSMiddleware())
+	//r.Use(CORSMiddleware())
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		// AllowOrigins:  []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"Accept", "Access-Control-Allow-Origin", "Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		// AllowOriginFunc: func(origin string) bool {
+		// 	return origin == "https://github.com"
+		// },
+		MaxAge: 12 * time.Hour,
+	}))
+
 	r.Static("/assets", "./assets")
 	r.Static("/upload", "./upload")
 	r.Static("/script", "./templates/js")
@@ -562,22 +576,15 @@ func main() {
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:4000")
-		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
-		// c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		// c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization")
-		fmt.Println(c.Request.Method)
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(200)
-		} else {
-			c.Next()
+			c.AbortWithStatus(204)
+			return
 		}
+
+		c.Next()
 	}
 }
