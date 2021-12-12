@@ -27,6 +27,8 @@ func (EntityMembershipView) ViewModel() string {
 	sql.WriteString("  r.created_by,")
 	sql.WriteString("  r.updated_at,")
 	sql.WriteString("  r.updated_by,")
+	sql.WriteString("  r.submitted_at,")
+	sql.WriteString("  r.submitted_by,")
 	sql.WriteString("  r.approved_at,")
 	sql.WriteString("  r.approved_by,")
 	sql.WriteString("  r.entity_id,")

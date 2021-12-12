@@ -17,6 +17,7 @@ import (
 
 type MembershipController interface {
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
 	GetViewById(context *gin.Context)
@@ -45,6 +46,20 @@ func (c *membershipController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.membershipService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *membershipController) GetPagination(context *gin.Context) {
+	commons.Logger()
+
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error(errDTO.Error())
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.membershipService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

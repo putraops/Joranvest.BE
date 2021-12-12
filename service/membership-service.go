@@ -9,6 +9,7 @@ import (
 
 type MembershipService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Membership
 	Insert(record models.Membership) helper.Response
 	Update(record models.Membership) helper.Response
@@ -31,6 +32,10 @@ func NewMembershipService(repo repository.MembershipRepository) MembershipServic
 
 func (service *membershipService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.membershipRepository.GetDatatables(request)
+}
+
+func (service *membershipService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.membershipRepository.GetPagination(request)
 }
 
 func (service *membershipService) GetAll(filter map[string]interface{}) []models.Membership {

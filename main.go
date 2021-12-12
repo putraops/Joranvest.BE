@@ -21,7 +21,6 @@ import (
 	"net/http"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -141,41 +140,41 @@ type App struct {
 	c *gin.Context
 }
 
-func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
-	data := make(map[string]string)
-	session := sessions.Default(c)
-	isAdmin := fmt.Sprint(session.Get("IsAdmin"))
-	entityid := fmt.Sprint(session.Get("EntityId"))
-	data["title"] = title
-	data["header"] = header
-	data["subheader"] = subheader
-	data["nav"] = nav
-	data["subnav"] = subnav
-	data["timenow"] = time.Now().Format("2006-01-02 15:04:05.000000")
-	data["token"] = fmt.Sprint(session.Get("mytoken"))
-	if isAdmin == "true" {
-		data["isadmin"] = "1"
-	} else {
-		data["isadmin"] = "0"
-	}
-	data["entityid"] = entityid
-	data["userLoginName"] = fmt.Sprint(session.Get("userLoginName"))
-	data["userFirstName"] = fmt.Sprint(session.Get("userFirstName"))
+// func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
+// 	data := make(map[string]string)
+// 	session := sessions.Default(c)
+// 	isAdmin := fmt.Sprint(session.Get("IsAdmin"))
+// 	entityid := fmt.Sprint(session.Get("EntityId"))
+// 	data["title"] = title
+// 	data["header"] = header
+// 	data["subheader"] = subheader
+// 	data["nav"] = nav
+// 	data["subnav"] = subnav
+// 	data["timenow"] = time.Now().Format("2006-01-02 15:04:05.000000")
+// 	data["token"] = fmt.Sprint(session.Get("mytoken"))
+// 	if isAdmin == "true" {
+// 		data["isadmin"] = "1"
+// 	} else {
+// 		data["isadmin"] = "0"
+// 	}
+// 	data["entityid"] = entityid
+// 	data["userLoginName"] = fmt.Sprint(session.Get("userLoginName"))
+// 	data["userFirstName"] = fmt.Sprint(session.Get("userFirstName"))
 
-	if session.Get("userFirstName") == nil {
-		data["userFirstName"] = ""
-	}
+// 	if session.Get("userFirstName") == nil {
+// 		data["userFirstName"] = ""
+// 	}
 
-	url := location.Get(c)
-	fmt.Println("=======================================")
-	fmt.Println("Scheme: ", url.Scheme)
-	fmt.Println("Host: ", url.Host)
-	fmt.Println("Path: ", url.Path)
-	fmt.Println("=======================================")
-	data["hostName"] = url.Scheme + "://" + url.Host
+// 	url := location.Get(c)
+// 	fmt.Println("=======================================")
+// 	fmt.Println("Scheme: ", url.Scheme)
+// 	fmt.Println("Host: ", url.Host)
+// 	fmt.Println("Path: ", url.Path)
+// 	fmt.Println("=======================================")
+// 	data["hostName"] = url.Scheme + "://" + url.Host
 
-	return data
-}
+// 	return data
+// }
 
 // func getCardToken() string {
 // 	//midtrans.ClientKey = "SB-Mid-client-w7QtpoJYMNe_-JVb"
@@ -242,18 +241,18 @@ func main() {
 	r.HTMLRender = createMyRender("templates/views/")
 
 	// #region User Web View
-	r.GET("/", func(c *gin.Context) {
-		data := Setup(c, "Joranvest", "", "", "", "")
-		c.HTML(
-			http.StatusOK,
-			"index",
-			gin.H{
-				"title": "Joranvest",
-				"err":   "",
-				"data":  data,
-			},
-		)
-	})
+	// r.GET("/", func(c *gin.Context) {
+	// 	data := Setup(c, "Joranvest", "", "", "", "")
+	// 	c.HTML(
+	// 		http.StatusOK,
+	// 		"index",
+	// 		gin.H{
+	// 			"title": "Joranvest",
+	// 			"err":   "",
+	// 			"data":  data,
+	// 		},
+	// 	)
+	// })
 	// #endregion
 
 	// #region Auth Route
@@ -449,6 +448,7 @@ func main() {
 	membershipApiRoutes := r.Group("api/membership")
 	{
 		membershipApiRoutes.POST("/getDatatables", membershipController.GetDatatables)
+		membershipApiRoutes.POST("/getPagination", membershipController.GetPagination)
 		membershipApiRoutes.GET("/getAll", membershipController.GetAll)
 		membershipApiRoutes.POST("/save", membershipController.Save)
 		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
