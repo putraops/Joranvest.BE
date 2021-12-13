@@ -17,7 +17,9 @@ import (
 type WebinarCategoryController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
+	GetTreeParent(context *gin.Context)
 	GetTree(context *gin.Context)
+	OrderTree(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -60,8 +62,24 @@ func (c *webinarCategoryController) GetDatatables(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
+func (c *webinarCategoryController) GetTreeParent(context *gin.Context) {
+	var result = c.webinarCategoryService.GetTreeParent()
+	context.JSON(http.StatusOK, result)
+}
+
 func (c *webinarCategoryController) GetTree(context *gin.Context) {
 	var result = c.webinarCategoryService.GetTree()
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *webinarCategoryController) OrderTree(context *gin.Context) {
+	var dto dto.OrderTreeDto
+	err := context.Bind(&dto)
+	if err != nil {
+		res := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.webinarCategoryService.OrderTree(dto.RecordId, dto.ParentId, dto.OrderIndex)
 	context.JSON(http.StatusOK, result)
 }
 

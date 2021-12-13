@@ -19,11 +19,13 @@ type WebinarCategoryRepository interface {
 	Lookup(req map[string]interface{}) []models.WebinarCategory
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.WebinarCategory
+	GetTreeParent() []commons.JStreeResponse
 	GetTree() []commons.JStreeResponse
 	Insert(t models.WebinarCategory) helper.Response
 	Update(record models.WebinarCategory) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
+	OrderTree(recordId string, parentId string, orderIndex int) helper.Response
 }
 
 type webinarCategoryConnection struct {
@@ -142,6 +144,25 @@ func (db *webinarCategoryConnection) GetDatatables(request commons.DataTableRequ
 	return res
 }
 
+func (db *webinarCategoryConnection) GetTreeParent() []commons.JStreeResponse {
+	var res []commons.JStreeResponse
+	var records []models.WebinarCategory
+	db.connection.Where("parent_id = ?", "").Find(&records)
+	if len(records) > 0 {
+		for _, s := range records {
+			var item commons.JStreeResponse
+			item.Id = s.Id
+			item.Text = s.Name
+			item.Description = s.Description
+			item.JStreeState.Opened = true
+			item.JStreeState.Disabled = false
+			item.JStreeState.Selected = true
+			res = append(res, item)
+		}
+	}
+	return res
+}
+
 func (db *webinarCategoryConnection) GetTree() []commons.JStreeResponse {
 	var res []commons.JStreeResponse
 	var records []models.WebinarCategory
@@ -256,4 +277,12 @@ func (db *webinarCategoryConnection) DeleteById(recordId string) helper.Response
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 	}
+}
+
+func (db *webinarCategoryConnection) OrderTree(recordId string, parentId string, orderIndex int) helper.Response {
+	res := db.connection.Exec("SELECT set_webinar_category_order(?, ?, ?)", recordId, parentId, orderIndex)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }

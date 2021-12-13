@@ -203,6 +203,7 @@ func main() {
 	//getCardToken()
 
 	r := gin.New()
+	// r := gin.Default()
 
 	// programatically set swagger info
 	docs.SwaggerInfo.Title = "Swagger Example API"
@@ -391,7 +392,9 @@ func main() {
 	webinarCategoryApiRoutes := r.Group("api/webinar_category")
 	{
 		webinarCategoryApiRoutes.POST("/getDatatables", webinarCategoryController.GetDatatables)
+		webinarCategoryApiRoutes.GET("/getTreeParent", webinarCategoryController.GetTreeParent)
 		webinarCategoryApiRoutes.GET("/getTree", webinarCategoryController.GetTree)
+		webinarCategoryApiRoutes.POST("/orderTree", webinarCategoryController.OrderTree)
 		webinarCategoryApiRoutes.GET("/lookup", webinarCategoryController.Lookup)
 		webinarCategoryApiRoutes.POST("/save", webinarCategoryController.Save)
 		webinarCategoryApiRoutes.GET("/getById/:id", webinarCategoryController.GetById)
