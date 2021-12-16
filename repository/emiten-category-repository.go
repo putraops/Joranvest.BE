@@ -23,6 +23,7 @@ type EmitenCategoryRepository interface {
 	Insert(t models.EmitenCategory) helper.Response
 	Update(record models.EmitenCategory) helper.Response
 	GetById(recordId string) helper.Response
+	GetByName(emitenCategoryName string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -201,6 +202,7 @@ func (db *emitenCategoryConnection) Insert(record models.EmitenCategory) helper.
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
@@ -238,6 +240,17 @@ func (db *emitenCategoryConnection) Update(record models.EmitenCategory) helper.
 func (db *emitenCategoryConnection) GetById(recordId string) helper.Response {
 	var record models.EmitenCategory
 	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *emitenCategoryConnection) GetByName(emitenCategoryName string) helper.Response {
+	var record models.EmitenCategory
+	db.connection.First(&record, "name = ?", emitenCategoryName)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

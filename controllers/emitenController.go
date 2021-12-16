@@ -3,13 +3,17 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"joranvest/commons"
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
+	"joranvest/models/request_models"
 	"joranvest/service"
 
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +27,7 @@ type EmitenController interface {
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
+	PatchingEmiten(context *gin.Context)
 }
 
 type emitenController struct {
@@ -166,5 +171,119 @@ func (c *emitenController) DeleteById(context *gin.Context) {
 	} else {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *emitenController) PatchingEmiten(context *gin.Context) {
+	result := helper.Response{}
+	var record models.Filemaster
+
+	file, errFile := context.FormFile("file")
+	if errFile != nil {
+		response := helper.BuildResponse(false, fmt.Sprintf("get form err: %s", errFile.Error()), helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	err := context.Bind(&record)
+	if err != nil {
+		response := helper.BuildResponse(false, err.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		authHeader := context.GetHeader("Authorization")
+		userIdentity := c.jwtService.GetUserByToken(authHeader)
+
+		folderUpload := "./upload/patching/emiten/"
+		//-- Create folder if not exist
+		_, errStat := os.Stat(folderUpload)
+		if os.IsNotExist(errStat) {
+			errDir := os.MkdirAll(folderUpload, 0755)
+			if errDir != nil {
+				log.Fatal(errStat)
+				response := helper.BuildResponse(false, fmt.Sprintf("Upload File Error: %s", err.Error()), helper.EmptyObj{})
+				context.JSON(http.StatusOK, response)
+				return
+			}
+		}
+
+		filename := filepath.Base(file.Filename)
+		extension := filepath.Ext(file.Filename)
+		if extension != ".xlsx" && extension != ".xls" {
+			response := helper.BuildResponse(false, "Only allow file .xls or .xlsx to upload.", helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+			return
+		}
+
+		path := folderUpload + filename
+		errRemoveDir := os.RemoveAll(path)
+		if err != nil {
+			log.Fatal(errRemoveDir)
+		}
+
+		if err := context.SaveUploadedFile(file, path); err != nil {
+			response := helper.BuildResponse(false, fmt.Sprintf("Upload File Error: %s", err.Error()), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+			return
+		}
+
+		fmt.Println("./upload/patching/emiten/" + filename + extension)
+
+		//-- ReadFile
+		xlsx, errRead := excelize.OpenFile("./" + path)
+		if errRead != nil {
+			response := helper.BuildResponse(false, fmt.Sprintf("%v", errRead.Error()), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+			return
+		}
+		readSheet1Name := xlsx.GetSheetName(1)
+
+		var PatchingEmiten []request_models.PatchingEmiten
+		for index, _ := range xlsx.GetRows(readSheet1Name) {
+			if index > 0 {
+				var emitenName = xlsx.GetCellValue(readSheet1Name, fmt.Sprintf("A%d", index+1))
+				var emitenCode = xlsx.GetCellValue(readSheet1Name, fmt.Sprintf("B%d", index+1))
+				var emitenSector = xlsx.GetCellValue(readSheet1Name, fmt.Sprintf("C%d", index+1))
+				var emitenCategory = xlsx.GetCellValue(readSheet1Name, fmt.Sprintf("D%d", index+1))
+
+				if emitenName == "" {
+					response := helper.BuildResponse(false, fmt.Sprintf("Emiten Name cannot be empty. Please check line %v", index+1), helper.EmptyObj{})
+					context.JSON(http.StatusOK, response)
+					return
+				}
+				if emitenCode == "" {
+					response := helper.BuildResponse(false, fmt.Sprintf("Emiten Code cannot be empty. Please check line %v", index+1), helper.EmptyObj{})
+					context.JSON(http.StatusOK, response)
+					return
+				}
+				if emitenSector == "" {
+					response := helper.BuildResponse(false, fmt.Sprintf("Emiten Sector cannot be empty. Please check line %v", index+1), helper.EmptyObj{})
+					context.JSON(http.StatusOK, response)
+					return
+				}
+				if emitenCategory == "" {
+					response := helper.BuildResponse(false, fmt.Sprintf("Emiten Category cannot be empty. Please check line %v", index+1), helper.EmptyObj{})
+					context.JSON(http.StatusOK, response)
+					return
+				}
+
+				temp := request_models.PatchingEmiten{ // b == Student{"Bob", 0}
+					EmitenName:     emitenName,
+					EmitenCode:     emitenCode,
+					EmitenSector:   emitenSector,
+					EmitenCategory: emitenCategory,
+				}
+				PatchingEmiten = append(PatchingEmiten, temp)
+			}
+		}
+		result = c.emitenService.PatchingEmiten(PatchingEmiten, userIdentity.UserId)
+
+		if result.Status {
+			response := helper.BuildResponse(result.Status, "OK", result.Data)
+			context.JSON(http.StatusOK, response)
+		} else {
+			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+		}
 	}
 }

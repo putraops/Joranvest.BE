@@ -4,6 +4,7 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
+	"joranvest/models/request_models"
 	"joranvest/repository"
 )
 
@@ -16,6 +17,7 @@ type EmitenService interface {
 	Update(record models.Emiten) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
+	PatchingEmiten(data []request_models.PatchingEmiten, userId string) helper.Response
 }
 
 type emitenService struct {
@@ -73,4 +75,8 @@ func (service *emitenService) GetById(recordId string) helper.Response {
 
 func (service *emitenService) DeleteById(recordId string) helper.Response {
 	return service.emitenRepository.DeleteById(recordId)
+}
+
+func (service *emitenService) PatchingEmiten(data []request_models.PatchingEmiten, userId string) helper.Response {
+	return service.emitenRepository.PatchingEmiten(data, userId)
 }

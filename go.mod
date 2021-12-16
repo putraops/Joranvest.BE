@@ -3,6 +3,7 @@ module joranvest
 go 1.14
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/StefanSchroeder/Golang-Roman v1.0.0
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.9.0 // indirect
@@ -36,6 +37,7 @@ require (
 	github.com/swaggo/swag v1.7.1
 	github.com/twinj/uuid v1.0.0
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/xuri/excelize/v2 v2.4.1
 	github.com/ydhnwb/golang_api v0.0.0-20210821145656-97a206998698
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f // indirect

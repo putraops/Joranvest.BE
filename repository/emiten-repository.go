@@ -6,6 +6,7 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
+	"joranvest/models/request_models"
 	entity_view_models "joranvest/models/view_models"
 	"strings"
 	"time"
@@ -23,22 +24,28 @@ type EmitenRepository interface {
 	Insert(t models.Emiten) helper.Response
 	Update(record models.Emiten) helper.Response
 	GetById(recordId string) helper.Response
+	GetByEmitenCode(emiten_code string) helper.Response
 	DeleteById(recordId string) helper.Response
+	PatchingEmiten(data []request_models.PatchingEmiten, userId string) helper.Response
 }
 
 type emitenConnection struct {
-	connection        *gorm.DB
-	serviceRepository ServiceRepository
-	tableName         string
-	viewQuery         string
+	connection               *gorm.DB
+	serviceRepository        ServiceRepository
+	emitenCategoryRepository EmitenCategoryRepository
+	sectorRepository         SectorRepository
+	tableName                string
+	viewQuery                string
 }
 
 func NewEmitenRepository(db *gorm.DB) EmitenRepository {
 	return &emitenConnection{
-		connection:        db,
-		tableName:         models.Emiten.TableName(models.Emiten{}),
-		viewQuery:         entity_view_models.EntityEmitenView.ViewModel(entity_view_models.EntityEmitenView{}),
-		serviceRepository: NewServiceRepository(db),
+		connection:               db,
+		tableName:                models.Emiten.TableName(models.Emiten{}),
+		viewQuery:                entity_view_models.EntityEmitenView.ViewModel(entity_view_models.EntityEmitenView{}),
+		serviceRepository:        NewServiceRepository(db),
+		sectorRepository:         NewSectorRepository(db),
+		emitenCategoryRepository: NewEmitenCategoryRepository(db),
 	}
 }
 
@@ -201,6 +208,7 @@ func (db *emitenConnection) Insert(record models.Emiten) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
@@ -247,6 +255,17 @@ func (db *emitenConnection) GetById(recordId string) helper.Response {
 	return res
 }
 
+func (db *emitenConnection) GetByEmitenCode(emiten_code string) helper.Response {
+	var record models.Emiten
+	db.connection.First(&record, "emiten_code = ?", emiten_code)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
 func (db *emitenConnection) DeleteById(recordId string) helper.Response {
 	var record models.Emiten
 	db.connection.First(&record, "id = ?", recordId)
@@ -260,5 +279,80 @@ func (db *emitenConnection) DeleteById(recordId string) helper.Response {
 			return helper.ServerResponse(false, "Error", fmt.Sprintf("%v", res.Error), helper.EmptyObj{})
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+	}
+}
+
+func (db *emitenConnection) PatchingEmiten(data []request_models.PatchingEmiten, userId string) helper.Response {
+	tx := db.connection.Begin()
+
+	if len(data) > 0 {
+		var emitenData []models.Emiten
+		for _, datum := range data {
+			//-- Check Sector and getId
+			var emitenResult = db.GetByEmitenCode(datum.EmitenCode)
+			if emitenResult.Status {
+				// Exist
+				res := (emitenResult.Data).(models.Emiten)
+				emitenData = append(emitenData, res)
+			} else {
+				var emitenRecord models.Emiten
+				emitenRecord.Id = uuid.New().String()
+				emitenRecord.EmitenName = datum.EmitenName
+				emitenRecord.EmitenCode = datum.EmitenCode
+				emitenRecord.IsActive = true
+				emitenRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+				emitenRecord.CreatedBy = userId
+				emitenRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+				//-- Check Sector and getId
+				var sectorResult = db.sectorRepository.GetByName(datum.EmitenSector)
+				if sectorResult.Status {
+					// Exist
+					res := (sectorResult.Data).(models.Sector)
+					emitenRecord.SectorId = res.Id
+				} else {
+					var new models.Sector
+					new.Name = datum.EmitenSector
+					new.Description = ""
+					new.IsActive = true
+					new.CreatedBy = userId
+					var resNew = db.sectorRepository.Insert(new)
+					if resNew.Status {
+						res := (resNew.Data).(models.Sector)
+						emitenRecord.SectorId = res.Id
+					}
+				}
+
+				//-- Check Category and GetId
+				var emitenCategoryResult = db.emitenCategoryRepository.GetByName(datum.EmitenCategory)
+				if emitenCategoryResult.Status {
+					// Exist
+					res := (emitenCategoryResult.Data).(models.EmitenCategory)
+					emitenRecord.EmitenCategoryId = res.Id
+				} else {
+					var new models.EmitenCategory
+					new.Name = datum.EmitenCategory
+					new.Description = ""
+					new.IsActive = true
+					new.CreatedBy = userId
+					var resNew = db.emitenCategoryRepository.Insert(new)
+					if resNew.Status {
+						res := (resNew.Data).(models.EmitenCategory)
+						emitenRecord.EmitenCategoryId = res.Id
+					}
+				}
+				emitenData = append(emitenData, emitenRecord)
+			}
+		}
+
+		if err := tx.Save(&emitenData).Error; err != nil {
+			tx.Rollback()
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		} else {
+			tx.Commit()
+			return helper.ServerResponse(true, "Ok", "", emitenData)
+		}
+	} else {
+		return helper.ServerResponse(false, "File is empty. Please check your file.", "File is empty. Please check your file.", helper.EmptyObj{})
 	}
 }

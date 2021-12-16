@@ -23,6 +23,7 @@ type SectorRepository interface {
 	Insert(t models.Sector) helper.Response
 	Update(record models.Sector) helper.Response
 	GetById(recordId string) helper.Response
+	GetByName(sectorName string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -201,6 +202,7 @@ func (db *sectorConnection) Insert(record models.Sector) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
@@ -238,6 +240,17 @@ func (db *sectorConnection) Update(record models.Sector) helper.Response {
 func (db *sectorConnection) GetById(recordId string) helper.Response {
 	var record models.Sector
 	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *sectorConnection) GetByName(sectorName string) helper.Response {
+	var record models.Sector
+	db.connection.First(&record, "name = ?", sectorName)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

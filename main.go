@@ -327,6 +327,7 @@ func main() {
 		emitenApiRoutes.GET("/lookup", emitenController.Lookup)
 		emitenApiRoutes.POST("/emitenLookup", emitenController.EmitenLookup)
 		emitenApiRoutes.POST("/save", emitenController.Save)
+		emitenApiRoutes.POST("/patchingEmiten", emitenController.PatchingEmiten)
 		emitenApiRoutes.GET("/getById/:id", emitenController.GetById)
 		emitenApiRoutes.DELETE("/deleteById/:id", emitenController.DeleteById)
 	}
