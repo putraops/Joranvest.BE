@@ -200,12 +200,15 @@ func (c *applicationUserController) RecoverPassword(context *gin.Context) {
 }
 
 func (c *applicationUserController) EmailVerificationById(context *gin.Context) {
-	id := context.Param("id")
-	if id == "" {
-		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
-		context.JSON(http.StatusBadRequest, response)
+	var recordDto dto.EmailVerificationDto
+	err := context.ShouldBind(&recordDto)
+	if err != nil {
+		response := helper.BuildErrorResponse("Failed to request login", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
 	}
-	result := c.applicationUserService.EmailVerificationById(id)
+
+	result := c.applicationUserService.EmailVerificationById(recordDto.Id)
 	response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
 	context.JSON(http.StatusOK, response)
 }

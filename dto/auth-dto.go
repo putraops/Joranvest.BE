@@ -19,3 +19,7 @@ type RecoverPasswordDto struct {
 	Id          string `json:"id" form:"id"`
 	OldPassword string `json:"old_password" form:"old_password" binding:"required"`
 }
+
+type EmailVerificationDto struct {
+	Id string `json:"id" form:"id"`
+}

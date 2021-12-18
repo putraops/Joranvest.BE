@@ -411,7 +411,7 @@ func main() {
 		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
 		applicationUserApiRoutes.POST("/register", authController.Register)
 		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
-		applicationUserApiRoutes.GET("/emailVerificationById/:id", applicationUserController.EmailVerificationById)
+		applicationUserApiRoutes.POST("/emailVerificationById", applicationUserController.EmailVerificationById)
 	}
 
 	technicalAnalysisApiRoutes := r.Group("api/technical_analysis")
