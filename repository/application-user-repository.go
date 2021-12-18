@@ -15,6 +15,7 @@ import (
 type ApplicationUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	Lookup(req map[string]interface{}) []models.ApplicationUser
+	GetViewUserByEmail(username string, email string) interface{}
 	GetViewUserByUsernameOrEmail(username string, email string) interface{}
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
@@ -148,6 +149,14 @@ func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models
 func (db *applicationUserConnection) GetViewUserByUsernameOrEmail(username string, email string) interface{} {
 	var record entity_view_models.EntityApplicationUserView
 	res := db.connection.Where("username = ? AND (username <> '' OR username IS NULL) ", username).Or("email = ?", email).Take(&record)
+	if res.Error == nil {
+		return record
+	}
+	return nil
+}
+func (db *applicationUserConnection) GetViewUserByEmail(username string, email string) interface{} {
+	var record entity_view_models.EntityApplicationUserView
+	res := db.connection.Where("email = ?", email).Take(&record)
 	if res.Error == nil {
 		return record
 	}

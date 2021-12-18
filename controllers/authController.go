@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"joranvest/dto"
 	"joranvest/helper"
-	"joranvest/models"
 	entity_view_models "joranvest/models/view_models"
 	"joranvest/service"
 	"net/http"
@@ -16,7 +15,6 @@ import (
 
 type AuthController interface {
 	Login(ctx *gin.Context)
-	LoginForm(ctx *gin.Context, username string, email string, password string) (bool, bool, string, string)
 	Logout(ctx *gin.Context)
 	Register(ctx *gin.Context)
 	RegisterForm(ctx *gin.Context)
@@ -24,9 +22,10 @@ type AuthController interface {
 
 type authController struct {
 	//-- Here to put your service
-	authService service.AuthService
-	jwtService  service.JWTService
-	ginService  *gin.Context
+	authService  service.AuthService
+	emailService service.EmailService
+	jwtService   service.JWTService
+	ginService   *gin.Context
 }
 
 var (
@@ -35,10 +34,11 @@ var (
 )
 
 //-- to create a new instance of AuthController
-func NewAuthController(authService service.AuthService, jwtService service.JWTService) AuthController {
+func NewAuthController(authService service.AuthService, emailService service.EmailService, jwtService service.JWTService) AuthController {
 	return &authController{
-		authService: authService,
-		jwtService:  jwtService,
+		authService:  authService,
+		emailService: emailService,
+		jwtService:   jwtService,
 	}
 }
 
@@ -52,17 +52,14 @@ func (c *authController) Login(ctx *gin.Context) {
 		return
 	}
 	authResult := c.authService.VerifyCredential(loginDto.Username, loginDto.Email, loginDto.Password)
-	if authResult == nil {
-		response := helper.BuildResponse(false, "User not found", helper.EmptyObj{})
-		ctx.JSON(http.StatusOK, response)
-		return
-	} else if authResult == false {
-		response := helper.BuildResponse(false, "Wrong Password", helper.EmptyObj{})
+
+	if !authResult.Status {
+		response := helper.BuildResponse(false, authResult.Message, helper.EmptyObj{})
 		ctx.JSON(http.StatusOK, response)
 		return
 	}
 
-	if v, ok := authResult.(entity_view_models.EntityApplicationUserView); ok {
+	if v, ok := (authResult.Data).(entity_view_models.EntityApplicationUserView); ok {
 		// generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(v.ID, 10))
 		generatedToken := c.jwtService.GenerateToken(v.Id, v.EntityId)
 		v.Token = generatedToken
@@ -74,47 +71,6 @@ func (c *authController) Login(ctx *gin.Context) {
 
 	response := helper.BuildErrorResponse("Please check your credentials", "Invalid Credentials", helper.EmptyObj{})
 	ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
-}
-
-func (c *authController) LoginForm(ctx *gin.Context, username string, email string, password string) (bool, bool, string, string) {
-	println("==========================")
-	println("==========================")
-	println("==========================")
-	authResult := c.authService.VerifyCredential(username, email, password)
-
-	if authResult != nil {
-		if v, ok := authResult.(models.ApplicationUser); ok {
-			generatedToken := c.jwtService.GenerateToken(v.Id, v.EntityId)
-			v.Token = generatedToken
-
-			session := sessions.Default(ctx)
-			session.Set("userLoginName", v.FirstName+" "+v.LastName)
-			session.Set("userFirstName", v.FirstName)
-			session.Set("UserId", v.Id)
-			session.Set("EntityId", v.EntityId)
-			session.Set("IsAdmin", v.IsAdmin)
-
-			if v.EntityId == "" {
-				session.Set("IsSuperAdmin", true)
-			}
-			session.Save()
-
-			println(fmt.Sprintf("%v", session.Get("EntityId")))
-
-			//asdasd := userSession.GetAppSession()
-			println("==========================")
-			//println(asdasd.EntityId)
-
-			if v.IsAdmin {
-				return true, true, v.Token, ""
-			} else {
-				return true, false, v.Token, ""
-			}
-		}
-		return false, false, "", "Username dan password masih salah."
-	} else {
-		return false, false, "", "Username tidak terdaftar."
-	}
 }
 
 func (c *authController) Logout(ctx *gin.Context) {
@@ -131,7 +87,6 @@ func (c *authController) Logout(ctx *gin.Context) {
 }
 
 func (c *authController) Register(ctx *gin.Context) {
-	println("asd")
 	var registerDto dto.ApplicationUserRegisterDto
 	err := ctx.ShouldBind(&registerDto)
 	if err != nil {
@@ -141,22 +96,12 @@ func (c *authController) Register(ctx *gin.Context) {
 	}
 
 	if !c.authService.IsDuplicateEmail(registerDto.Email) {
-		response := helper.BuildErrorResponse("Failed to request register", "Duplicate Email", helper.EmptyObj{})
-		ctx.JSON(http.StatusConflict, response)
+		response := helper.BuildResponse(false, "Email telah terdaftar.", helper.EmptyObj{})
+		ctx.JSON(http.StatusOK, response)
+		return
 	} else {
-		// session := sessions.Default(ctx)
-		// println("==========================")
-		// entityid := session.Get("EntityId")
-		// println(fmt.Sprintf("%v", entityid))
-		// println("==========================")
-
-		authHeader := ctx.GetHeader("Authorization")
-		userIdentity := c.jwtService.GetUserByToken(authHeader)
-
-		registerDto.EntityId = userIdentity.EntityId
 		createdUser, err := c.authService.CreateUser(registerDto)
 		if err != nil {
-			createdUser.CreatedBy = userIdentity.UserId
 			var message = ""
 			if strings.Contains(err.Error(), "duplicate key") && strings.Contains(err.Error(), "idx_users_username") {
 				message = "Username " + registerDto.Email + " sudah terdaftar"
@@ -170,6 +115,10 @@ func (c *authController) Register(ctx *gin.Context) {
 		} else {
 
 			token := c.jwtService.GenerateToken(createdUser.Id, createdUser.EntityId)
+
+			// Send Email Verification
+			to := []string{createdUser.Email}
+			c.emailService.SendEmailVerification(to, createdUser.Id)
 
 			createdUser.Token = token
 			response := helper.BuildResponse(true, "Ok!", createdUser)

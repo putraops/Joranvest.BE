@@ -119,7 +119,7 @@ func (c *emitenController) Save(context *gin.Context) {
 		}
 
 		if result.Status {
-			response := helper.BuildResponse(true, "OK", result.Data)
+			response := helper.BuildResponse(true, result.Message, result.Data)
 			context.JSON(http.StatusOK, response)
 		} else {
 			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})

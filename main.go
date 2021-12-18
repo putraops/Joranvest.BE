@@ -57,6 +57,7 @@ var (
 	organizationRepository            repository.OrganizationRepository            = repository.NewOrganizationRepository(db)
 	ratingMasterRepository            repository.RatingMasterRepository            = repository.NewRatingMasterRepository(db)
 	paymentRepository                 repository.PaymentRepository                 = repository.NewPaymentRepository(db)
+	emailRepository                   repository.EmailRepository                   = repository.NewEmailRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
@@ -86,8 +87,9 @@ var (
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
 	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
 	paymentService                 service.PaymentService                 = service.NewPaymentService(paymentRepository)
+	emailService                   service.EmailService                   = service.NewEmailService(emailRepository)
 
-	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
+	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, emailService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
 	applicationMenuCategoryController controllers.ApplicationMenuCategoryController = controllers.NewApplicationMenuCategoryController(applicationMenuCategoryService, jwtService)
 	applicationMenuController         controllers.ApplicationMenuController         = controllers.NewApplicationMenuController(applicationMenuService, jwtService)
@@ -114,6 +116,7 @@ var (
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
 	paymentController                 controllers.PaymentController                 = controllers.NewPaymentController(paymentService, jwtService)
+	emailController                   controllers.EmailController                   = controllers.NewEmailController(emailService, jwtService)
 
 	//clientest coreapi.ClientTest = coreapi.NewClientTest()
 	// #endregion
@@ -140,63 +143,41 @@ type App struct {
 	c *gin.Context
 }
 
-// func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
-// 	data := make(map[string]string)
-// 	session := sessions.Default(c)
-// 	isAdmin := fmt.Sprint(session.Get("IsAdmin"))
-// 	entityid := fmt.Sprint(session.Get("EntityId"))
-// 	data["title"] = title
-// 	data["header"] = header
-// 	data["subheader"] = subheader
-// 	data["nav"] = nav
-// 	data["subnav"] = subnav
-// 	data["timenow"] = time.Now().Format("2006-01-02 15:04:05.000000")
-// 	data["token"] = fmt.Sprint(session.Get("mytoken"))
-// 	if isAdmin == "true" {
-// 		data["isadmin"] = "1"
-// 	} else {
-// 		data["isadmin"] = "0"
-// 	}
-// 	data["entityid"] = entityid
-// 	data["userLoginName"] = fmt.Sprint(session.Get("userLoginName"))
-// 	data["userFirstName"] = fmt.Sprint(session.Get("userFirstName"))
+func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
+	data := make(map[string]string)
+	session := sessions.Default(c)
+	isAdmin := fmt.Sprint(session.Get("IsAdmin"))
+	entityid := fmt.Sprint(session.Get("EntityId"))
+	data["title"] = title
+	data["header"] = header
+	data["subheader"] = subheader
+	data["nav"] = nav
+	data["subnav"] = subnav
+	data["timenow"] = time.Now().Format("2006-01-02 15:04:05.000000")
+	data["token"] = fmt.Sprint(session.Get("mytoken"))
+	if isAdmin == "true" {
+		data["isadmin"] = "1"
+	} else {
+		data["isadmin"] = "0"
+	}
+	data["entityid"] = entityid
+	data["userLoginName"] = fmt.Sprint(session.Get("userLoginName"))
+	data["userFirstName"] = fmt.Sprint(session.Get("userFirstName"))
 
-// 	if session.Get("userFirstName") == nil {
-// 		data["userFirstName"] = ""
-// 	}
+	if session.Get("userFirstName") == nil {
+		data["userFirstName"] = ""
+	}
 
-// 	url := location.Get(c)
-// 	fmt.Println("=======================================")
-// 	fmt.Println("Scheme: ", url.Scheme)
-// 	fmt.Println("Host: ", url.Host)
-// 	fmt.Println("Path: ", url.Path)
-// 	fmt.Println("=======================================")
-// 	data["hostName"] = url.Scheme + "://" + url.Host
+	//url := location.Get(c)
+	fmt.Println("=======================================")
+	// fmt.Println("Scheme: ", url.Scheme)
+	// fmt.Println("Host: ", url.Host)
+	// fmt.Println("Path: ", url.Path)
+	fmt.Println("=======================================")
+	//data["hostName"] = url.Scheme + "://" + url.Host
 
-// 	return data
-// }
-
-// func getCardToken() string {
-// 	//midtrans.ClientKey = "SB-Mid-client-w7QtpoJYMNe_-JVb"
-// 	// resp, err := coreapi.CardToken("4105058689481467", 12, 2021, "123")
-// 	fmt.Println("=================================================")
-// 	fmt.Println("---------------- Configuration ------------------")
-// 	fmt.Println("=================================================")
-
-// 	resp, err := coreapi.CardToken("4811111111111114", 12, 2024, "123")
-
-// 	// fundamentalAnalysisTagRepository  repository.FundamentalAnalysisTagRepository  = repository.NewFundamentalAnalysisTagRepository(db)
-// 	// clientest.getCardToken()
-// 	if err != nil {
-// 		fmt.Println("Error get card token", err.GetMessage())
-// 	}
-// 	fmt.Println("response card token", resp)
-
-// 	fmt.Println("=================================================")
-// 	fmt.Println("--------------------- End -----------------------")
-// 	fmt.Println("=================================================")
-// 	return resp.TokenID
-// }
+	return data
+}
 
 func main() {
 	defer config.CloseDatabaseConnection(db)
@@ -242,74 +223,17 @@ func main() {
 	r.HTMLRender = createMyRender("templates/views/")
 
 	// #region User Web View
-	// r.GET("/", func(c *gin.Context) {
-	// 	data := Setup(c, "Joranvest", "", "", "", "")
-	// 	c.HTML(
-	// 		http.StatusOK,
-	// 		"index",
-	// 		gin.H{
-	// 			"title": "Joranvest",
-	// 			"err":   "",
-	// 			"data":  data,
-	// 		},
-	// 	)
-	// })
-	// #endregion
-
-	// #region Auth Route
-	r.POST("/login", func(c *gin.Context) {
-		c.Request.ParseForm()
-		username := c.PostFormArray("username")[0]
-		email := c.PostFormArray("email")[0]
-		password := c.PostFormArray("password")[0]
-		var err = ""
-		var isValid = false
-		var isAdmin = false
-
-		if email == "" && password == "" {
-			err = "Email dan Password tidak boleh kosong."
-		} else if email == "" {
-			err = "Email tidak boleh kosong."
-		} else if password == "" {
-			err = "Password tidak boleh kosong."
-		} else {
-			err = "Nice"
-			isVerified, _isAdmin, token, message := authController.LoginForm(c, username, email, password)
-
-			if isVerified {
-				session := sessions.Default(c)
-				session.Set("mytoken", token)
-				session.Save()
-				err = "Login Successfully."
-				isValid = true
-				isAdmin = _isAdmin
-
-			} else {
-				err = message
-			}
-		}
-
-		if isValid {
-			if isAdmin {
-				c.Redirect(http.StatusMovedPermanently, "/admin/dashboard")
-			} else {
-				fmt.Println("end")
-				c.Redirect(http.StatusMovedPermanently, "/")
-			}
-		} else {
-			c.HTML(
-				http.StatusOK, "login",
-				gin.H{
-					"title": "Login",
-					"err":   err,
-				},
-			)
-		}
-	})
-	r.POST("/logout", func(c *gin.Context) {
-		c.Request.ParseForm()
-		authController.Logout(c)
-		c.Redirect(http.StatusMovedPermanently, "/")
+	r.GET("/", func(c *gin.Context) {
+		data := Setup(c, "Joranvest", "", "", "", "")
+		c.HTML(
+			http.StatusOK,
+			"index",
+			gin.H{
+				"title": "Joranvest",
+				"err":   "",
+				"data":  data,
+			},
+		)
 	})
 	// #endregion
 
@@ -489,7 +413,7 @@ func main() {
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
 		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
-		applicationUserApiRoutes.POST("/register", authController.RegisterForm)
+		applicationUserApiRoutes.POST("/register", authController.Register)
 		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
 	}
 
@@ -570,6 +494,11 @@ func main() {
 		paymentApiRoutes.POST("/membershipPayment", paymentController.MembershipPayment)
 		paymentApiRoutes.POST("/webinarPayment", paymentController.WebinarPayment)
 		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
+	}
+
+	emailApiRoutes := r.Group("api/email")
+	{
+		emailApiRoutes.POST("/sendEmailVerification", emailController.SendEmailVerification)
 	}
 	// #endregion
 
