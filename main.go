@@ -139,10 +139,6 @@ func createMyRender(view_path string) multitemplate.Renderer {
 	return r
 }
 
-type App struct {
-	c *gin.Context
-}
-
 func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
 	data := make(map[string]string)
 	session := sessions.Default(c)
@@ -504,6 +500,13 @@ func main() {
 	// #endregion
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// url := location.Get()
+	fmt.Println("=======================================")
+	// fmt.Println("Scheme: ", url.Scheme)
+	// fmt.Println("Host: ", url.Host)
+	// fmt.Println("Path: ", url.Path)
+	fmt.Println("=======================================")
 	r.Run(":10000")
 }
 
