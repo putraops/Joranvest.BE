@@ -28,7 +28,7 @@ type emailService struct {
 func NewEmailService(emailRepository repository.EmailRepository) EmailService {
 	return &emailService{
 		emailRepository: emailRepository,
-		serverName:      "https://dev.joranvest.com",
+		serverName:      os.Getenv("FRONTEND_URL"),
 	}
 }
 
