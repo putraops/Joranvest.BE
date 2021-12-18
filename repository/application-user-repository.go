@@ -23,6 +23,7 @@ type ApplicationUserRepository interface {
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
 	RecoverPassword(recordId string, oldPassword string) helper.Response
+	EmailVerificationById(userId string) helper.Response
 	UserProfile(applicationUserId string) models.ApplicationUser
 	GetById(applicationUserId string) helper.Response
 	GetViewById(applicationUserId string) helper.Response
@@ -271,4 +272,16 @@ func (db *applicationUserConnection) GetViewById(applicationUserId string) helpe
 		res := helper.ServerResponse(true, "Ok", "", record)
 		return res
 	}
+}
+
+func (db *applicationUserConnection) EmailVerificationById(userId string) helper.Response {
+	var result = db.GetById(userId)
+	if !result.Status {
+		return result
+	}
+	var record = result.Data.(models.ApplicationUser)
+	record.IsEmailVerified = true
+
+	db.connection.Model(&record).Select("Name", "Age").Updates(models.ApplicationUser{IsEmailVerified: true})
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }

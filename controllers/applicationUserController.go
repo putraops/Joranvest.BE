@@ -25,6 +25,7 @@ type ApplicationUserController interface {
 	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	RecoverPassword(context *gin.Context)
+	EmailVerificationById(context *gin.Context)
 }
 
 type applicationUserController struct {
@@ -195,5 +196,16 @@ func (c *applicationUserController) RecoverPassword(context *gin.Context) {
 	}
 	result := c.applicationUserService.RecoverPassword(recordDto.Id, recordDto.OldPassword)
 	response := helper.BuildResponse(true, "Ok!", result)
+	context.JSON(http.StatusOK, response)
+}
+
+func (c *applicationUserController) EmailVerificationById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.applicationUserService.EmailVerificationById(id)
+	response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
 	context.JSON(http.StatusOK, response)
 }

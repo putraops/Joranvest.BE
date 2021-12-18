@@ -25,6 +25,7 @@ type ApplicationUserService interface {
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
 	RecoverPassword(recordId string, oldPassword string) helper.Response
+	EmailVerificationById(recordId string) helper.Response
 }
 
 type applicationUserService struct {
@@ -125,4 +126,8 @@ func (service *applicationUserService) ChangePassword(recordDto dto.ChangePasswo
 
 func (service *applicationUserService) RecoverPassword(recordId string, oldPassword string) helper.Response {
 	return service.applicationUserRepository.RecoverPassword(recordId, oldPassword)
+}
+
+func (service *applicationUserService) EmailVerificationById(recordId string) helper.Response {
+	return service.applicationUserRepository.EmailVerificationById(recordId)
 }

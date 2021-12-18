@@ -50,7 +50,7 @@ func (service *authService) VerifyCredential(username string, email string, pass
 			return helper.ServerResponse(false, "Password yang Anda masukkan salah", "", helper.EmptyObj{})
 		}
 	}
-	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+	return helper.ServerResponse(true, "Ok", "", res.(entity_view_models.EntityApplicationUserView))
 }
 
 func (service *authService) CreateUser(user dto.ApplicationUserRegisterDto) (models.ApplicationUser, error) {
