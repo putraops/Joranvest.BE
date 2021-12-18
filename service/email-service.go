@@ -22,11 +22,13 @@ type EmailService interface {
 type emailService struct {
 	emailRepository repository.EmailRepository
 	helper.AppSession
+	serverName string
 }
 
 func NewEmailService(emailRepository repository.EmailRepository) EmailService {
 	return &emailService{
 		emailRepository: emailRepository,
+		serverName:      "https://dev.joranvest.com",
 	}
 }
 
@@ -288,7 +290,7 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
                                         <p class="text-center">Untuk menyelesaikan Registrasi akun Anda, Silahkan Verifikasi Email Anda dengan cara menekan tombol di bawah.</p>
 
                                         <p class="text-center">
-                                            <a class="btn btn-primary text-white" href="`+os.Getenv("FRONTEND_URL")+`/register-verification/`+userId+`" target="_blank">Verifikasi Email</a>
+                                            <a class="btn btn-primary text-white" href="`+service.serverName+`/register-verification/`+userId+`" target="_blank">Verifikasi Email</a>
                                         </p>
                                     
                                         <hr style="margin-top: 30px;" />
@@ -582,7 +584,7 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
                                         <p class="text-center">Tekan tombol dibawah ini untuk login ke dalam Aplikasi.</p>
 
                                         <p class="text-center">
-                                            <a class="btn btn-primary text-white" href="`+os.Getenv("FRONTEND_URL")+`/login" target="_blank">Login</a>
+                                            <a class="btn btn-primary text-white" href="`+service.serverName+`/login" target="_blank">Login</a>
                                         </p>
                                     
                                         <hr style="margin-top: 30px;" />
