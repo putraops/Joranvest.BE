@@ -30,11 +30,13 @@ type ApplicationUserService interface {
 
 type applicationUserService struct {
 	applicationUserRepository repository.ApplicationUserRepository
+	emailService              EmailService
 }
 
-func NewApplicationUserService(repo repository.ApplicationUserRepository) ApplicationUserService {
+func NewApplicationUserService(repo repository.ApplicationUserRepository, emailService EmailService) ApplicationUserService {
 	return &applicationUserService{
 		applicationUserRepository: repo,
+		emailService:              emailService,
 	}
 }
 
@@ -129,5 +131,12 @@ func (service *applicationUserService) RecoverPassword(recordId string, oldPassw
 }
 
 func (service *applicationUserService) EmailVerificationById(recordId string) helper.Response {
-	return service.applicationUserRepository.EmailVerificationById(recordId)
+
+	res := service.applicationUserRepository.EmailVerificationById(recordId)
+	if res.Status {
+		var record = res.Data.(models.ApplicationUser)
+		to := []string{record.Email}
+		service.emailService.SendEmailVerified(to)
+	}
+	return res
 }

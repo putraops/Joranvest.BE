@@ -61,7 +61,7 @@ var (
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
-	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository)
+	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository, emailService)
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
