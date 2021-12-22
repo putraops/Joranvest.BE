@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"joranvest/dto"
 	"joranvest/helper"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"joranvest/service"
 	"net/http"
 	"strings"

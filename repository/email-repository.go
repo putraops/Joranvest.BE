@@ -2,7 +2,7 @@ package repository
 
 import (
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 
 	"gorm.io/gorm"
 )

@@ -6,8 +6,8 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"joranvest/models/request_models"
-	entity_view_models "joranvest/models/view_models"
 	"strings"
 	"time"
 
