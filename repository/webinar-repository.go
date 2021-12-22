@@ -7,6 +7,7 @@ import (
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
+	"joranvest/models/view_models"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 type WebinarRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.Pagination2ndRequest) interface{}
+	GetPaginationRegisteredByUser(request commons.Pagination2ndRequest, userId string) interface{}
 	GetAll(filter map[string]interface{}) []models.Webinar
 	Insert(t models.Webinar) helper.Response
 	Submit(recordId string, userId string) helper.Response
@@ -174,6 +176,153 @@ func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest)
 	}
 	response.Total = int(result.RowsAffected)
 	// #endregion
+
+	response.Data = records
+	return response
+}
+
+func (db *webinarConnection) GetPaginationRegisteredByUser(request commons.Pagination2ndRequest, userId string) interface{} {
+	var response commons.PaginationResponse
+	var records []view_models.WebinarUserViewModel
+	var totalUnfilter int
+
+	var sql strings.Builder
+	sql.WriteString("SELECT")
+	sql.WriteString("	r.*,")
+	sql.WriteString("	c.name AS webinar_category_name,")
+	sql.WriteString("	f.filepath,")
+	sql.WriteString("	f.filepath_thumbnail,")
+	sql.WriteString("	f.filename,")
+	sql.WriteString("	f.extension,")
+	sql.WriteString("	CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
+	sql.WriteString("	CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")
+	sql.WriteString("	CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
+	sql.WriteString("FROM (")
+	sql.WriteString("	SELECT")
+	sql.WriteString("	  r.id,")
+	sql.WriteString("	  r.title,")
+	sql.WriteString("	  r.description,")
+	sql.WriteString("	  r.webinar_start_date,")
+	sql.WriteString("	  r.webinar_end_date,")
+	sql.WriteString("	  r.min_age,")
+	sql.WriteString("	  r.webinar_level,")
+	sql.WriteString("	  r.price,")
+	sql.WriteString("	  r.discount,")
+	sql.WriteString("	  r.is_certificate,")
+	sql.WriteString("	  r.reward,")
+	sql.WriteString("	  r.status,")
+	sql.WriteString("	  r.speaker_type,")
+	sql.WriteString("	  w.is_active,")
+	sql.WriteString("	  w.is_locked,")
+	sql.WriteString("	  w.is_default,")
+	sql.WriteString("	  w.created_at,")
+	sql.WriteString("	  w.created_by,")
+	sql.WriteString("	  w.updated_at,")
+	sql.WriteString("	  w.updated_by,")
+	sql.WriteString("	  w.submitted_at,")
+	sql.WriteString("	  w.submitted_by,")
+	sql.WriteString("	  w.approved_at,")
+	sql.WriteString("	  w.approved_by,")
+	sql.WriteString("	  w.owner_id,")
+	sql.WriteString("	  w.entity_id,")
+	sql.WriteString("	  0 AS webinar_price,")
+	sql.WriteString("	  NULL AS payment_date,")
+	sql.WriteString("	  NULL AS payment_date_expired,")
+	sql.WriteString("	  NULL AS payment_type,")
+	sql.WriteString("	  200 AS payment_status,")
+	sql.WriteString("	  r.webinar_category_id")
+	sql.WriteString("	FROM webinar r")
+	sql.WriteString("	INNER JOIN webinar_registration w ON w.webinar_id = r.id ")
+	sql.WriteString(fmt.Sprintf("WHERE w.created_by = '%v'", userId))
+	sql.WriteString("	AND w.payment_id = ''")
+	sql.WriteString("	UNION ALL")
+	sql.WriteString("	SELECT")
+	sql.WriteString("	  r.id,")
+	sql.WriteString("	  r.title,")
+	sql.WriteString("	  r.description,")
+	sql.WriteString("	  r.webinar_start_date,")
+	sql.WriteString("	  r.webinar_end_date,")
+	sql.WriteString("	  r.min_age,")
+	sql.WriteString("	  r.webinar_level,")
+	sql.WriteString("	  r.price,")
+	sql.WriteString("	  r.discount,")
+	sql.WriteString("	  r.is_certificate,")
+	sql.WriteString("	  r.reward,")
+	sql.WriteString("	  r.status,")
+	sql.WriteString("	  r.speaker_type,")
+	sql.WriteString("	  p.is_active,")
+	sql.WriteString("	  p.is_locked,")
+	sql.WriteString("	  p.is_default,")
+	sql.WriteString("	  p.created_at,")
+	sql.WriteString("	  p.created_by,")
+	sql.WriteString("	  p.updated_at,")
+	sql.WriteString("	  p.updated_by,")
+	sql.WriteString("	  p.submitted_at,")
+	sql.WriteString("	  p.submitted_by,")
+	sql.WriteString("	  p.approved_at,")
+	sql.WriteString("	  p.approved_by,")
+	sql.WriteString("	  p.owner_id,")
+	sql.WriteString("	  p.entity_id,")
+	sql.WriteString("	  p.price + p.unique_number AS webinar_price,")
+	sql.WriteString("	  p.payment_date,")
+	sql.WriteString("	  p.payment_date_expired,")
+	sql.WriteString("	  p.payment_type,")
+	sql.WriteString("	  p.payment_status,")
+	sql.WriteString("	  r.webinar_category_id")
+	sql.WriteString("	FROM webinar r")
+	sql.WriteString("	INNER JOIN payment p ON p.record_id = r.id ")
+	sql.WriteString(fmt.Sprintf("WHERE r.created_by = '%v' ", userId))
+	sql.WriteString(") AS r ")
+	sql.WriteString("LEFT JOIN webinar_category c ON c.id = r.webinar_category_id ")
+	sql.WriteString("LEFT JOIN filemaster f ON f.record_id = r.id ")
+	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
+	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
+	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.submitted_by ")
+	sql.WriteString("ORDER BY r.created_by DESC ")
+
+	var sqlTotalUnfilter strings.Builder
+	sqlTotalUnfilter.WriteString("SELECT COUNT(r.*) ")
+	sqlTotalUnfilter.WriteString("FROM ( ")
+	sqlTotalUnfilter.WriteString("	SELECT ")
+	sqlTotalUnfilter.WriteString("	r.id ")
+	sqlTotalUnfilter.WriteString("	FROM webinar r ")
+	sqlTotalUnfilter.WriteString("	INNER JOIN webinar_registration w ON w.webinar_id = r.id ")
+	sqlTotalUnfilter.WriteString(fmt.Sprintf("WHERE w.created_by = '%v'", userId))
+	sqlTotalUnfilter.WriteString("	AND w.payment_id = '' ")
+	sqlTotalUnfilter.WriteString("	UNION ALL ")
+	sqlTotalUnfilter.WriteString("	SELECT ")
+	sqlTotalUnfilter.WriteString("	r.id ")
+	sqlTotalUnfilter.WriteString("	FROM webinar r ")
+	sqlTotalUnfilter.WriteString("	INNER JOIN payment p ON p.record_id = r.id  ")
+	sqlTotalUnfilter.WriteString(fmt.Sprintf("WHERE r.created_by = '%v' ", userId))
+	sqlTotalUnfilter.WriteString(") AS r ")
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+	offset := (page - 1) * pageSize
+
+	//#region Get Total Data for Pagination
+	result := db.connection.Raw(sqlTotalUnfilter.String()).Find(&totalUnfilter)
+	if result.Error != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", result.Error), fmt.Sprintf("%v,", result.Error), helper.EmptyObj{})
+	}
+	response.Total = totalUnfilter
+	//#endregion
+
+	sql.WriteString(fmt.Sprintf("OFFSET %v ROW FETCH NEXT %v ROWS ONLY", offset, pageSize))
+	if err := db.connection.Raw(sql.String()).Scan(&records).Error; err != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
 
 	response.Data = records
 	return response

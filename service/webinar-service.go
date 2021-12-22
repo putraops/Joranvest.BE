@@ -10,6 +10,7 @@ import (
 type WebinarService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.Pagination2ndRequest) interface{}
+	GetPaginationRegisteredByUser(request commons.Pagination2ndRequest, userId string) interface{}
 	GetAll(filter map[string]interface{}) []models.Webinar
 	Insert(record models.Webinar) helper.Response
 	Submit(recordId string, userId string) helper.Response
@@ -35,6 +36,10 @@ func (service *webinarService) GetDatatables(request commons.DataTableRequest) c
 
 func (service *webinarService) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	return service.webinarRepository.GetPagination(request)
+}
+
+func (service *webinarService) GetPaginationRegisteredByUser(request commons.Pagination2ndRequest, userId string) interface{} {
+	return service.webinarRepository.GetPaginationRegisteredByUser(request, userId)
 }
 
 func (service *webinarService) GetAll(filter map[string]interface{}) []models.Webinar {

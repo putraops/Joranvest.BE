@@ -17,7 +17,7 @@ import (
 
 type WebinarRegistrationRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
@@ -109,7 +109,7 @@ func (db *webinarRegistrationConnection) GetDatatables(request commons.DataTable
 	return res
 }
 
-func (db *webinarRegistrationConnection) GetPagination(request commons.PaginationRequest) interface{} {
+func (db *webinarRegistrationConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityWebinarRegistrationView
 
@@ -143,13 +143,20 @@ func (db *webinarRegistrationConnection) GetPagination(request commons.Paginatio
 	// #region filter
 	var filters = ""
 	total_filter := 0
-	for k, v := range request.Filter {
-		if v != "" {
-			if total_filter > 0 {
-				filters += "AND "
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
 			}
-			filters += fmt.Sprintf("%v = '%v' ", k, v)
-			total_filter++
 		}
 	}
 	// #endregion

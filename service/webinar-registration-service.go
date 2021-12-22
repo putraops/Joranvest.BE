@@ -9,7 +9,7 @@ import (
 
 type WebinarRegistrationService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
@@ -34,7 +34,7 @@ func (service *webinarRegistrationService) GetDatatables(request commons.DataTab
 	return service.webinarRegistrationRepository.GetDatatables(request)
 }
 
-func (service *webinarRegistrationService) GetPagination(request commons.PaginationRequest) interface{} {
+func (service *webinarRegistrationService) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	return service.webinarRegistrationRepository.GetPagination(request)
 }
 
