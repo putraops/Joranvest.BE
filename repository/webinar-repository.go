@@ -128,22 +128,6 @@ func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest)
 
 	offset := (page - 1) * pageSize
 
-	// #region Ordering
-	var orders = "COALESCE(submitted_at, created_at) DESC"
-	if len(request.Order) > 0 {
-		order_total := 0
-		for k, v := range request.Order {
-			if order_total == 0 {
-				orders = ""
-			} else {
-				orders += ", "
-			}
-			orders += fmt.Sprintf("%v %v ", k, v)
-			order_total++
-		}
-	}
-	// #endregion
-
 	// #region filter
 	var filters = ""
 	if len(request.Filter) > 0 {
@@ -164,6 +148,35 @@ func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest)
 		}
 	}
 	// #endregion
+
+	// #region Ordering
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	isNearest := false
+	if len(request.Order) > 0 {
+		order_total := 0
+		for k, v := range request.Order {
+			if k == "nearest" {
+				isNearest = true
+			} else {
+				if order_total == 0 {
+					orders = ""
+				} else {
+					orders += ", "
+				}
+				orders += fmt.Sprintf("%v %v ", k, v)
+				order_total++
+			}
+		}
+	}
+
+	if isNearest {
+		t := time.Now()
+		year := t.Year()
+		month := t.Month()
+		day := t.Day()
+		currentDate := fmt.Sprintf("'%v-%v-%v 00:00:00'", year, int(month), day)
+		filters += fmt.Sprintf("webinar_start_date >= %v ", currentDate)
+	}
 
 	if err := db.connection.Where(filters).Offset(offset).Order(orders).Limit(pageSize).Find(&records).Error; err != nil {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
