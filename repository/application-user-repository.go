@@ -282,6 +282,6 @@ func (db *applicationUserConnection) EmailVerificationById(userId string) helper
 	var record = result.Data.(models.ApplicationUser)
 	record.IsEmailVerified = true
 
-	db.connection.Model(&record).Select("Name", "Age").Updates(models.ApplicationUser{IsEmailVerified: true})
-	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+	db.connection.Model(&record).Updates(models.ApplicationUser{IsEmailVerified: true})
+	return helper.ServerResponse(true, "Ok", "", record)
 }
