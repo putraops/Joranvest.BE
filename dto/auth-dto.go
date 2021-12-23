@@ -20,6 +20,11 @@ type RecoverPasswordDto struct {
 	OldPassword string `json:"old_password" form:"old_password" binding:"required"`
 }
 
+type ChangePhoneDto struct {
+	Id    string `json:"id" form:"id"`
+	Phone string `json:"phone" form:"phone"`
+}
+
 type EmailVerificationDto struct {
 	Id string `json:"id" form:"id"`
 }

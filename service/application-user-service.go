@@ -19,6 +19,7 @@ type ApplicationUserService interface {
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
+	ChangePhone(recordDto dto.ChangePhoneDto) helper.Response
 	ChangePassword(recordDto dto.ChangePasswordDto) helper.Response
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
@@ -123,6 +124,20 @@ func (service *applicationUserService) ChangePassword(recordDto dto.ChangePasswo
 			return helper.ServerResponse(false, "Password is not match", "Error", helper.EmptyObj{})
 		}
 	}
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+}
+
+func (service *applicationUserService) ChangePhone(recordDto dto.ChangePhoneDto) helper.Response {
+	res := service.applicationUserRepository.GetById(recordDto.Id)
+	if !res.Status {
+		return res
+	}
+
+	var userData = (res.Data).(models.ApplicationUser)
+	userData.Password = "" //-- Set to empty :: use for restrict change password
+	userData.Phone = recordDto.Phone
+
+	_ = service.applicationUserRepository.Update(userData)
 	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }
 

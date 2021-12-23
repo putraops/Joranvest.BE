@@ -152,11 +152,15 @@ func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest)
 	// #region Ordering
 	var orders = "COALESCE(submitted_at, created_at) DESC"
 	isNearest := false
+	isFree := false
+	//-- Make sure Order cannot be greater than 1 condition
 	if len(request.Order) > 0 {
 		order_total := 0
 		for k, v := range request.Order {
-			if k == "nearest" {
+			if k == "#nearest" {
 				isNearest = true
+			} else if k == "#free" {
+				isFree = true
 			} else {
 				if order_total == 0 {
 					orders = ""
@@ -176,6 +180,10 @@ func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest)
 		day := t.Day()
 		currentDate := fmt.Sprintf("'%v-%v-%v 00:00:00'", year, int(month), day)
 		filters += fmt.Sprintf("webinar_start_date >= %v ", currentDate)
+	}
+
+	if isFree {
+		filters += fmt.Sprintf("price = %v", 0)
 	}
 
 	if err := db.connection.Where(filters).Offset(offset).Order(orders).Limit(pageSize).Find(&records).Error; err != nil {

@@ -18,6 +18,7 @@ type ApplicationUserController interface {
 	GetDatatables(context *gin.Context)
 	Lookup(context *gin.Context)
 	Update(context *gin.Context)
+	ChangePhone(context *gin.Context)
 	ChangePassword(context *gin.Context)
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
@@ -184,6 +185,26 @@ func (c *applicationUserController) ChangePassword(context *gin.Context) {
 			context.JSON(http.StatusOK, response)
 		}
 	}
+}
+
+func (c *applicationUserController) ChangePhone(context *gin.Context) {
+	var recordDto dto.ChangePhoneDto
+	err := context.ShouldBind(&recordDto)
+	if err != nil {
+		response := helper.BuildErrorResponse("Failed to bind request", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	res := c.applicationUserService.ChangePhone(recordDto)
+
+	if res.Status {
+		response := helper.BuildResponse(true, "Ok!", res.Data)
+		context.JSON(http.StatusOK, response)
+	} else {
+		response := helper.BuildResponse(false, res.Message, helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
+	return
 }
 
 func (c *applicationUserController) RecoverPassword(context *gin.Context) {

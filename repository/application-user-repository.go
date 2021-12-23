@@ -182,7 +182,8 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 		record.Password = helper.HashAndSalt([]byte(record.Password))
 	} else {
 		var tempUser models.ApplicationUser
-		db.connection.Find(&tempUser, record.Id)
+		res := db.GetById(record.Id)
+		tempUser = (res.Data).(models.ApplicationUser)
 		record.Password = tempUser.Password
 	}
 

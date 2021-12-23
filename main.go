@@ -408,6 +408,7 @@ func main() {
 	{
 		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
+		applicationUserApiRoutes.POST("/changePhone", applicationUserController.ChangePhone)
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
 		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
 		applicationUserApiRoutes.POST("/register", authController.Register)
@@ -501,13 +502,6 @@ func main() {
 	// #endregion
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// url := location.Get()
-	fmt.Println("=======================================")
-	// fmt.Println("Scheme: ", url.Scheme)
-	// fmt.Println("Host: ", url.Host)
-	// fmt.Println("Path: ", url.Path)
-	fmt.Println("=======================================")
 	r.Run(":10000")
 }
 
