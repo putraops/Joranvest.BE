@@ -5,18 +5,21 @@ import (
 	"fmt"
 	"net/http"
 
+	"joranvest/commons"
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 type WebinarSpeakerController interface {
 	Save(context *gin.Context)
-	GetById(context *gin.Context)
 	GetAll(context *gin.Context)
+	GetById(context *gin.Context)
+	GetSpeakersRatingByWebinarId(context *gin.Context)
 }
 
 type webinarSpeakerController struct {
@@ -77,6 +80,24 @@ func (c *webinarSpeakerController) GetById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	result := c.webinarSpeakerService.GetById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *webinarSpeakerController) GetSpeakersRatingByWebinarId(context *gin.Context) {
+	commons.Logger()
+	webinarId := context.Param("webinarId")
+	if webinarId == "" {
+		log.Error("Failed to get webinarId")
+		response := helper.BuildErrorResponse("Failed to get webinarId", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.webinarSpeakerService.GetSpeakersRatingByWebinarId(webinarId)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)

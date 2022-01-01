@@ -13,19 +13,22 @@ type FilemasterService interface {
 	UploadByType(record models.Filemaster) helper.Response
 	UploadProfilePicture(record models.Filemaster) helper.Response
 	Insert(record models.Filemaster) helper.Response
+	UpdateWebinarCoverImage(record models.Webinar) helper.Response
 	DeleteById(recordId string) helper.Response
 	DeleteByRecordId(recordId string) helper.Response
 	GetDirectoryConfig(moduleName string, moduleId string, filetype int) string
 }
 
 type filemasterService struct {
-	repo repository.FilemasterRepository
+	repo              repository.FilemasterRepository
+	webinarRepository repository.WebinarRepository
 	helper.AppSession
 }
 
-func NewFilemasterService(repo repository.FilemasterRepository) FilemasterService {
+func NewFilemasterService(repo repository.FilemasterRepository, webinarRepo repository.WebinarRepository) FilemasterService {
 	return &filemasterService{
-		repo: repo,
+		repo:              repo,
+		webinarRepository: webinarRepo,
 	}
 }
 
@@ -51,6 +54,10 @@ func (service *filemasterService) UploadProfilePicture(record models.Filemaster)
 
 func (service *filemasterService) Insert(record models.Filemaster) helper.Response {
 	return service.repo.Insert(record)
+}
+
+func (service *filemasterService) UpdateWebinarCoverImage(record models.Webinar) helper.Response {
+	return service.webinarRepository.UpdateCoverImage(record)
 }
 
 func (service *filemasterService) DeleteById(id string) helper.Response {

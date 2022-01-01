@@ -66,7 +66,7 @@ var (
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
 	membershipUserService          service.MembershipUserService          = service.NewMembershipUserService(membershipUserRepository)
-	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository)
+	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository, webinarRepository)
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
 	articleCategoryService         service.ArticleCategoryService         = service.NewArticleCategoryService(articleCategoryRepository)
@@ -329,7 +329,9 @@ func main() {
 		webinarApiRoutes.POST("/getPaginationRegisteredByUser/:user_id", webinarController.GetPaginationRegisteredByUser)
 		webinarApiRoutes.POST("/save", webinarController.Save)
 		webinarApiRoutes.POST("/submit/:id", webinarController.Submit)
+		webinarApiRoutes.POST("/uploadWebinarCover/:id", filemasterController.UploadWebinarCover)
 		webinarApiRoutes.GET("/getById/:id", webinarController.GetById)
+		webinarApiRoutes.GET("/getWebinarWithRatingByUserId/:webinar_id/:user_id", webinarController.GetWebinarWithRatingByUserId)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)
 	}
 
@@ -338,6 +340,7 @@ func main() {
 		webinarSpeakerApiRoutes.POST("/save", webinarSpeakerController.Save)
 		webinarSpeakerApiRoutes.GET("/getById/:id", webinarSpeakerController.GetById)
 		webinarSpeakerApiRoutes.GET("/getAll", webinarSpeakerController.GetAll)
+		webinarSpeakerApiRoutes.GET("/getSpeakersRatingByWebinarId/:webinarId", webinarSpeakerController.GetSpeakersRatingByWebinarId)
 	}
 
 	webinarRegistrationApiRoutes := r.Group("api/webinar_registration")

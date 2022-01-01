@@ -11,6 +11,7 @@ type WebinarSpeakerService interface {
 	Insert(records []models.WebinarSpeaker, speakerType int) helper.Response
 	GetById(recordId string) helper.Response
 	GetAll(filter map[string]interface{}) []entity_view_models.EntityWebinarSpeakerView
+	GetSpeakersRatingByWebinarId(webinarId string) helper.Response
 }
 
 type webinarSpeakerService struct {
@@ -34,4 +35,8 @@ func (service *webinarSpeakerService) GetById(recordId string) helper.Response {
 
 func (service *webinarSpeakerService) GetAll(filter map[string]interface{}) []entity_view_models.EntityWebinarSpeakerView {
 	return service.webinarSpeakerRepository.GetAll(filter)
+}
+
+func (service *webinarSpeakerService) GetSpeakersRatingByWebinarId(webinarId string) helper.Response {
+	return service.webinarSpeakerRepository.GetSpeakersRatingByWebinarId(webinarId)
 }

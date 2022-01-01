@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 )
 
 type WebinarController interface {
@@ -21,6 +22,7 @@ type WebinarController interface {
 	GetPaginationRegisteredByUser(context *gin.Context)
 	DeleteById(context *gin.Context)
 	GetById(context *gin.Context)
+	GetWebinarWithRatingByUserId(context *gin.Context)
 	Save(context *gin.Context)
 	Submit(context *gin.Context)
 }
@@ -168,6 +170,21 @@ func (c *webinarController) GetById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *webinarController) GetWebinarWithRatingByUserId(context *gin.Context) {
+	commons.Logger()
+
+	webinar_id := context.Param("webinar_id")
+	user_id := context.Param("user_id")
+	if user_id == "" || webinar_id == "" {
+		log.Error("Failed to get User Id or Webinar Id :: Function Name: GetWebinarWithRatingByUserId")
+		response := helper.BuildErrorResponse("Failed to get User Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.webinarService.GetWebinarWithRatingByUserId(webinar_id, user_id)
+	response := helper.BuildResponse(true, "Ok", result.Data)
+	context.JSON(http.StatusOK, response)
 }
 
 // @Tags Webinar

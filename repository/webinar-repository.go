@@ -6,10 +6,13 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/entity_view_models"
 	"joranvest/models/view_models"
 	"strings"
 	"time"
+
+	entity_view_models "joranvest/models/entity_view_models"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -21,9 +24,11 @@ type WebinarRepository interface {
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetPaginationRegisteredByUser(request commons.Pagination2ndRequest, userId string) interface{}
 	GetAll(filter map[string]interface{}) []models.Webinar
+	GetWebinarWithRatingByUserId(webinarId string, userId string) helper.Response
 	Insert(t models.Webinar) helper.Response
 	Submit(recordId string, userId string) helper.Response
 	Update(record models.Webinar) helper.Response
+	UpdateCoverImage(record models.Webinar) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -359,10 +364,76 @@ func (db *webinarConnection) GetAll(filter map[string]interface{}) []models.Webi
 	return records
 }
 
+func (db *webinarConnection) GetWebinarWithRatingByUserId(webinarId string, userId string) helper.Response {
+	commons.Logger()
+	var record view_models.WebinarUserRatingViewModel
+
+	var sql strings.Builder
+	sql.WriteString("SELECT")
+	sql.WriteString("	r.id,")
+	sql.WriteString("	r.is_active,")
+	sql.WriteString("	r.is_locked,")
+	sql.WriteString("	r.is_default,")
+	sql.WriteString("	r.created_at,")
+	sql.WriteString("	r.created_by,")
+	sql.WriteString("	r.updated_at,")
+	sql.WriteString("	r.updated_by,")
+	sql.WriteString("	r.approved_at,")
+	sql.WriteString("	r.approved_by,")
+	sql.WriteString("	r.submitted_at,")
+	sql.WriteString("	r.submitted_by,")
+	sql.WriteString("	r.owner_id,")
+	sql.WriteString("	r.entity_id,")
+	sql.WriteString("	r.webinar_category_id,")
+	sql.WriteString("	c.name AS webinar_category_name,")
+	sql.WriteString("	r.title,")
+	sql.WriteString("	r.description,")
+	sql.WriteString("	r.webinar_start_date,")
+	sql.WriteString("	r.webinar_end_date,")
+	sql.WriteString("	r.min_age,")
+	sql.WriteString("	r.webinar_level,")
+	sql.WriteString("	r.price,")
+	sql.WriteString("	r.discount,")
+	sql.WriteString("	r.is_certificate,")
+	sql.WriteString("	r.reward,")
+	sql.WriteString("	r.status,")
+	sql.WriteString("	r.speaker_type,")
+	sql.WriteString("	r.filepath,")
+	sql.WriteString("	r.filepath_thumbnail,")
+	sql.WriteString("	r.filename,")
+	sql.WriteString("	r.extension,")
+	sql.WriteString("	rm.id AS rating_master_id,")
+	sql.WriteString("	rm.rating,")
+	sql.WriteString("	rm.comment,")
+	sql.WriteString("	concat(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
+	sql.WriteString("	concat(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")
+	sql.WriteString("	concat(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
+	sql.WriteString("FROM public.webinar r ")
+	sql.WriteString("LEFT JOIN webinar_category c ON c.id = r.webinar_category_id ")
+	sql.WriteString("LEFT JOIN rating_master rm ON")
+	sql.WriteString("		      rm.reference_id = rm.object_rated_id AND")
+	sql.WriteString("		      rm.reference_id = r.id AND")
+	sql.WriteString(fmt.Sprintf(" rm.user_id = '%v' ", userId))
+	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
+	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
+	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.submitted_by ")
+	sql.WriteString(fmt.Sprintf(" WHERE r.id = '%v' ", webinarId))
+
+	result := db.connection.Raw(sql.String()).Find(&record)
+	if result.Error != nil {
+		log.Error(fmt.Sprintf("%v,", result.Error))
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", result.Error), fmt.Sprintf("%v,", result.Error), helper.EmptyObj{})
+	}
+
+	return helper.ServerResponse(true, "Ok", "", record)
+}
+
 func (db *webinarConnection) Insert(record models.Webinar) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	if err := tx.Create(&record).Error; err != nil {
@@ -399,11 +470,43 @@ func (db *webinarConnection) Update(record models.Webinar) helper.Response {
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 
+func (db *webinarConnection) UpdateCoverImage(record models.Webinar) helper.Response {
+	tx := db.connection.Begin()
+	var oldRecord models.Webinar
+	db.connection.First(&oldRecord, "id = ?", record.Id)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	oldRecord.Filepath = record.Filepath
+	oldRecord.FilepathThumbnail = record.FilepathThumbnail
+	oldRecord.Filename = record.Filename
+	oldRecord.Extension = record.Extension
+	oldRecord.Size = record.Size
+	oldRecord.UpdatedBy = record.UpdatedBy
+	oldRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+	res := tx.Save(&oldRecord)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	db.connection.Preload(clause.Associations).Find(&record)
+	return helper.ServerResponse(true, "Ok", "", record)
+}
+
 func (db *webinarConnection) Submit(recordId string, userId string) helper.Response {
+	commons.Logger()
+
 	tx := db.connection.Begin()
 	var existingRecord models.Webinar
 	db.connection.First(&existingRecord, "id = ?", recordId)
 	if existingRecord.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error("Record not found")
+
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
 	}
@@ -412,6 +515,8 @@ func (db *webinarConnection) Submit(recordId string, userId string) helper.Respo
 	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := tx.Save(&existingRecord)
 	if res.RowsAffected == 0 {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", fmt.Sprintf("%v,", res.Error)))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
 	}
 

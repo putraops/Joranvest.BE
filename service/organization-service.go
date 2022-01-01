@@ -8,7 +8,7 @@ import (
 )
 
 type OrganizationService interface {
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Organization
@@ -29,8 +29,8 @@ func NewOrganizationService(repo repository.OrganizationRepository) Organization
 	}
 }
 
-func (service *organizationService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *organizationService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
 	request := make(map[string]interface{})
 	request["qry"] = r.Q
@@ -47,20 +47,48 @@ func (service *organizationService) Lookup(r helper.Select2Request) helper.Respo
 	result := service.organizationRepository.Lookup(request)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Value:       record.Id,
-				Text:        record.Name,
-				Label:       record.Name,
-				Description: "",
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.Name,
+				ParentId: "",
 			}
 			ary.Results = append(ary.Results, p)
 		}
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)
+
+	// var ary helper.Select2Response
+
+	// request := make(map[string]interface{})
+	// request["qry"] = r.Q
+	// request["condition"] = helper.DataFilter{
+	// 	Request: []helper.Operator{
+	// 		{
+	// 			Operator: "like",
+	// 			Field:    r.Field,
+	// 			Value:    r.Q,
+	// 		},
+	// 	},
+	// }
+
+	// result := service.organizationRepository.Lookup(request)
+	// if len(result) > 0 {
+	// 	for _, record := range result {
+	// 		var p = helper.Select2Item{
+	// 			Id:          record.Id,
+	// 			Value:       record.Id,
+	// 			Text:        record.Name,
+	// 			Label:       record.Name,
+	// 			Description: "",
+	// 			Selected:    true,
+	// 			Disabled:    false,
+	// 		}
+	// 		ary.Results = append(ary.Results, p)
+	// 	}
+	// }
+	// ary.Count = len(result)
+	// return helper.ServerResponse(true, "Ok", "", ary)
 }
 
 func (service *organizationService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {

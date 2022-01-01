@@ -33,6 +33,11 @@ type Webinar struct {
 	Reward            int          `gorm:"type:int" json:"reward"`
 	Status            int          `gorm:"type:int" json:"status"`
 	SpeakerType       int          `gorm:"type:int;" json:"speaker_type"`
+	Filepath          string       `gorm:"type:varchar(200)" json:"filepath"`
+	FilepathThumbnail string       `gorm:"type:varchar(200)" json:"filepath_thumbnail"`
+	Filename          string       `gorm:"type:varchar(200)" json:"filename"`
+	Extension         string       `gorm:"type:varchar(10)" json:"extension"`
+	Size              string       `gorm:"type:varchar(100)" json:"size"`
 
 	WebinarSpeaker []WebinarSpeaker `gorm:"-" json:"webinar_speaker"`
 }

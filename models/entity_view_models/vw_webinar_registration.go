@@ -25,6 +25,11 @@ type EntityWebinarRegistrationView struct {
 	PaymentStatus       int          `json:"payment_status"`
 	SpeakerTitle        string       `json:"speaker_title"`
 
+	Filepath          string `json:"filepath"`
+	FilepathThumbnail string `json:"filepath_thumbnail"`
+	Filename          string `json:"filename"`
+	Extension         string `json:"extension"`
+
 	UserFullname      string `json:"user_fullname"`
 	CreatedByFullname string `json:"created_by_fullname"`
 	UserCreateTitle   string `json:"user_create_title"`
@@ -72,6 +77,10 @@ func (EntityWebinarRegistrationView) ViewModel() string {
 	sql.WriteString("  w.discount,")
 	sql.WriteString("  w.is_certificate,")
 	sql.WriteString("  w.reward,")
+	sql.WriteString("  w.filepath,")
+	sql.WriteString("  w.filepath_thumbnail,")
+	sql.WriteString("  w.filename,")
+	sql.WriteString("  w.extension,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
 	sql.WriteString("  u4.title AS speaker_title,")
