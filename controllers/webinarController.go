@@ -13,13 +13,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 )
 
 type WebinarController interface {
 	GetDatatables(context *gin.Context)
 	GetPagination(context *gin.Context)
+	GetPaginationRegisteredByUser(context *gin.Context)
 	DeleteById(context *gin.Context)
 	GetById(context *gin.Context)
+	GetWebinarWithRatingByUserId(context *gin.Context)
 	Save(context *gin.Context)
 	Submit(context *gin.Context)
 }
@@ -55,13 +58,41 @@ func (c *webinarController) GetDatatables(context *gin.Context) {
 // @Failure 400,404 {object} object
 // @Router /webinar/getPagination [get]
 func (c *webinarController) GetPagination(context *gin.Context) {
-	var req commons.PaginationRequest
+	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.webinarService.GetPagination(req)
+	context.JSON(http.StatusOK, result)
+}
+
+// @Tags Webinar
+// @Summary Get Pagination
+// @Param id path string true "id"
+// @Router /webinar/getPagination [post]
+// @Success 200 {obsject} object
+// @Failure 400,404 {object} object
+// @Router /webinar/getPagination [get]
+func (c *webinarController) GetPaginationRegisteredByUser(context *gin.Context) {
+	var req commons.Pagination2ndRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+
+	userId := context.Param("user_id")
+	if userId == "" {
+		response := helper.BuildErrorResponse("Failed to get userId", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	fmt.Println("======================")
+	fmt.Println(userId)
+	fmt.Println("======================")
+
+	var result = c.webinarService.GetPaginationRegisteredByUser(req, userId)
 	context.JSON(http.StatusOK, result)
 }
 
@@ -139,6 +170,21 @@ func (c *webinarController) GetById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *webinarController) GetWebinarWithRatingByUserId(context *gin.Context) {
+	commons.Logger()
+
+	webinar_id := context.Param("webinar_id")
+	user_id := context.Param("user_id")
+	if user_id == "" || webinar_id == "" {
+		log.Error("Failed to get User Id or Webinar Id :: Function Name: GetWebinarWithRatingByUserId")
+		response := helper.BuildErrorResponse("Failed to get User Id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.webinarService.GetWebinarWithRatingByUserId(webinar_id, user_id)
+	response := helper.BuildResponse(true, "Ok", result.Data)
+	context.JSON(http.StatusOK, response)
 }
 
 // @Tags Webinar

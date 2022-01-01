@@ -12,11 +12,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 )
 
 type TagController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -49,23 +51,42 @@ func (c *tagController) Lookup(context *gin.Context) {
 }
 
 func (c *tagController) GetDatatables(context *gin.Context) {
+	commons.Logger()
+	log.Info("Datatables")
 	var dt commons.DataTableRequest
 	errDTO := context.Bind(&dt)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error(errDTO.Error())
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.tagService.GetDatatables(dt)
 	context.JSON(http.StatusOK, result)
 }
 
+func (c *tagController) GetPagination(context *gin.Context) {
+	commons.Logger()
+
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error(errDTO.Error())
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.tagService.GetPagination(req)
+	context.JSON(http.StatusOK, result)
+}
+
 func (c *tagController) Save(context *gin.Context) {
+	commons.Logger()
 	result := helper.Response{}
 	var recordDto dto.TagDto
 
 	errDTO := context.Bind(&recordDto)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error(errDTO.Error())
 		context.JSON(http.StatusBadRequest, res)
 	} else {
 		authHeader := context.GetHeader("Authorization")
@@ -88,6 +109,7 @@ func (c *tagController) Save(context *gin.Context) {
 			context.JSON(http.StatusOK, response)
 		} else {
 			response := helper.BuildErrorResponse(result.Message, fmt.Sprintf("%v", result.Errors), helper.EmptyObj{})
+			log.Error(fmt.Sprintf("%v", result.Errors))
 			context.JSON(http.StatusOK, response)
 		}
 	}

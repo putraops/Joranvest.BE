@@ -7,6 +7,7 @@ import (
 	"joranvest/commons"
 	"joranvest/dto"
 	"joranvest/helper"
+	"joranvest/models"
 	"joranvest/service"
 
 	"github.com/dgrijalva/jwt-go"
@@ -17,11 +18,15 @@ type ApplicationUserController interface {
 	GetDatatables(context *gin.Context)
 	Lookup(context *gin.Context)
 	Update(context *gin.Context)
+	ChangePhone(context *gin.Context)
+	ChangePassword(context *gin.Context)
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
 	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
+	RecoverPassword(context *gin.Context)
+	EmailVerificationById(context *gin.Context)
 }
 
 type applicationUserController struct {
@@ -48,7 +53,7 @@ func (c *applicationUserController) GetDatatables(context *gin.Context) {
 }
 
 func (c *applicationUserController) Lookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	qry := context.Request.URL.Query()
 
 	if _, found := qry["q"]; found {
@@ -114,7 +119,7 @@ func (c *applicationUserController) DeleteById(context *gin.Context) {
 	result = c.applicationUserService.DeleteById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusBadRequest, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
@@ -130,7 +135,7 @@ func (c *applicationUserController) GetById(context *gin.Context) {
 	result := c.applicationUserService.GetById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusBadRequest, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
@@ -146,9 +151,83 @@ func (c *applicationUserController) GetViewById(context *gin.Context) {
 	result := c.applicationUserService.GetViewById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusBadRequest, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *applicationUserController) ChangePassword(context *gin.Context) {
+	var recordDto dto.ChangePasswordDto
+	err := context.ShouldBind(&recordDto)
+	if err != nil {
+		response := helper.BuildErrorResponse("Failed to request login", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	result := c.applicationUserService.ChangePassword(recordDto)
+	if result.Status {
+		if v, ok := (result.Data).(models.ApplicationUser); ok {
+			generatedToken := c.jwtService.GenerateToken(v.Id, v.EntityId)
+			v.Token = generatedToken
+
+			response := helper.BuildResponse(true, "Ok!", v)
+			context.JSON(http.StatusOK, response)
+			return
+		}
+	} else {
+		if result.Errors == "NotFound" {
+			response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+			context.JSON(http.StatusBadRequest, response)
+		} else {
+			response := helper.BuildResponse(false, result.Message, helper.EmptyObj{})
+			context.JSON(http.StatusOK, response)
+		}
+	}
+}
+
+func (c *applicationUserController) ChangePhone(context *gin.Context) {
+	var recordDto dto.ChangePhoneDto
+	err := context.ShouldBind(&recordDto)
+	if err != nil {
+		response := helper.BuildErrorResponse("Failed to bind request", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	res := c.applicationUserService.ChangePhone(recordDto)
+
+	if res.Status {
+		response := helper.BuildResponse(true, "Ok!", res.Data)
+		context.JSON(http.StatusOK, response)
+	} else {
+		response := helper.BuildResponse(false, res.Message, helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
+	return
+}
+
+func (c *applicationUserController) RecoverPassword(context *gin.Context) {
+	var recordDto dto.RecoverPasswordDto
+	err := context.ShouldBind(&recordDto)
+	if err != nil {
+		response := helper.BuildErrorResponse("Failed to request dto", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	result := c.applicationUserService.RecoverPassword(recordDto.Id, recordDto.OldPassword)
+	response := helper.BuildResponse(true, "Ok!", result)
+	context.JSON(http.StatusOK, response)
+}
+
+func (c *applicationUserController) EmailVerificationById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+
+	result := c.applicationUserService.EmailVerificationById(id)
+	response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
+	context.JSON(http.StatusOK, response)
 }

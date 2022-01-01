@@ -6,7 +6,7 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"strings"
 	"time"
 
@@ -16,13 +16,14 @@ import (
 )
 
 type EmitenCategoryRepository interface {
-	Lookup(req map[string]interface{}) []models.EmitenCategory
+	Lookup(request helper.ReactSelectRequest) []models.EmitenCategory
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.EmitenCategory
 	Insert(t models.EmitenCategory) helper.Response
 	Update(record models.EmitenCategory) helper.Response
 	GetById(recordId string) helper.Response
+	GetByName(emitenCategoryName string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -42,39 +43,28 @@ func NewEmitenCategoryRepository(db *gorm.DB) EmitenCategoryRepository {
 	}
 }
 
-func (db *emitenCategoryConnection) Lookup(req map[string]interface{}) []models.EmitenCategory {
+func (db *emitenCategoryConnection) Lookup(request helper.ReactSelectRequest) []models.EmitenCategory {
 	records := []models.EmitenCategory{}
 	db.connection.Order("name asc")
 
-	var sqlQuery strings.Builder
-	sqlQuery.WriteString("SELECT * FROM " + db.tableName)
-
-	v, found := req["condition"]
-	if found {
-		sqlQuery.WriteString(" WHERE 1 = 1")
-		requests := v.(helper.DataFilter).Request
-		for _, v := range requests {
-			totalFilter := 0
-			if v.Operator == "like" {
-				for _, valueDetail := range v.Field {
-					if totalFilter == 0 {
-						sqlQuery.WriteString(" AND (LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
-					} else {
-						sqlQuery.WriteString(" OR LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
-					}
-					totalFilter++
-				}
-			}
-
-			if totalFilter > 0 {
-				sqlQuery.WriteString(")")
-			}
+	var orders = "name ASC"
+	var filters = ""
+	totalFilter := 0
+	for _, field := range request.Field {
+		if totalFilter == 0 {
+			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
+		} else {
+			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
 		}
+		totalFilter++
 	}
 
-	fmt.Println("Query: ", sqlQuery.String())
+	if totalFilter > 0 {
+		filters += ")"
+	}
 
-	db.connection.Raw(sqlQuery.String()).Scan(&records)
+	offset := (request.Page - 1) * request.Size
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
 	return records
 }
 
@@ -212,6 +202,7 @@ func (db *emitenCategoryConnection) Insert(record models.EmitenCategory) helper.
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
@@ -249,6 +240,17 @@ func (db *emitenCategoryConnection) Update(record models.EmitenCategory) helper.
 func (db *emitenCategoryConnection) GetById(recordId string) helper.Response {
 	var record models.EmitenCategory
 	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *emitenCategoryConnection) GetByName(emitenCategoryName string) helper.Response {
+	var record models.EmitenCategory
+	db.connection.First(&record, "name = ?", emitenCategoryName)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

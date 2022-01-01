@@ -6,7 +6,7 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"strings"
 	"time"
 
@@ -16,12 +16,14 @@ import (
 )
 
 type SectorRepository interface {
-	Lookup(req map[string]interface{}) []models.Sector
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Sector
+	Lookup(request helper.ReactSelectRequest) []models.Sector
 	Insert(t models.Sector) helper.Response
 	Update(record models.Sector) helper.Response
 	GetById(recordId string) helper.Response
+	GetByName(sectorName string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -41,39 +43,28 @@ func NewSectorRepository(db *gorm.DB) SectorRepository {
 	}
 }
 
-func (db *sectorConnection) Lookup(req map[string]interface{}) []models.Sector {
+func (db *sectorConnection) Lookup(request helper.ReactSelectRequest) []models.Sector {
 	records := []models.Sector{}
 	db.connection.Order("name asc")
 
-	var sqlQuery strings.Builder
-	sqlQuery.WriteString("SELECT * FROM " + db.tableName)
-
-	v, found := req["condition"]
-	if found {
-		sqlQuery.WriteString(" WHERE 1 = 1")
-		requests := v.(helper.DataFilter).Request
-		for _, v := range requests {
-			totalFilter := 0
-			if v.Operator == "like" {
-				for _, valueDetail := range v.Field {
-					if totalFilter == 0 {
-						sqlQuery.WriteString(" AND (LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
-					} else {
-						sqlQuery.WriteString(" OR LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
-					}
-					totalFilter++
-				}
-			}
-
-			if totalFilter > 0 {
-				sqlQuery.WriteString(")")
-			}
+	var orders = "name ASC"
+	var filters = ""
+	totalFilter := 0
+	for _, field := range request.Field {
+		if totalFilter == 0 {
+			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
+		} else {
+			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
 		}
+		totalFilter++
 	}
 
-	fmt.Println("Query: ", sqlQuery.String())
+	if totalFilter > 0 {
+		filters += ")"
+	}
 
-	db.connection.Raw(sqlQuery.String()).Scan(&records)
+	offset := (request.Page - 1) * request.Size
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
 	return records
 }
 
@@ -141,6 +132,62 @@ func (db *sectorConnection) GetDatatables(request commons.DataTableRequest) comm
 	return res
 }
 
+func (db *sectorConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntitySectorView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	for k, v := range request.Filter {
+		if v != "" {
+			if total_filter > 0 {
+				filters += "AND "
+			}
+			filters += fmt.Sprintf("%v = '%v' ", k, v)
+			total_filter++
+		}
+	}
+	// #endregion
+
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+
+	var count int64
+	db.connection.Model(&entity_view_models.EntitySectorView{}).Where(filters).Count(&count)
+
+	response.Data = records
+	response.Total = int(count)
+	return response
+}
+
 func (db *sectorConnection) GetAll(filter map[string]interface{}) []models.Sector {
 	var records []models.Sector
 	if len(filter) == 0 {
@@ -155,6 +202,7 @@ func (db *sectorConnection) Insert(record models.Sector) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
@@ -192,6 +240,17 @@ func (db *sectorConnection) Update(record models.Sector) helper.Response {
 func (db *sectorConnection) GetById(recordId string) helper.Response {
 	var record models.Sector
 	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *sectorConnection) GetByName(sectorName string) helper.Response {
+	var record models.Sector
+	db.connection.First(&record, "name = ?", sectorName)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

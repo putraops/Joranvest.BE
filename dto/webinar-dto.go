@@ -20,6 +20,11 @@ type WebinarDto struct {
 	Reward                  int       `json:"reward" form:"reward"`
 	Status                  int       `json:"status" form:"status"`
 	SpeakerType             int       `json:"speaker_type" form:"speaker_type"`
+	Filepath                string    `json:"filepath" form:"filepath"`
+	FilepathThumbnail       string    `json:"filepath_thumbnail" form:"filepath_thumbnail"`
+	Filename                string    `json:"filename" form:"filename"`
+	Extension               string    `json:"extension" form:"extension"`
+	Size                    string    `json:"size" form:"size"`
 
 	EntityId  string `json:"-"`
 	UpdatedBy string

@@ -3,6 +3,7 @@ module joranvest
 go 1.14
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/StefanSchroeder/Golang-Roman v1.0.0
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.9.0 // indirect
@@ -25,14 +26,18 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mashingan/smapping v0.1.6
 	github.com/mattn/go-isatty v0.0.13 // indirect
+	github.com/midtrans/midtrans-go v1.2.2
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.1
 	github.com/swaggo/swag v1.7.1
 	github.com/twinj/uuid v1.0.0
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/xuri/excelize/v2 v2.4.1
 	github.com/ydhnwb/golang_api v0.0.0-20210821145656-97a206998698
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f // indirect
@@ -40,6 +45,8 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/postgres v1.0.8
 	gorm.io/gorm v1.21.3
 )

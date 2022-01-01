@@ -12,11 +12,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 )
 
 type OrganizationController interface {
 	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -35,7 +37,7 @@ func NewOrganizationController(organizationService service.OrganizationService, 
 }
 
 func (c *organizationController) Lookup(context *gin.Context) {
-	var request helper.Select2Request
+	var request helper.ReactSelectRequest
 	qry := context.Request.URL.Query()
 
 	if _, found := qry["q"]; found {
@@ -56,6 +58,20 @@ func (c *organizationController) GetDatatables(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, res)
 	}
 	var result = c.organizationService.GetDatatables(dt)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *organizationController) GetPagination(context *gin.Context) {
+	commons.Logger()
+
+	var req commons.PaginationRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error(errDTO.Error())
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.organizationService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

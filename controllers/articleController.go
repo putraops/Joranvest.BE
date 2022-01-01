@@ -56,7 +56,7 @@ func (c *articleController) GetDatatables(context *gin.Context) {
 // @Success 200 {obsject} object
 // @Failure 400,404 {object} object
 func (c *articleController) GetPagination(context *gin.Context) {
-	var req commons.PaginationRequest
+	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})

@@ -3,12 +3,14 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -48,25 +50,32 @@ func (db *ratingMasterConnection) GetAll(filter map[string]interface{}) []models
 }
 
 func (db *ratingMasterConnection) Insert(record models.RatingMaster) helper.Response {
+	commons.Logger()
+
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
 	if err := tx.Create(&record).Error; err != nil {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
-	} else {
-		tx.Commit()
-		db.connection.Find(&record)
-		return helper.ServerResponse(true, "Ok", "", record)
 	}
+
+	tx.Commit()
+	db.connection.Find(&record)
+	return helper.ServerResponse(true, "Ok", "", record)
 }
 
 func (db *ratingMasterConnection) Update(record models.RatingMaster) helper.Response {
 	var oldRecord models.RatingMaster
 	db.connection.First(&oldRecord, "id = ?", record.Id)
 	if record.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error("Record not found")
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
 	}
@@ -78,6 +87,8 @@ func (db *ratingMasterConnection) Update(record models.RatingMaster) helper.Resp
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", res.Error))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
 	}
 

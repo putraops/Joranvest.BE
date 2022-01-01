@@ -6,21 +6,24 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type MembershipRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Membership
+	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	Insert(t models.Membership) helper.Response
 	Update(record models.Membership) helper.Response
 	SetRecomendationById(recordId string, isChecked bool) helper.Response
-	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -104,6 +107,62 @@ func (db *membershipConnection) GetDatatables(request commons.DataTableRequest) 
 	return res
 }
 
+func (db *membershipConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityMembershipView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	for k, v := range request.Filter {
+		if v != "" {
+			if total_filter > 0 {
+				filters += "AND "
+			}
+			filters += fmt.Sprintf("%v = '%v' ", k, v)
+			total_filter++
+		}
+	}
+	// #endregion
+
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+
+	var count int64
+	db.connection.Model(&entity_view_models.EntityMembershipView{}).Where(filters).Count(&count)
+
+	response.Data = records
+	response.Total = int(count)
+	return response
+}
+
 func (db *membershipConnection) GetAll(filter map[string]interface{}) []models.Membership {
 	var records []models.Membership
 	if len(filter) == 0 {
@@ -157,6 +216,20 @@ func (db *membershipConnection) GetById(recordId string) helper.Response {
 	var record models.Membership
 	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *membershipConnection) GetViewById(recordId string) helper.Response {
+	commons.Logger()
+	var record entity_view_models.EntityMembershipView
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", "Record not found"))
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
 	}

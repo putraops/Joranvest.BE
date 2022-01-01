@@ -19,10 +19,11 @@ type RatingMaster struct {
 	ApprovedBy  string       `gorm:"type:varchar(50)" json:"approved_by"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	RecordId string `gorm:"type:varchar(50);not null" json:"record_id"`
-	UserId   string `gorm:"type:varchar(50)" json:"user_id"`
-	Rating   int    `gorm:"type:int" json:"rating"`
-	Comment  string `gorm:"type:text" json:"comment"`
+	UserId        string `gorm:"type:varchar(50)" json:"user_id"`
+	ObjectRatedId string `gorm:"type:varchar(50)" json:"object_rated_id"`
+	ReferenceId   string `gorm:"type:varchar(50)" json:"reference_id"`
+	Rating        int    `gorm:"type:int" json:"rating"`
+	Comment       string `gorm:"type:text" json:"comment"`
 
 	ApplicationUser ApplicationUser `gorm:"foreignkey:UserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"application_user"`
 }

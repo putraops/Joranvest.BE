@@ -8,8 +8,9 @@ import (
 )
 
 type SectorService interface {
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Sector
 	Insert(record models.Sector) helper.Response
 	Update(record models.Sector) helper.Response
@@ -28,32 +29,16 @@ func NewSectorService(repo repository.SectorRepository) SectorService {
 	}
 }
 
-func (service *sectorService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *sectorService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
-	request := make(map[string]interface{})
-	request["qry"] = r.Q
-	request["condition"] = helper.DataFilter{
-		Request: []helper.Operator{
-			{
-				Operator: "like",
-				Field:    r.Field,
-				Value:    r.Q,
-			},
-		},
-	}
-
-	result := service.sectorRepository.Lookup(request)
+	result := service.sectorRepository.Lookup(r)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Value:       record.Id,
-				Text:        record.Name,
-				Label:       record.Name,
-				Description: "",
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.Name,
+				ParentId: "",
 			}
 			ary.Results = append(ary.Results, p)
 		}
@@ -64,6 +49,10 @@ func (service *sectorService) Lookup(r helper.Select2Request) helper.Response {
 
 func (service *sectorService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.sectorRepository.GetDatatables(request)
+}
+
+func (service *sectorService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.sectorRepository.GetPagination(request)
 }
 
 func (service *sectorService) GetAll(filter map[string]interface{}) []models.Sector {

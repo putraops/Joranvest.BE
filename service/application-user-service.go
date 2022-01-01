@@ -5,7 +5,9 @@ import (
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"joranvest/repository"
+
 	"log"
 
 	"github.com/mashingan/smapping"
@@ -14,22 +16,28 @@ import (
 //-- This is user contract
 type ApplicationUserService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	Lookup(request helper.Select2Request) helper.Response
+	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
+	ChangePhone(recordDto dto.ChangePhoneDto) helper.Response
+	ChangePassword(recordDto dto.ChangePasswordDto) helper.Response
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
+	RecoverPassword(recordId string, oldPassword string) helper.Response
+	EmailVerificationById(recordId string) helper.Response
 }
 
 type applicationUserService struct {
 	applicationUserRepository repository.ApplicationUserRepository
+	emailService              EmailService
 }
 
-func NewApplicationUserService(repo repository.ApplicationUserRepository) ApplicationUserService {
+func NewApplicationUserService(repo repository.ApplicationUserRepository, emailService EmailService) ApplicationUserService {
 	return &applicationUserService{
 		applicationUserRepository: repo,
+		emailService:              emailService,
 	}
 }
 
@@ -37,8 +45,8 @@ func (service *applicationUserService) GetDatatables(request commons.DataTableRe
 	return service.applicationUserRepository.GetDatatables(request)
 }
 
-func (service *applicationUserService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
+func (service *applicationUserService) Lookup(r helper.ReactSelectRequest) helper.Response {
+	var ary helper.ReactSelectResponse
 
 	request := make(map[string]interface{})
 	request["qry"] = r.Q
@@ -55,14 +63,10 @@ func (service *applicationUserService) Lookup(r helper.Select2Request) helper.Re
 	result := service.applicationUserRepository.Lookup(request)
 	if len(result) > 0 {
 		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Value:       record.Id,
-				Text:        record.FirstName + " " + record.LastName,
-				Label:       record.FirstName + " " + record.LastName,
-				Description: "",
-				Selected:    true,
-				Disabled:    false,
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.FirstName + " " + record.LastName,
+				ParentId: "",
 			}
 			ary.Results = append(ary.Results, p)
 		}
@@ -100,4 +104,54 @@ func (service *applicationUserService) GetAll() []models.ApplicationUser {
 
 func (service *applicationUserService) DeleteById(userId string) helper.Response {
 	return service.applicationUserRepository.DeleteById(userId)
+}
+
+func (service *applicationUserService) ChangePassword(recordDto dto.ChangePasswordDto) helper.Response {
+	res := service.applicationUserRepository.GetViewUserByUsernameOrEmail(recordDto.Username, recordDto.Email)
+	if res == nil {
+		return helper.ServerResponse(false, "Record not found", "NotFound", helper.EmptyObj{})
+	}
+	if v, ok := res.(entity_view_models.EntityApplicationUserView); ok {
+		comparedPassword := comparePassword(v.Password, []byte(recordDto.OldPassword))
+		if (v.Email == recordDto.Email || v.Username == recordDto.Username) && comparedPassword {
+			user := (service.applicationUserRepository.GetById(v.Id).Data).(models.ApplicationUser)
+			user.Password = recordDto.NewPassword
+
+			newUserData := service.applicationUserRepository.Update(user)
+			return helper.ServerResponse(true, "Ok", "", newUserData)
+
+		} else {
+			return helper.ServerResponse(false, "Password is not match", "Error", helper.EmptyObj{})
+		}
+	}
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+}
+
+func (service *applicationUserService) ChangePhone(recordDto dto.ChangePhoneDto) helper.Response {
+	res := service.applicationUserRepository.GetById(recordDto.Id)
+	if !res.Status {
+		return res
+	}
+
+	var userData = (res.Data).(models.ApplicationUser)
+	userData.Password = "" //-- Set to empty :: use for restrict change password
+	userData.Phone = recordDto.Phone
+
+	_ = service.applicationUserRepository.Update(userData)
+	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
+}
+
+func (service *applicationUserService) RecoverPassword(recordId string, oldPassword string) helper.Response {
+	return service.applicationUserRepository.RecoverPassword(recordId, oldPassword)
+}
+
+func (service *applicationUserService) EmailVerificationById(recordId string) helper.Response {
+
+	res := service.applicationUserRepository.EmailVerificationById(recordId)
+	if res.Status {
+		var record = res.Data.(models.ApplicationUser)
+		to := []string{record.Email}
+		service.emailService.SendEmailVerified(to)
+	}
+	return res
 }

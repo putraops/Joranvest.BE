@@ -20,14 +20,14 @@ type MembershipUser struct {
 	OwnerId     string       `gorm:"type:varchar(50)" json:"owner_id"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	MembershipId        string       `gorm:"type:varchar(50);not null" json:"membership_id"`
-	ApplicationUserId   string       `gorm:"type:varchar(50);not null" json:"application_user_id"`
-	MembershipPaymentId string       `gorm:"type:varchar(50);not null" json:"membership_payment_id"`
-	ExpiredDate         sql.NullTime `gorm:"type:timestamp" json:"expired_date"`
+	MembershipId      string       `gorm:"type:varchar(50);not null" json:"membership_id"`
+	ApplicationUserId string       `gorm:"type:varchar(50);not null" json:"application_user_id"`
+	PaymentId         string       `gorm:"type:varchar(50);" json:"payment_id"`
+	ExpiredDate       sql.NullTime `gorm:"type:timestamp" json:"expired_date"`
 
-	Membership        Membership        `gorm:"foreignkey:MembershipId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"membership"`
-	MembershipPayment MembershipPayment `gorm:"foreignkey:MembershipPaymentId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"membership_payment"`
-	ApplicationUser   ApplicationUser   `gorm:"foreignkey:ApplicationUserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"application_user"`
+	Membership      Membership      `gorm:"foreignkey:MembershipId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"membership"`
+	Payment         Payment         `gorm:"foreignkey:PaymentId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"payment"`
+	ApplicationUser ApplicationUser `gorm:"foreignkey:ApplicationUserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"application_user"`
 }
 
 func (MembershipUser) TableName() string {

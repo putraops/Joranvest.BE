@@ -6,11 +6,12 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -18,6 +19,7 @@ import (
 type TagRepository interface {
 	Lookup(req map[string]interface{}) []models.Tag
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Tag
 	Insert(t models.Tag) helper.Response
 	Update(record models.Tag) helper.Response
@@ -141,6 +143,62 @@ func (db *tagConnection) GetDatatables(request commons.DataTableRequest) commons
 	return res
 }
 
+func (db *tagConnection) GetPagination(request commons.PaginationRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityTagView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	for k, v := range request.Filter {
+		if v != "" {
+			if total_filter > 0 {
+				filters += "AND "
+			}
+			filters += fmt.Sprintf("%v = '%v' ", k, v)
+			total_filter++
+		}
+	}
+	// #endregion
+
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+
+	var count int64
+	db.connection.Model(&entity_view_models.EntityTagView{}).Where(filters).Count(&count)
+
+	response.Data = records
+	response.Total = int(count)
+	return response
+}
+
 func (db *tagConnection) GetAll(filter map[string]interface{}) []models.Tag {
 	var records []models.Tag
 	if len(filter) == 0 {
@@ -152,6 +210,7 @@ func (db *tagConnection) GetAll(filter map[string]interface{}) []models.Tag {
 }
 
 func (db *tagConnection) Insert(record models.Tag) helper.Response {
+	commons.Logger()
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
@@ -159,6 +218,7 @@ func (db *tagConnection) Insert(record models.Tag) helper.Response {
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
+		log.Error(fmt.Sprintf("%v,", err))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	} else {
 		tx.Commit()
@@ -168,10 +228,13 @@ func (db *tagConnection) Insert(record models.Tag) helper.Response {
 }
 
 func (db *tagConnection) Update(record models.Tag) helper.Response {
+	commons.Logger()
+
 	var oldRecord models.Tag
 	db.connection.First(&oldRecord, "id = ?", record.Id)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		log.Error("Tag: Record not found")
 		return res
 	}
 
@@ -182,6 +245,7 @@ func (db *tagConnection) Update(record models.Tag) helper.Response {
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
+		log.Error(fmt.Sprintf("%v,", res.Error))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
 	}
 
@@ -210,6 +274,7 @@ func (db *tagConnection) DeleteById(recordId string) helper.Response {
 	} else {
 		res := db.connection.Where("id = ?", recordId).Delete(&record)
 		if res.RowsAffected == 0 {
+			log.Error(fmt.Sprintf("%v,", res.Error))
 			return helper.ServerResponse(false, "Error", fmt.Sprintf("%v", res.Error), helper.EmptyObj{})
 		}
 		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})

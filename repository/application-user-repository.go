@@ -5,7 +5,7 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"strings"
 
 	"github.com/google/uuid"
@@ -15,12 +15,15 @@ import (
 type ApplicationUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	Lookup(req map[string]interface{}) []models.ApplicationUser
-	GetUserByUsernameOrEmail(username string, email string) interface{}
+	GetViewUserByEmail(username string, email string) interface{}
+	GetViewUserByUsernameOrEmail(username string, email string) interface{}
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
 	VerifyCredential(username string, email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
+	RecoverPassword(recordId string, oldPassword string) helper.Response
+	EmailVerificationById(userId string) helper.Response
 	UserProfile(applicationUserId string) models.ApplicationUser
 	GetById(applicationUserId string) helper.Response
 	GetViewById(applicationUserId string) helper.Response
@@ -144,9 +147,17 @@ func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models
 	return records
 }
 
-func (db *applicationUserConnection) GetUserByUsernameOrEmail(username string, email string) interface{} {
+func (db *applicationUserConnection) GetViewUserByUsernameOrEmail(username string, email string) interface{} {
 	var record entity_view_models.EntityApplicationUserView
-	res := db.connection.Where("username = ?", username).Or("email = ?", email).Take(&record)
+	res := db.connection.Where("LOWER(username) = ? AND (LOWER(username) <> '' OR LOWER(username) IS NULL) ", strings.ToLower(username)).Or("LOWER(email) = ?", strings.ToLower(email)).Take(&record)
+	if res.Error == nil {
+		return record
+	}
+	return nil
+}
+func (db *applicationUserConnection) GetViewUserByEmail(username string, email string) interface{} {
+	var record entity_view_models.EntityApplicationUserView
+	res := db.connection.Where("LOWER(email) = ?", strings.ToLower(email)).Take(&record)
 	if res.Error == nil {
 		return record
 	}
@@ -171,12 +182,28 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 		record.Password = helper.HashAndSalt([]byte(record.Password))
 	} else {
 		var tempUser models.ApplicationUser
-		db.connection.Find(&tempUser, record.Id)
+		res := db.GetById(record.Id)
+		tempUser = (res.Data).(models.ApplicationUser)
 		record.Password = tempUser.Password
 	}
 
 	db.connection.Save(&record)
 	return record
+}
+
+func (db *applicationUserConnection) RecoverPassword(recordId string, oldPassword string) helper.Response {
+	tx := db.connection.Begin()
+	var user models.ApplicationUser
+	db.connection.Find(&user, recordId)
+	user.Password = helper.HashAndSalt([]byte(oldPassword))
+
+	res := tx.Save(&user)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", user)
 }
 
 func (db *applicationUserConnection) VerifyCredential(username string, email string, password string) interface{} {
@@ -246,4 +273,16 @@ func (db *applicationUserConnection) GetViewById(applicationUserId string) helpe
 		res := helper.ServerResponse(true, "Ok", "", record)
 		return res
 	}
+}
+
+func (db *applicationUserConnection) EmailVerificationById(userId string) helper.Response {
+	var result = db.GetById(userId)
+	if !result.Status {
+		return result
+	}
+	var record = result.Data.(models.ApplicationUser)
+	record.IsEmailVerified = true
+
+	db.connection.Model(&record).Updates(models.ApplicationUser{IsEmailVerified: true})
+	return helper.ServerResponse(true, "Ok", "", record)
 }

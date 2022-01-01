@@ -2,8 +2,9 @@ package service
 
 import (
 	"joranvest/dto"
+	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"joranvest/repository"
 	"log"
 
@@ -17,7 +18,7 @@ import (
 
 //AuthService is a contract about something that this service can do
 type AuthService interface {
-	VerifyCredential(username string, email string, password string) interface{}
+	VerifyCredential(username string, email string, password string) helper.Response
 	CreateUser(user dto.ApplicationUserRegisterDto) (models.ApplicationUser, error)
 	GetByEmail(email string) models.ApplicationUser
 	IsDuplicateEmail(email string) bool
@@ -34,19 +35,22 @@ func NewAuthService(appUserRepo repository.ApplicationUserRepository) AuthServic
 	}
 }
 
-func (service *authService) VerifyCredential(username string, email string, password string) interface{} {
-	res := service.appUserRepo.GetUserByUsernameOrEmail(username, email)
+func (service *authService) VerifyCredential(username string, email string, password string) helper.Response {
+	res := service.appUserRepo.GetViewUserByEmail(username, email)
 	if res == nil {
-		return nil
+		return helper.ServerResponse(false, "Email yang Anda masukkan tidak terdaftar.", "", helper.EmptyObj{})
 	}
 	if v, ok := res.(entity_view_models.EntityApplicationUserView); ok {
-		comparedPassword := comparePassword(v.Password, []byte(password))
-		if (v.Email == email || v.Username == username) && comparedPassword {
-			return res
+		if !v.IsEmailVerified {
+			return helper.ServerResponse(false, "Akun anda belum aktif. Silahkan periksa kembali Email untuk melakukan verifikasi.", "", helper.EmptyObj{})
 		}
-		return false
+
+		comparedPassword := comparePassword(v.Password, []byte(password))
+		if (v.Email == email || v.Username == username) && !comparedPassword {
+			return helper.ServerResponse(false, "Password yang Anda masukkan salah", "", helper.EmptyObj{})
+		}
 	}
-	return nil
+	return helper.ServerResponse(true, "Ok", "", res.(entity_view_models.EntityApplicationUserView))
 }
 
 func (service *authService) CreateUser(user dto.ApplicationUserRegisterDto) (models.ApplicationUser, error) {
@@ -55,13 +59,6 @@ func (service *authService) CreateUser(user dto.ApplicationUserRegisterDto) (mod
 	if errMap != nil {
 		log.Fatalf("Failed map %v", errMap)
 	}
-
-	//
-	// //asdasd := userSession.GetAppSession()
-	// println("userSession.GetAppSession().EntityId")
-	// session := sessions.Default(ctx)
-	// println(fmt.Sprintf("%v", session.Get("EntityId")))
-
 	return service.appUserRepo.Insert(userToCreate)
 }
 

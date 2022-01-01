@@ -9,7 +9,7 @@ import (
 
 type ArticleService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Article
 	GetArticleCoverById(recordId string) helper.Response
 	Insert(record models.Article) helper.Response
@@ -35,7 +35,7 @@ func (service *articleService) GetDatatables(request commons.DataTableRequest) c
 	return service.articleRepository.GetDatatables(request)
 }
 
-func (service *articleService) GetPagination(request commons.PaginationRequest) interface{} {
+func (service *articleService) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	return service.articleRepository.GetPagination(request)
 }
 

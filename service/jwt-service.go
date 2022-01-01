@@ -1,10 +1,12 @@
 package service
 
 import (
+	"joranvest/commons"
 	"joranvest/helper"
 	"os"
 
 	"github.com/dgrijalva/jwt-go"
+	log "github.com/sirupsen/logrus"
 
 	"fmt"
 	"time"
@@ -72,9 +74,12 @@ func (j *jwtService) ValidateToken(token string) (*jwt.Token, error) {
 }
 
 func (c *jwtService) GetUserByToken(token string) helper.UserIdentity {
+	commons.Logger()
 	var userIdentity helper.UserIdentity
 	aToken, err := c.ValidateToken(token)
 	if err != nil {
+		log.Error("jwt-service.go:GetUserByToken")
+		log.Error(err.Error())
 		panic(err.Error())
 	}
 	claims := aToken.Claims.(jwt.MapClaims)

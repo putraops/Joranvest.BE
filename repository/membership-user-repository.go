@@ -6,7 +6,10 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
+
+	log "github.com/sirupsen/logrus"
+
 	"strings"
 	"time"
 
@@ -19,8 +22,9 @@ type MembershipUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.MembershipUser
-	Insert(membershipUser models.MembershipUser, payment models.MembershipPayment) helper.Response
+	Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
+	SetMembership(membershipId string, payment models.Payment) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -175,7 +179,43 @@ func (db *membershipUserConnection) GetAll(filter map[string]interface{}) []mode
 	return records
 }
 
-func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser, payment models.MembershipPayment) helper.Response {
+func (db *membershipUserConnection) SetMembership(membershipId string, payment models.Payment) helper.Response {
+	commons.Logger()
+	tx := db.connection.Begin()
+	// -- Get Membership Record
+	var membershipRecord models.Membership
+	if err := tx.First(&membershipRecord, "id = ?", membershipId).Error; err != nil || membershipRecord.Id == "" {
+		return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	var membershipUser models.MembershipUser
+	membershipUser.Id = uuid.New().String()
+	membershipUser.MembershipId = payment.RecordId
+	membershipUser.PaymentId = payment.Id
+	if payment.UpdatedBy != "" {
+		membershipUser.CreatedBy = payment.UpdatedBy
+	} else {
+		membershipUser.CreatedBy = payment.CreatedBy
+	}
+	membershipUser.OwnerId = payment.OwnerId
+	membershipUser.ApplicationUserId = payment.CreatedBy
+	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	membershipUser.ExpiredDate = sql.NullTime{
+		Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
+		Valid: true,
+	}
+
+	if err := tx.Create(&membershipUser).Error; err != nil {
+		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", membershipUser.Id)
+}
+
+func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response {
 	tx := db.connection.Begin()
 
 	//-- Payment Record
@@ -186,12 +226,16 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 	}
 	if err := tx.Create(&payment).Error; err != nil {
 		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
 
 	// -- Get Membership Record
 	var membershipRecord models.Membership
 	if err := tx.First(&membershipRecord, "id = ?", membershipUser.MembershipId).Error; err != nil || membershipRecord.Id == "" {
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
 		tx.Rollback()
 		return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
@@ -205,7 +249,7 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 	}
 
 	membershipUser.Id = uuid.New().String()
-	membershipUser.MembershipPaymentId = payment.Id
+	membershipUser.PaymentId = payment.Id
 	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&membershipUser).Error; err != nil {
 		tx.Rollback()

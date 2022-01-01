@@ -4,17 +4,20 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
+	"joranvest/models/request_models"
 	"joranvest/repository"
 )
 
 type EmitenService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Emiten
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Insert(record models.Emiten) helper.Response
 	Update(record models.Emiten) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
+	PatchingEmiten(data []request_models.PatchingEmiten, userId string) helper.Response
 }
 
 type emitenService struct {
@@ -30,6 +33,10 @@ func NewEmitenService(repo repository.EmitenRepository) EmitenService {
 
 func (service *emitenService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.emitenRepository.GetDatatables(request)
+}
+
+func (service *emitenService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.emitenRepository.GetPagination(request)
 }
 
 func (service *emitenService) GetAll(filter map[string]interface{}) []models.Emiten {
@@ -68,4 +75,8 @@ func (service *emitenService) GetById(recordId string) helper.Response {
 
 func (service *emitenService) DeleteById(recordId string) helper.Response {
 	return service.emitenRepository.DeleteById(recordId)
+}
+
+func (service *emitenService) PatchingEmiten(data []request_models.PatchingEmiten, userId string) helper.Response {
+	return service.emitenRepository.PatchingEmiten(data, userId)
 }

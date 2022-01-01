@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"joranvest/helper"
 	"joranvest/models"
+	"runtime"
 	"strings"
 
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ type ServiceRepository interface {
 	Lookup(req map[string]interface{}, r helper.Select2Request) []models.ApplicationUser
 	ConvertViewQueryIntoViewCount(param string) string
 	ConvertViewQueryIntoViewCountByPublic(param string, tableName string) string
+	getCurrentFuncName() string
 }
 
 type serviceConnection struct {
@@ -136,4 +138,9 @@ func (db *serviceConnection) Lookup(req map[string]interface{}, r helper.Select2
 	//fmt.Println("End Get")
 
 	return records
+}
+
+func (db *serviceConnection) getCurrentFuncName() string {
+	pc, _, _, _ := runtime.Caller(1)
+	return runtime.FuncForPC(pc).Name()
 }

@@ -4,10 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"joranvest/commons"
-	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
-	entity_view_models "joranvest/models/view_models"
+	entity_view_models "joranvest/models/entity_view_models"
 	"strings"
 	"time"
 
@@ -18,14 +17,13 @@ import (
 
 type WebinarRegistrationRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
-	IsWebinarRegistered(webinarId string, userId string) helper.Response
-	Insert(t models.WebinarRegistration) helper.Response
+	Insert(record models.WebinarRegistration) helper.Response
 	Update(record models.WebinarRegistration) helper.Response
-	UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response
+	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -111,7 +109,7 @@ func (db *webinarRegistrationConnection) GetDatatables(request commons.DataTable
 	return res
 }
 
-func (db *webinarRegistrationConnection) GetPagination(request commons.PaginationRequest) interface{} {
+func (db *webinarRegistrationConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityWebinarRegistrationView
 
@@ -145,19 +143,27 @@ func (db *webinarRegistrationConnection) GetPagination(request commons.Paginatio
 	// #region filter
 	var filters = ""
 	total_filter := 0
-	for k, v := range request.Filter {
-		if v != "" {
-			if total_filter > 0 {
-				filters += "AND "
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
 			}
-			filters += fmt.Sprintf("%v = '%v' ", k, v)
-			total_filter++
 		}
 	}
 	// #endregion
 
 	offset := (page - 1) * pageSize
 	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	db.connection.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	var count int64
 	db.connection.Model(&entity_view_models.EntityWebinarRegistrationView{}).Where(filters).Count(&count)
@@ -182,9 +188,6 @@ func (db *webinarRegistrationConnection) Insert(record models.WebinarRegistratio
 
 	record.Id = uuid.New().String()
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	if record.PaymentStatus == 200 {
-		record.PaymentDate = record.CreatedAt
-	}
 
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
@@ -217,35 +220,6 @@ func (db *webinarRegistrationConnection) Update(record models.WebinarRegistratio
 
 	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
-	return helper.ServerResponse(true, "Ok", "", record)
-}
-
-func (db *webinarRegistrationConnection) UpdatePayment(dto dto.WebinarRegistrationUpdatePaymentDto) helper.Response {
-	tx := db.connection.Begin()
-	var record models.WebinarRegistration
-
-	db.connection.First(&record, "id = ?", dto.Id)
-	if dto.Id == "" {
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-		return res
-	}
-
-	record.PaymentStatus = dto.PaymentStatus
-	record.UpdatedBy = dto.UpdatedBy
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-
-	res := tx.Save(&record)
-	if res.RowsAffected == 0 {
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
-	}
-
-	db.connection.First(&record, "id = ?", dto.Id)
-	if dto.Id == "" {
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-		return res
-	}
-
-	tx.Commit()
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 

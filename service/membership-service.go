@@ -9,11 +9,13 @@ import (
 
 type MembershipService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Membership
 	Insert(record models.Membership) helper.Response
 	Update(record models.Membership) helper.Response
 	SetRecommendationById(recordId string, isChecked bool) helper.Response
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -30,6 +32,10 @@ func NewMembershipService(repo repository.MembershipRepository) MembershipServic
 
 func (service *membershipService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.membershipRepository.GetDatatables(request)
+}
+
+func (service *membershipService) GetPagination(request commons.PaginationRequest) interface{} {
+	return service.membershipRepository.GetPagination(request)
 }
 
 func (service *membershipService) GetAll(filter map[string]interface{}) []models.Membership {
@@ -50,6 +56,10 @@ func (service *membershipService) SetRecommendationById(recordId string, isCheck
 
 func (service *membershipService) GetById(recordId string) helper.Response {
 	return service.membershipRepository.GetById(recordId)
+}
+
+func (service *membershipService) GetViewById(recordId string) helper.Response {
+	return service.membershipRepository.GetViewById(recordId)
 }
 
 func (service *membershipService) DeleteById(recordId string) helper.Response {

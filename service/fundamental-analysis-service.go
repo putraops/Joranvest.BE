@@ -11,6 +11,7 @@ type FundamentalAnalysisService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.FundamentalAnalysis
+	Submit(recordId string, userId string) helper.Response
 	Insert(record models.FundamentalAnalysis) helper.Response
 	Update(record models.FundamentalAnalysis) helper.Response
 	GetById(recordId string) helper.Response
@@ -42,6 +43,10 @@ func (service *fundamentalAnalysisService) GetAll(filter map[string]interface{})
 
 func (service *fundamentalAnalysisService) Insert(record models.FundamentalAnalysis) helper.Response {
 	return service.fundamentalAnalysisRepository.Insert(record)
+}
+
+func (service *fundamentalAnalysisService) Submit(recordId string, userId string) helper.Response {
+	return service.fundamentalAnalysisRepository.Submit(recordId, userId)
 }
 
 func (service *fundamentalAnalysisService) Update(record models.FundamentalAnalysis) helper.Response {

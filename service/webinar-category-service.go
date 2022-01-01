@@ -11,7 +11,9 @@ type WebinarCategoryService interface {
 	Lookup(request helper.Select2Request) helper.Response
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetAll(filter map[string]interface{}) []models.WebinarCategory
+	GetTreeParent() []commons.JStreeResponse
 	GetTree() []commons.JStreeResponse
+	OrderTree(recordId string, parentId string, orderIndex int) helper.Response
 	Insert(record models.WebinarCategory) helper.Response
 	Update(record models.WebinarCategory) helper.Response
 	GetById(recordId string) helper.Response
@@ -78,8 +80,16 @@ func (service *webinarCategoryService) GetDatatables(request commons.DataTableRe
 	return service.webinarCategoryRepository.GetDatatables(request)
 }
 
+func (service *webinarCategoryService) GetTreeParent() []commons.JStreeResponse {
+	return service.webinarCategoryRepository.GetTreeParent()
+}
+
 func (service *webinarCategoryService) GetTree() []commons.JStreeResponse {
 	return service.webinarCategoryRepository.GetTree()
+}
+
+func (service *webinarCategoryService) OrderTree(recordId string, parentId string, orderIndex int) helper.Response {
+	return service.webinarCategoryRepository.OrderTree(recordId, parentId, orderIndex)
 }
 
 func (service *webinarCategoryService) GetAll(filter map[string]interface{}) []models.WebinarCategory {

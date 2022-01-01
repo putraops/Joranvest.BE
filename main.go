@@ -20,7 +20,7 @@ import (
 	"joranvest/service"
 	"net/http"
 
-	"github.com/gin-contrib/location"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -56,15 +56,17 @@ var (
 	roleMenuRepository                repository.RoleMenuRepository                = repository.NewRoleMenuRepository(db)
 	organizationRepository            repository.OrganizationRepository            = repository.NewOrganizationRepository(db)
 	ratingMasterRepository            repository.RatingMasterRepository            = repository.NewRatingMasterRepository(db)
+	paymentRepository                 repository.PaymentRepository                 = repository.NewPaymentRepository(db)
+	emailRepository                   repository.EmailRepository                   = repository.NewEmailRepository(db)
 
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
-	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository)
+	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository, emailService)
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
 	membershipUserService          service.MembershipUserService          = service.NewMembershipUserService(membershipUserRepository)
-	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository)
+	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository, webinarRepository)
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
 	articleCategoryService         service.ArticleCategoryService         = service.NewArticleCategoryService(articleCategoryRepository)
@@ -84,8 +86,10 @@ var (
 	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
 	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
+	paymentService                 service.PaymentService                 = service.NewPaymentService(paymentRepository)
+	emailService                   service.EmailService                   = service.NewEmailService(emailRepository)
 
-	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, jwtService)
+	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, emailService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
 	applicationMenuCategoryController controllers.ApplicationMenuCategoryController = controllers.NewApplicationMenuCategoryController(applicationMenuCategoryService, jwtService)
 	applicationMenuController         controllers.ApplicationMenuController         = controllers.NewApplicationMenuController(applicationMenuService, jwtService)
@@ -111,6 +115,10 @@ var (
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
+	paymentController                 controllers.PaymentController                 = controllers.NewPaymentController(paymentService, jwtService)
+	emailController                   controllers.EmailController                   = controllers.NewEmailController(emailService, jwtService)
+
+	//clientest coreapi.ClientTest = coreapi.NewClientTest()
 	// #endregion
 )
 
@@ -125,133 +133,10 @@ func createMyRender(view_path string) multitemplate.Renderer {
 	// }
 
 	shared_path := view_path + "shared/"
-	admin_shared_path := view_path + "admin/shared/"
-
 	// #region Template Route
 	r.AddFromFiles("index", "templates/views/index.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	r.AddFromFiles("login", "templates/views/login.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	r.AddFromFiles("logout", "templates/views/logout.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	r.AddFromFiles("register", "templates/views/register/index.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	r.AddFromFiles("register/success", "templates/views/register/success.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	r.AddFromFiles("browse",
-		view_path+"_base.html", view_path+"order/order.index.html",
-		shared_path+"_header.html", shared_path+"_nav.html", shared_path+"_topNav.html",
-		shared_path+"_logout.html", shared_path+"_footer.html", shared_path+"_baseScript.html")
-
-	r.AddFromFiles("browse/technical", view_path+"browse/technical.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	r.AddFromFiles("article", view_path+"article/index.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-
-	r.AddFromFiles("dashboard",
-		view_path+"_base.html", view_path+"admin/dashboard.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("emiten_category",
-		view_path+"_base.html", view_path+"admin/emiten_category/emiten_category.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("webinar_category",
-		view_path+"_base.html", view_path+"admin/webinar_category/webinar_category.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("webinar",
-		view_path+"_base.html", view_path+"admin/webinar/webinar.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("webinar_detail",
-		view_path+"_base.html", view_path+"admin/webinar/webinar.detail.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("article_category",
-		view_path+"_base.html", view_path+"admin/article_category/article_category.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("article",
-		view_path+"_base.html", view_path+"admin/article/article.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("article_detail",
-		view_path+"_base.html", view_path+"admin/article/article.detail.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("application_menu",
-		view_path+"_base.html", view_path+"admin/application_menu/application_menu.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("application_menu_detail",
-		view_path+"_base.html", view_path+"admin/application_menu/application_menu.detail.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("emiten",
-		view_path+"_base.html", view_path+"admin/emiten/emiten.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("sector",
-		view_path+"_base.html", view_path+"admin/sector/sector.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("tag",
-		view_path+"_base.html", view_path+"admin/tag/tag.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("membership",
-		view_path+"_base.html", view_path+"admin/membership/membership.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("application_user",
-		view_path+"_base.html", view_path+"admin/application_user/application_user.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("technical_analysis_index",
-		view_path+"_base.html", view_path+"admin/analysis/technical_analysis.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("technical_analysis_detail",
-		view_path+"_base.html", view_path+"admin/analysis/technical_analysis.detail.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("fundamental_analysis_index",
-		view_path+"_base.html", view_path+"admin/analysis/fundamental_analysis.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("fundamental_analysis_detail",
-		view_path+"_base.html", view_path+"admin/analysis/fundamental_analysis.detail.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("role",
-		view_path+"_base.html", view_path+"admin/role/role.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("role_member",
-		view_path+"_base.html", view_path+"admin/role/role.member.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-	r.AddFromFiles("role_menu",
-		view_path+"_base.html", view_path+"admin/role/role.menu.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
-
-	r.AddFromFiles("organization",
-		view_path+"_base.html", view_path+"admin/organization/organization.index.html",
-		admin_shared_path+"_header.html", admin_shared_path+"_nav.html", admin_shared_path+"_topNav.html",
-		admin_shared_path+"_logout.html", admin_shared_path+"_footer.html", admin_shared_path+"_baseScript.html")
 	// #endregion
 	return r
-}
-
-type App struct {
-	c *gin.Context
 }
 
 func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
@@ -279,20 +164,23 @@ func Setup(c *gin.Context, title string, header string, subheader string, nav st
 		data["userFirstName"] = ""
 	}
 
-	url := location.Get(c)
+	//url := location.Get(c)
 	fmt.Println("=======================================")
-	fmt.Println("Scheme: ", url.Scheme)
-	fmt.Println("Host: ", url.Host)
-	fmt.Println("Path: ", url.Path)
+	// fmt.Println("Scheme: ", url.Scheme)
+	// fmt.Println("Host: ", url.Host)
+	// fmt.Println("Path: ", url.Path)
 	fmt.Println("=======================================")
-	data["hostName"] = url.Scheme + "://" + url.Host
+	//data["hostName"] = url.Scheme + "://" + url.Host
 
 	return data
 }
 
 func main() {
 	defer config.CloseDatabaseConnection(db)
-	r := gin.Default()
+	//getCardToken()
+
+	r := gin.New()
+	// r := gin.Default()
 
 	// programatically set swagger info
 	docs.SwaggerInfo.Title = "Swagger Example API"
@@ -301,17 +189,30 @@ func main() {
 	docs.SwaggerInfo.Host = "localhost:10000"
 	docs.SwaggerInfo.BasePath = "/api"
 
-	r.Use(location.New(location.Config{
-		Scheme:  "http",
-		Host:    "foo.com",
-		Base:    "/base",
-		Headers: location.Headers{Scheme: "X-Forwarded-Proto", Host: "X-Forwarded-For"},
-	}))
+	// r.Use(location.New(location.Config{
+	// 	Scheme:  "http",
+	// 	Host:    "foo.com",
+	// 	Base:    "/base",
+	// 	Headers: location.Headers{Scheme: "X-Forwarded-Proto", Host: "X-Forwarded-For"},
+	// }))
 
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("mysession", store))
 
-	r.Use(CORSMiddleware())
+	//r.Use(CORSMiddleware())
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		// AllowOrigins:  []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"Accept", "Access-Control-Allow-Origin", "Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		// AllowOriginFunc: func(origin string) bool {
+		// 	return origin == "https://github.com"
+		// },
+		MaxAge: 12 * time.Hour,
+	}))
+
 	r.Static("/assets", "./assets")
 	r.Static("/upload", "./upload")
 	r.Static("/script", "./templates/js")
@@ -330,461 +231,6 @@ func main() {
 			},
 		)
 	})
-	r.GET("/logout", func(c *gin.Context) {
-		data := Setup(c, "Logout", "", "", "", "")
-		c.HTML(
-			http.StatusOK,
-			"logout",
-			gin.H{
-				"title": "Logout",
-				"err":   "",
-				"data":  data,
-			},
-		)
-	})
-
-	r.GET("/login", func(c *gin.Context) {
-		c.HTML(
-			http.StatusOK,
-			"login",
-			gin.H{
-				"title": "Login",
-				"err":   "",
-			},
-		)
-	})
-	r.GET("/register", func(c *gin.Context) {
-		data := Setup(c, "Dashboard", "", "", "", "")
-		c.HTML(
-			http.StatusOK,
-			"register",
-			gin.H{
-				"title": "Register",
-				"err":   "",
-				"data":  data,
-			},
-		)
-	})
-	// r.GET("/register", func(c *gin.Context) {
-	// 	c.HTML(
-	// 		http.StatusOK,
-	// 		"register",
-	// 		gin.H{
-	// 			"title": "Register",
-	// 			"err":   "",
-	// 		},
-	// 	)
-	// })
-
-	applicationUserRoutes := r.Group("user")
-	{
-		applicationUserRoutes.POST("/register", authController.RegisterForm)
-		applicationUserRoutes.GET("/register/success", func(c *gin.Context) {
-			data := Setup(c, "Dashboard", "", "", "", "")
-			c.HTML(
-				http.StatusOK,
-				"register/success",
-				gin.H{
-					"title": "Register",
-					"err":   "",
-					"data":  data,
-				},
-			)
-		})
-	}
-	// #endregion
-
-	// #region Auth Route
-	r.POST("/login", func(c *gin.Context) {
-		c.Request.ParseForm()
-		username := c.PostFormArray("username")[0]
-		email := c.PostFormArray("email")[0]
-		password := c.PostFormArray("password")[0]
-		var err = ""
-		var isValid = false
-		var isAdmin = false
-
-		if email == "" && password == "" {
-			err = "Email dan Password tidak boleh kosong."
-		} else if email == "" {
-			err = "Email tidak boleh kosong."
-		} else if password == "" {
-			err = "Password tidak boleh kosong."
-		} else {
-			err = "Nice"
-			isVerified, _isAdmin, token, message := authController.LoginForm(c, username, email, password)
-
-			if isVerified {
-				session := sessions.Default(c)
-				session.Set("mytoken", token)
-				session.Save()
-				err = "Login Successfully."
-				isValid = true
-				isAdmin = _isAdmin
-
-			} else {
-				err = message
-			}
-		}
-
-		if isValid {
-			if isAdmin {
-				c.Redirect(http.StatusMovedPermanently, "/admin/dashboard")
-			} else {
-				fmt.Println("end")
-				c.Redirect(http.StatusMovedPermanently, "/")
-			}
-		} else {
-			c.HTML(
-				http.StatusOK, "login",
-				gin.H{
-					"title": "Login",
-					"err":   err,
-				},
-			)
-		}
-	})
-	r.POST("/logout", func(c *gin.Context) {
-		c.Request.ParseForm()
-		authController.Logout(c)
-		c.Redirect(http.StatusMovedPermanently, "/")
-	})
-	// #endregion
-
-	// #region Web Admin Route
-	adminRoutes := r.Group("admin")
-	{
-		adminRoutes.GET("/dashboard", func(c *gin.Context) {
-			data := Setup(c, "Dashboard", "", "", "", "")
-			c.HTML(
-				http.StatusOK,
-				"dashboard",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/application_menu", func(c *gin.Context) {
-			data := Setup(c, "Application Menu", "Application Menu", "Application Menu", "Application Menu", "Application Menu")
-			c.HTML(
-				http.StatusOK,
-				"application_menu",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/application_menu/detail", func(c *gin.Context) {
-			data := Setup(c, "Application Menu", "Application Menu", "Application Menu", "Application Menu", "Application Menu")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"application_menu_detail",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/membership", func(c *gin.Context) {
-			data := Setup(c, "Membership", "", "", "", "")
-			c.HTML(
-				http.StatusOK,
-				"membership",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/emiten", func(c *gin.Context) {
-			data := Setup(c, "Emiten", "", "", "", "")
-			c.HTML(
-				http.StatusOK,
-				"emiten",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/emiten_category", func(c *gin.Context) {
-			data := Setup(c, "Emiten Category", "Emiten Category", "Emiten Category", "Emiten Category", "Emiten Category")
-			c.HTML(
-				http.StatusOK,
-				"emiten_category",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/article_category", func(c *gin.Context) {
-			data := Setup(c, "Article Category", "Article Category", "Article Category", "Article Category", "Article Category")
-			c.HTML(
-				http.StatusOK,
-				"article_category",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/webinar_category", func(c *gin.Context) {
-			data := Setup(c, "Webinar Category", "Webinar Category", "Webinar Category", "Webinar Category", "Webinar Category")
-			c.HTML(
-				http.StatusOK,
-				"webinar_category",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/webinar", func(c *gin.Context) {
-			data := Setup(c, "Webinar", "Webinar", "Webinar", "Webinar", "Webinar")
-			c.HTML(
-				http.StatusOK,
-				"webinar",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-		adminRoutes.GET("/webinar/detail", func(c *gin.Context) {
-			data := Setup(c, "Webinar Detail", "Webinar Detail", "Webinar Detail", "Webinar Detail", "Webinar Detail")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"webinar_detail",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/article", func(c *gin.Context) {
-			data := Setup(c, "Article", "Article", "Article", "Article", "Article")
-			c.HTML(
-				http.StatusOK,
-				"article",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-		adminRoutes.GET("/article/detail", func(c *gin.Context) {
-			data := Setup(c, "Article Detail", "Article Detail", "Article Detail", "Article Detail", "Article Detail")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"article_detail",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/sector", func(c *gin.Context) {
-			data := Setup(c, "Sector", "Sector", "Sector", "Sector", "Sector")
-			c.HTML(
-				http.StatusOK,
-				"sector",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/tag", func(c *gin.Context) {
-			data := Setup(c, "Tag", "", "", "", "")
-			c.HTML(
-				http.StatusOK,
-				"tag",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/technical_analysis", func(c *gin.Context) {
-			data := Setup(c, "Analisa Teknikal", "Analisa Teknikal", "Analisa Teknikal", "Analisa Teknikal", "Analisa Teknikal")
-			c.HTML(
-				http.StatusOK,
-				"technical_analysis_index",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-		adminRoutes.GET("/technical_analysis/detail", func(c *gin.Context) {
-			data := Setup(c, "Analisa Teknikal", "Analisa Teknikal", "Analisa Teknikal", "Analisa Teknikal", "Analisa Teknikal")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"technical_analysis_detail",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/fundamental_analysis", func(c *gin.Context) {
-			data := Setup(c, "Analisa Fundamental", "Analisa Fundamental", "Analisa Fundamental", "Analisa Fundamental", "Analisa Fundamental")
-			c.HTML(
-				http.StatusOK,
-				"fundamental_analysis_index",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-		adminRoutes.GET("/fundamental_analysis/detail", func(c *gin.Context) {
-			data := Setup(c, "Analisa Fundamental", "Analisa Fundamental", "Analisa Fundamental", "Analisa Fundamental", "Analisa Fundamental")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"fundamental_analysis_detail",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/application_user", func(c *gin.Context) {
-			data := Setup(c, "Application User", "", "", "", "")
-			c.HTML(
-				http.StatusOK,
-				"application_user",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/role", func(c *gin.Context) {
-			data := Setup(c, "Role", "Role", "Role", "Role", "Role")
-			c.HTML(
-				http.StatusOK,
-				"role",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-		adminRoutes.GET("/role/member", func(c *gin.Context) {
-			data := Setup(c, "Role Member", "Role Member", "Role Member", "Role Member", "Role Member")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"role_member",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-		adminRoutes.GET("/role/menu", func(c *gin.Context) {
-			data := Setup(c, "Role Menu", "Role Menu", "Role Menu", "Role Menu", "Role Menu")
-			qry := c.Request.URL.Query()
-			if _, found := qry["id"]; found {
-				data["id"] = fmt.Sprint(qry["id"][0])
-			}
-			c.HTML(
-				http.StatusOK,
-				"role_menu",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		adminRoutes.GET("/organization", func(c *gin.Context) {
-			data := Setup(c, "Organization", "Organization", "Organization", "Organization", "Organization")
-			c.HTML(
-				http.StatusOK,
-				"organization",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-	}
-
-	browseRoutes := r.Group("browse")
-	{
-		browseRoutes.GET("", func(c *gin.Context) {
-
-			data := Setup(c, "Order", "Daftar Order", "Daftar Order", "", "")
-			c.HTML(
-				http.StatusOK, "order",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-
-		browseRoutes.GET("/technical", func(c *gin.Context) {
-			data := Setup(c, "Technical", "Technical", "Technical", "", "")
-			//qry := c.Request.URL.Query()
-			// if _, found := qry["id"]; found {
-			// 	data["id"] = fmt.Sprint(qry["id"][0])
-			// }
-
-			c.HTML(
-				http.StatusOK, "browse/technical",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-	}
-
-	articleRoutes := r.Group("article")
-	{
-		articleRoutes.GET("", func(c *gin.Context) {
-
-			data := Setup(c, "Article", "List Article", "List Article", "", "")
-			c.HTML(
-				http.StatusOK, "article",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-	}
-
-	entityRoutes := r.Group("entity")
-	{
-		entityRoutes.GET("", func(c *gin.Context) {
-			data := Setup(c, "Entity", "Daftar Entity", "Daftar Entity", "", "")
-			c.HTML(
-				http.StatusOK, "entity",
-				gin.H{
-					"data": data,
-				},
-			)
-		})
-	}
 	// #endregion
 
 	// #region API
@@ -797,9 +243,11 @@ func main() {
 	emitenApiRoutes := r.Group("api/emiten")
 	{
 		emitenApiRoutes.POST("/getDatatables", emitenController.GetDatatables)
+		emitenApiRoutes.POST("/getPagination", emitenController.GetPagination)
 		emitenApiRoutes.GET("/lookup", emitenController.Lookup)
 		emitenApiRoutes.POST("/emitenLookup", emitenController.EmitenLookup)
 		emitenApiRoutes.POST("/save", emitenController.Save)
+		emitenApiRoutes.POST("/patchingEmiten", emitenController.PatchingEmiten)
 		emitenApiRoutes.GET("/getById/:id", emitenController.GetById)
 		emitenApiRoutes.DELETE("/deleteById/:id", emitenController.DeleteById)
 	}
@@ -865,7 +313,9 @@ func main() {
 	webinarCategoryApiRoutes := r.Group("api/webinar_category")
 	{
 		webinarCategoryApiRoutes.POST("/getDatatables", webinarCategoryController.GetDatatables)
+		webinarCategoryApiRoutes.GET("/getTreeParent", webinarCategoryController.GetTreeParent)
 		webinarCategoryApiRoutes.GET("/getTree", webinarCategoryController.GetTree)
+		webinarCategoryApiRoutes.POST("/orderTree", webinarCategoryController.OrderTree)
 		webinarCategoryApiRoutes.GET("/lookup", webinarCategoryController.Lookup)
 		webinarCategoryApiRoutes.POST("/save", webinarCategoryController.Save)
 		webinarCategoryApiRoutes.GET("/getById/:id", webinarCategoryController.GetById)
@@ -876,9 +326,12 @@ func main() {
 	{
 		webinarApiRoutes.POST("/getDatatables", webinarController.GetDatatables)
 		webinarApiRoutes.POST("/getPagination", webinarController.GetPagination)
+		webinarApiRoutes.POST("/getPaginationRegisteredByUser/:user_id", webinarController.GetPaginationRegisteredByUser)
 		webinarApiRoutes.POST("/save", webinarController.Save)
 		webinarApiRoutes.POST("/submit/:id", webinarController.Submit)
+		webinarApiRoutes.POST("/uploadWebinarCover/:id", filemasterController.UploadWebinarCover)
 		webinarApiRoutes.GET("/getById/:id", webinarController.GetById)
+		webinarApiRoutes.GET("/getWebinarWithRatingByUserId/:webinar_id/:user_id", webinarController.GetWebinarWithRatingByUserId)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)
 	}
 
@@ -887,16 +340,16 @@ func main() {
 		webinarSpeakerApiRoutes.POST("/save", webinarSpeakerController.Save)
 		webinarSpeakerApiRoutes.GET("/getById/:id", webinarSpeakerController.GetById)
 		webinarSpeakerApiRoutes.GET("/getAll", webinarSpeakerController.GetAll)
+		webinarSpeakerApiRoutes.GET("/getSpeakersRatingByWebinarId/:webinarId", webinarSpeakerController.GetSpeakersRatingByWebinarId)
 	}
 
 	webinarRegistrationApiRoutes := r.Group("api/webinar_registration")
 	{
 		webinarRegistrationApiRoutes.POST("/getDatatables", webinarRegistrationController.GetDatatables)
 		webinarRegistrationApiRoutes.POST("/getPagination", webinarRegistrationController.GetPagination)
-		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
-		webinarRegistrationApiRoutes.POST("/updatePayment", webinarRegistrationController.UpdatePayment)
 		webinarRegistrationApiRoutes.GET("/getById/:id", webinarRegistrationController.GetById)
 		webinarRegistrationApiRoutes.GET("/getViewById/:id", webinarRegistrationController.GetViewById)
+		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
 		webinarRegistrationApiRoutes.GET("/isWebinarRegistered/:id", webinarRegistrationController.IsWebinarRegistered)
 		webinarRegistrationApiRoutes.DELETE("/deleteById/:id", webinarRegistrationController.DeleteById)
 	}
@@ -904,6 +357,7 @@ func main() {
 	tagApiRoutes := r.Group("api/tag")
 	{
 		tagApiRoutes.POST("/getDatatables", tagController.GetDatatables)
+		tagApiRoutes.POST("/getPagination", tagController.GetPagination)
 		tagApiRoutes.GET("/lookup", tagController.Lookup)
 		tagApiRoutes.POST("/save", tagController.Save)
 		tagApiRoutes.GET("/getById/:id", tagController.GetById)
@@ -912,7 +366,7 @@ func main() {
 
 	sectorApiRoutes := r.Group("api/sector")
 	{
-		sectorApiRoutes.POST("/getDatatables", sectorController.GetDatatables)
+		sectorApiRoutes.POST("/getPagination", sectorController.GetPagination)
 		sectorApiRoutes.GET("/lookup", sectorController.Lookup)
 		sectorApiRoutes.POST("/save", sectorController.Save)
 		sectorApiRoutes.GET("/getById/:id", sectorController.GetById)
@@ -922,10 +376,12 @@ func main() {
 	membershipApiRoutes := r.Group("api/membership")
 	{
 		membershipApiRoutes.POST("/getDatatables", membershipController.GetDatatables)
+		membershipApiRoutes.POST("/getPagination", membershipController.GetPagination)
 		membershipApiRoutes.GET("/getAll", membershipController.GetAll)
 		membershipApiRoutes.POST("/save", membershipController.Save)
 		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
 		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)
+		membershipApiRoutes.GET("/getViewById/:id", membershipController.GetViewById)
 		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
 	}
 
@@ -942,9 +398,12 @@ func main() {
 	{
 		filemasterApiRoutes.POST("/single_upload/:id", filemasterController.SingleUpload)
 		filemasterApiRoutes.POST("/uploadByType/:module/:filetype/:id", filemasterController.UploadByType)
+		filemasterApiRoutes.POST("/uploadPDFDocuments/:module/:id", filemasterController.UploadPDFDocuments)
+		filemasterApiRoutes.POST("/uploadProfilePicture/:id", filemasterController.UploadProfilePicture)
 		filemasterApiRoutes.POST("/upload/:id", filemasterController.Insert)
 		filemasterApiRoutes.GET("/getAll", filemasterController.GetAll)
 		filemasterApiRoutes.POST("/getAllByRecordIds", filemasterController.GetAllByRecordIds)
+		filemasterApiRoutes.DELETE("/deleteById/:id", filemasterController.DeleteById)
 		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)
 	}
 
@@ -952,8 +411,12 @@ func main() {
 	{
 		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
-		applicationUserApiRoutes.POST("/register", authController.RegisterForm)
+		applicationUserApiRoutes.POST("/changePhone", applicationUserController.ChangePhone)
+		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
+		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
+		applicationUserApiRoutes.POST("/register", authController.Register)
 		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
+		applicationUserApiRoutes.PATCH("/emailVerificationById/:id", applicationUserController.EmailVerificationById)
 	}
 
 	technicalAnalysisApiRoutes := r.Group("api/technical_analysis")
@@ -970,6 +433,7 @@ func main() {
 		fundamentalAnalysisApiRoutes.POST("/getDatatables", fundamentalAnalysisController.GetDatatables)
 		fundamentalAnalysisApiRoutes.POST("/getPagination", fundamentalAnalysisController.GetPagination)
 		fundamentalAnalysisApiRoutes.POST("/save", fundamentalAnalysisController.Save)
+		fundamentalAnalysisApiRoutes.POST("/submit/:id", fundamentalAnalysisController.Submit)
 		fundamentalAnalysisApiRoutes.GET("/getById/:id", fundamentalAnalysisController.GetById)
 		fundamentalAnalysisApiRoutes.DELETE("/deleteById/:id", fundamentalAnalysisController.DeleteById)
 	}
@@ -1007,7 +471,7 @@ func main() {
 
 	organizationApiRoutes := r.Group("api/organization")
 	{
-		organizationApiRoutes.POST("/getDatatables", organizationController.GetDatatables)
+		organizationApiRoutes.POST("/getPagination", organizationController.GetPagination)
 		organizationApiRoutes.GET("/lookup", organizationController.Lookup)
 		organizationApiRoutes.POST("/save", organizationController.Save)
 		organizationApiRoutes.GET("/getById/:id", organizationController.GetById)
@@ -1021,6 +485,23 @@ func main() {
 		ratingMasterApiRoutes.GET("/getById/:id", ratingMasterController.GetById)
 		ratingMasterApiRoutes.DELETE("/deleteById/:id", ratingMasterController.DeleteById)
 	}
+
+	paymentApiRoutes := r.Group("api/payment")
+	{
+		paymentApiRoutes.POST("/getPagination", paymentController.GetPagination)
+		paymentApiRoutes.POST("/createTokenByCard", paymentController.CreateTokenIdByCard)
+		paymentApiRoutes.GET("/getById/:id", paymentController.GetById)
+		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
+		paymentApiRoutes.POST("/charge", paymentController.Charge)
+		paymentApiRoutes.POST("/membershipPayment", paymentController.MembershipPayment)
+		paymentApiRoutes.POST("/webinarPayment", paymentController.WebinarPayment)
+		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
+	}
+
+	emailApiRoutes := r.Group("api/email")
+	{
+		emailApiRoutes.POST("/sendEmailVerification", emailController.SendEmailVerification)
+	}
 	// #endregion
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -1030,22 +511,15 @@ func main() {
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		// c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:4000")
-		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE, GET, PUT, PATCH")
 
-		fmt.Println(c.Request.Method)
 		if c.Request.Method == "OPTIONS" {
-			fmt.Println("PUTRA")
-			fmt.Println("OPTIONS")
-			c.AbortWithStatus(200)
-		} else {
-			c.Next()
+			c.AbortWithStatus(204)
+			return
 		}
+
+		c.Next()
 	}
 }
