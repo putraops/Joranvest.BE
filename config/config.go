@@ -40,9 +40,16 @@ func (db *configService) setupAdministrator() (bool, error) {
 
 //-- Setup and Open Database Connection
 func SetupDatabaseConnection() *gorm.DB {
+	fmt.Println("=======================================================")
+	fmt.Println("Open Connection....")
+	fmt.Println("=======================================================")
+	fmt.Println("Open env file....")
+	fmt.Println("=======================================================")
 	err := godotenv.Load()
 	if err != nil {
-		panic("Failed to load env file")
+		fmt.Println("Failed to open env file!")
+		fmt.Println("=======================================================")
+		panic("")
 	}
 
 	//dbDial := os.Getenv("DB_DIAL")
@@ -61,12 +68,12 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
-	fmt.Println("Open Connection..")
-	fmt.Println("Connecting...")
+	fmt.Println("Connecting....")
 	if err != nil {
-		panic("Failed to connect database.")
+		fmt.Println("Failed to connect to database!")
+		panic("=======================================================")
 	} else {
-		fmt.Println("Connected.")
+		fmt.Println("Connected...")
 	}
 
 	//-- This function to generate model to database table
