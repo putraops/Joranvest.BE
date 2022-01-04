@@ -20,6 +20,7 @@ type OrganizationController interface {
 	GetDatatables(context *gin.Context)
 	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
+	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
 }
@@ -121,6 +122,22 @@ func (c *organizationController) GetById(context *gin.Context) {
 		context.JSON(http.StatusNotFound, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *organizationController) GetViewById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.organizationService.GetViewById(id)
+	if result.Status {
+		response := helper.BuildResponse(result.Status, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	} else {
+		response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
 	}
 }

@@ -12,6 +12,7 @@ type OrganizationService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Organization
+	GetViewById(recordId string) helper.Response
 	Insert(record models.Organization) helper.Response
 	Update(record models.Organization) helper.Response
 	GetById(recordId string) helper.Response
@@ -113,6 +114,10 @@ func (service *organizationService) Update(record models.Organization) helper.Re
 
 func (service *organizationService) GetById(recordId string) helper.Response {
 	return service.organizationRepository.GetById(recordId)
+}
+
+func (service *organizationService) GetViewById(recordId string) helper.Response {
+	return service.organizationRepository.GetViewById(recordId)
 }
 
 func (service *organizationService) DeleteById(recordId string) helper.Response {

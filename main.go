@@ -341,6 +341,7 @@ func main() {
 		webinarSpeakerApiRoutes.GET("/getById/:id", webinarSpeakerController.GetById)
 		webinarSpeakerApiRoutes.GET("/getAll", webinarSpeakerController.GetAll)
 		webinarSpeakerApiRoutes.GET("/getSpeakersRatingByWebinarId/:webinarId", webinarSpeakerController.GetSpeakersRatingByWebinarId)
+		webinarSpeakerApiRoutes.GET("/getSpeakerReviewById/:id", webinarSpeakerController.GetSpeakerReviewById)
 	}
 
 	webinarRegistrationApiRoutes := r.Group("api/webinar_registration")
@@ -475,11 +476,13 @@ func main() {
 		organizationApiRoutes.GET("/lookup", organizationController.Lookup)
 		organizationApiRoutes.POST("/save", organizationController.Save)
 		organizationApiRoutes.GET("/getById/:id", organizationController.GetById)
+		organizationApiRoutes.GET("/getViewById/:id", organizationController.GetViewById)
 		organizationApiRoutes.DELETE("/deleteById/:id", organizationController.DeleteById)
 	}
 
 	ratingMasterApiRoutes := r.Group("api/rating_master")
 	{
+		ratingMasterApiRoutes.POST("/getPagination", ratingMasterController.GetPagination)
 		ratingMasterApiRoutes.POST("/getAll", ratingMasterController.GetAll)
 		ratingMasterApiRoutes.POST("/save", ratingMasterController.Save)
 		ratingMasterApiRoutes.GET("/getById/:id", ratingMasterController.GetById)

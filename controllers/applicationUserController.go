@@ -149,11 +149,11 @@ func (c *applicationUserController) GetViewById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	result := c.applicationUserService.GetViewById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusBadRequest, response)
+	if result.Status {
+		response := helper.BuildResponse(result.Status, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
 	} else {
-		response := helper.BuildResponse(true, "Ok", result.Data)
+		response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
 	}
 }

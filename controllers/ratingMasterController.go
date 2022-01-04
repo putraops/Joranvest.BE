@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"joranvest/commons"
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
@@ -14,6 +15,7 @@ import (
 )
 
 type RatingMasterController interface {
+	GetPagination(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
@@ -29,6 +31,23 @@ func NewRatingMasterController(ratingMasterService service.RatingMasterService, 
 	return &ratingMasterController{
 		ratingMasterService: ratingMasterService,
 		jwtService:          jwtService,
+	}
+}
+
+func (c *ratingMasterController) GetPagination(context *gin.Context) {
+	var req commons.Pagination2ndRequest
+	errDTO := context.Bind(&req)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+	}
+	var result = c.ratingMasterService.GetPagination(req)
+	if result.Status {
+		response := helper.BuildResponse(true, result.Message, result.Data)
+		context.JSON(http.StatusOK, response)
+	} else {
+		response := helper.BuildResponse(false, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
 	}
 }
 

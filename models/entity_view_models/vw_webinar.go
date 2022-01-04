@@ -7,10 +7,6 @@ import (
 
 type EntityWebinarView struct {
 	models.Webinar
-	Filepath                  string `json:"filepath"`
-	FilepathThumbnail         string `json:"filepath_thumbnail"`
-	Filename                  string `json:"filename"`
-	Extension                 string `json:"extension"`
 	OrganizerOrganizationName string `json:"organizer_organization_name"`
 	SpeakerName               string `json:"speaker_name"`
 	WebinarCategoryName       string `json:"webinar_category_name"`
@@ -59,6 +55,7 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.filepath_thumbnail,")
 	sql.WriteString("  r.filename,")
 	sql.WriteString("  r.extension,")
+	sql.WriteString("  r.size,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname, ")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")

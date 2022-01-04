@@ -5,6 +5,7 @@ import (
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
+	"joranvest/models/view_models"
 	"joranvest/repository"
 	"os"
 
@@ -171,6 +172,8 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_webinar.TableName()] = vw_webinar.Migration()
 	var vw_webinar_speaker = entity_view_models.EntityWebinarSpeakerView{}
 	viewList[vw_webinar_speaker.TableName()] = vw_webinar_speaker.Migration()
+	var vw_webinar_speaker_review = view_models.WebinarSpeakerReviewViewModel{}
+	viewList[vw_webinar_speaker_review.TableName()] = vw_webinar_speaker_review.Migration()
 	var vw_webinar_registration = entity_view_models.EntityWebinarRegistrationView{}
 	viewList[vw_webinar_registration.TableName()] = vw_webinar_registration.Migration()
 

@@ -20,6 +20,7 @@ type OrganizationRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.PaginationRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Organization
+	GetViewById(recordId string) helper.Response
 	Insert(t models.Organization) helper.Response
 	Update(record models.Organization) helper.Response
 	GetById(recordId string) helper.Response
@@ -196,6 +197,18 @@ func (db *organizationConnection) GetPagination(request commons.PaginationReques
 	response.Data = records
 	response.Total = int(count)
 	return response
+}
+
+func (db *organizationConnection) GetViewById(id string) helper.Response {
+	var record entity_view_models.EntityOrganizationView
+	db.connection.First(&record, "id = ?", id)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	} else {
+		res := helper.ServerResponse(true, "Ok", "", record)
+		return res
+	}
 }
 
 func (db *organizationConnection) GetAll(filter map[string]interface{}) []models.Organization {

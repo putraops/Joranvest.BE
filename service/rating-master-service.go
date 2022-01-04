@@ -1,12 +1,14 @@
 package service
 
 import (
+	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
 )
 
 type RatingMasterService interface {
+	GetPagination(request commons.Pagination2ndRequest) helper.Response
 	GetAll(filter map[string]interface{}) []models.RatingMaster
 	Insert(record models.RatingMaster) helper.Response
 	Update(record models.RatingMaster) helper.Response
@@ -23,6 +25,10 @@ func NewRatingMasterService(repo repository.RatingMasterRepository) RatingMaster
 	return &ratingMasterService{
 		ratingMasterRepository: repo,
 	}
+}
+
+func (service *ratingMasterService) GetPagination(request commons.Pagination2ndRequest) helper.Response {
+	return service.ratingMasterRepository.GetPagination(request)
 }
 
 func (service *ratingMasterService) GetAll(filter map[string]interface{}) []models.RatingMaster {

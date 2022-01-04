@@ -19,6 +19,7 @@ import (
 type WebinarSpeakerRepository interface {
 	GetById(recordId string) helper.Response
 	GetAll(filter map[string]interface{}) []entity_view_models.EntityWebinarSpeakerView
+	GetSpeakerReviewById(recordId string) helper.Response
 	GetSpeakersRatingByWebinarId(webinarId string) helper.Response
 	Insert(records []models.WebinarSpeaker, speakerType int) helper.Response
 }
@@ -33,7 +34,7 @@ type webinarSpeakerConnection struct {
 func NewWebinarSpeakerRepository(db *gorm.DB) WebinarSpeakerRepository {
 	return &webinarSpeakerConnection{
 		connection:        db,
-		tableName:         models.FundamentalAnalysis.TableName(models.FundamentalAnalysis{}),
+		tableName:         models.WebinarSpeaker.TableName(models.WebinarSpeaker{}),
 		viewQuery:         entity_view_models.EntityWebinarSpeakerView.ViewModel(entity_view_models.EntityWebinarSpeakerView{}),
 		serviceRepository: NewServiceRepository(db),
 	}
@@ -133,6 +134,18 @@ func (db *webinarSpeakerConnection) GetById(recordId string) helper.Response {
 	}
 	res := helper.ServerResponse(true, "Ok", "", record)
 	return res
+}
+
+func (db *webinarSpeakerConnection) GetSpeakerReviewById(recordId string) helper.Response {
+	var record view_models.WebinarSpeakerReviewViewModel
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	} else {
+		res := helper.ServerResponse(true, "Ok", "", record)
+		return res
+	}
 }
 
 func (db *webinarSpeakerConnection) GetAll(filter map[string]interface{}) []entity_view_models.EntityWebinarSpeakerView {

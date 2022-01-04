@@ -20,6 +20,7 @@ type WebinarSpeakerController interface {
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
 	GetSpeakersRatingByWebinarId(context *gin.Context)
+	GetSpeakerReviewById(context *gin.Context)
 }
 
 type webinarSpeakerController struct {
@@ -103,6 +104,24 @@ func (c *webinarSpeakerController) GetSpeakersRatingByWebinarId(context *gin.Con
 		context.JSON(http.StatusNotFound, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *webinarSpeakerController) GetSpeakerReviewById(context *gin.Context) {
+	commons.Logger()
+	id := context.Param("id")
+	if id == "" {
+		log.Error("Failed to get id")
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.webinarSpeakerService.GetSpeakerReviewById(id)
+	if result.Status {
+		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	} else {
+		response := helper.BuildResponse(false, result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
 	}
 }
