@@ -52,9 +52,9 @@ func (db *sectorConnection) Lookup(request helper.ReactSelectRequest) []models.S
 	totalFilter := 0
 	for _, field := range request.Field {
 		if totalFilter == 0 {
-			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
+			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", strings.ToLower(request.Q), "%'")
 		} else {
-			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", request.Q, "%'")
+			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", strings.ToLower(request.Q), "%'")
 		}
 		totalFilter++
 	}
