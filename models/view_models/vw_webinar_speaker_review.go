@@ -27,7 +27,7 @@ func (WebinarSpeakerReviewViewModel) ViewModel() string {
 	sql.WriteString("FROM ( ")
 	sql.WriteString("	SELECT")
 	sql.WriteString("		r.id,")
-	sql.WriteString("		r.first_name AS speaker_name,")
+	sql.WriteString("		CONCAT(r.first_name, ' ', r.last_name) AS speaker_name,")
 	sql.WriteString("		COALESCE(m.rating, 0)::float AS rating,")
 	sql.WriteString("		COALESCE(m.total_rating, 0)::integer AS total_rating,")
 	sql.WriteString("		r.filepath,")

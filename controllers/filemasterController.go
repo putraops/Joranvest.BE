@@ -18,6 +18,7 @@ import (
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
+	"joranvest/models/request_models"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
@@ -469,7 +470,7 @@ func (c *filemasterController) UploadProfilePicture(context *gin.Context) {
 	id := context.Param("id")
 
 	result := helper.Response{}
-	var record models.Filemaster
+	var request request_models.FileRequestDto
 
 	file, err1 := context.FormFile("file")
 	if err1 != nil {
@@ -477,7 +478,7 @@ func (c *filemasterController) UploadProfilePicture(context *gin.Context) {
 		return
 	}
 
-	err := context.Bind(&record)
+	err := context.Bind(&request)
 	if err != nil {
 		res := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
@@ -518,16 +519,15 @@ func (c *filemasterController) UploadProfilePicture(context *gin.Context) {
 			log.Fatal(errThumb)
 		}
 
-		record.RecordId = id
-		record.EntityId = userIdentity.EntityId
-		record.CreatedBy = userIdentity.UserId
-		record.Filepath = path
-		record.FilepathThumbnail = path_thumb
-		record.Filename = filename
-		record.Extension = filepath.Ext(file.Filename)
-		record.Size = fmt.Sprint(file.Size)
-		record.FileType = 1
-		result = c.filemasterService.UploadProfilePicture(record)
+		request.Id = id
+		request.EntityId = userIdentity.EntityId
+		request.Filepath = path
+		request.FilepathThumbnail = path_thumb
+		request.Filename = filename
+		request.Extension = filepath.Ext(file.Filename)
+		request.Size = fmt.Sprint(file.Size)
+		request.FileType = 1
+		result = c.filemasterService.UploadProfilePicture(request)
 
 		if result.Status {
 			response := helper.BuildResponse(true, "OK", result.Data)

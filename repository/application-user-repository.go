@@ -1,15 +1,19 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"joranvest/commons"
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
+	"joranvest/models/request_models"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ApplicationUserRepository interface {
@@ -19,6 +23,7 @@ type ApplicationUserRepository interface {
 	GetViewUserByUsernameOrEmail(username string, email string) interface{}
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
+	UpdateProfilePicture(request request_models.FileRequestDto) helper.Response
 	VerifyCredential(username string, email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
@@ -189,6 +194,33 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 
 	db.connection.Save(&record)
 	return record
+}
+
+func (db *applicationUserConnection) UpdateProfilePicture(request request_models.FileRequestDto) helper.Response {
+	tx := db.connection.Begin()
+	var record models.ApplicationUser
+	db.connection.First(&record, "id = ?", request.Id)
+	if request.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+
+	record.Filepath = request.Filepath
+	record.FilepathThumbnail = request.FilepathThumbnail
+	record.Filename = request.Filename
+	record.Extension = request.Extension
+	record.Size = request.Size
+	record.UpdatedBy = request.UpdatedBy
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+	res := tx.Save(&record)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	db.connection.Preload(clause.Associations).Find(&record)
+	return helper.ServerResponse(true, "Ok", "", record)
 }
 
 func (db *applicationUserConnection) RecoverPassword(recordId string, oldPassword string) helper.Response {

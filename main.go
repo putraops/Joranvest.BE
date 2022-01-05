@@ -66,7 +66,7 @@ var (
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
 	membershipUserService          service.MembershipUserService          = service.NewMembershipUserService(membershipUserRepository)
-	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository, webinarRepository)
+	filemasterService              service.FilemasterService              = service.NewFilemasterService(filemasterRepository, webinarRepository, applicationUserRepository, organizationRepository)
 	emitenService                  service.EmitenService                  = service.NewEmitenService(emitenRepository)
 	emitenCategoryService          service.EmitenCategoryService          = service.NewEmitenCategoryService(emitenCategoryRepository)
 	articleCategoryService         service.ArticleCategoryService         = service.NewArticleCategoryService(articleCategoryRepository)
