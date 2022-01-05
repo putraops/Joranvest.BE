@@ -35,6 +35,7 @@ type ApplicationUser struct {
 	Filename          string       `gorm:"type:varchar(200)" json:"filename"`
 	Extension         string       `gorm:"type:varchar(10)" json:"extension"`
 	Size              string       `gorm:"type:varchar(100)" json:"size"`
+	Description       string       `gorm:"type:text" json:"description"`
 	Token             string       `gorm:"-" json:"token,omitempty"`
 }
 

@@ -14,6 +14,7 @@ type WebinarSpeakerReviewViewModel struct {
 	FilepathThumbnail string  `json:"filepath_thumbnail"`
 	Filename          string  `json:"filename"`
 	IsOrganization    bool    `json:"is_organization"`
+	Description       string  `json:"description"`
 }
 
 func (WebinarSpeakerReviewViewModel) TableName() string {
@@ -35,7 +36,8 @@ func (WebinarSpeakerReviewViewModel) ViewModel() string {
 	sql.WriteString("		r.filename,")
 	sql.WriteString("		r.extension,")
 	sql.WriteString("		r.title AS speaker_title,")
-	sql.WriteString("		0::boolean AS is_organization")
+	sql.WriteString("		0::boolean AS is_organization,")
+	sql.WriteString("		r.description")
 	sql.WriteString("	FROM application_user r")
 	sql.WriteString("	LEFT JOIN LATERAL get_webinar_speaker_rating(r.id) m(rating, total_rating) ON true")
 	sql.WriteString("	UNION ALL")
@@ -49,7 +51,8 @@ func (WebinarSpeakerReviewViewModel) ViewModel() string {
 	sql.WriteString("		r.filename,")
 	sql.WriteString("		r.extension,")
 	sql.WriteString("		null AS speaker_title,")
-	sql.WriteString("		1::boolean AS is_organization")
+	sql.WriteString("		1::boolean AS is_organization,")
+	sql.WriteString("		r.description")
 	sql.WriteString("	FROM organization r")
 	sql.WriteString("	LEFT JOIN LATERAL get_webinar_speaker_rating(r.id) m(rating, total_rating) ON true ")
 	sql.WriteString(") AS r")

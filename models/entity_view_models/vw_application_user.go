@@ -71,6 +71,7 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  r.filename,")
 	sql.WriteString("  r.extension,")
 	sql.WriteString("  r.size,")
+	sql.WriteString("  r.description,")
 	sql.WriteString("  COALESCE(w.rating, 0) AS rating,")
 	sql.WriteString("  COALESCE(w.total_rating, 0) AS total_rating,")
 	sql.WriteString("  CONCAT(r.first_name, ' ', r.last_name) AS full_name,")
