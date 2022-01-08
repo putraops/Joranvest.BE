@@ -15,6 +15,12 @@ type ApplicationUserRegisterDto struct {
 	IsAdmin    bool   `json:"is_admin" form:"is_admin"`
 }
 
+type ApplicationUserDescriptionDto struct {
+	Id          string `json:"id" form:"id" binding:"required"`
+	Description string `json:"description" form:"description"`
+	UpdatedBy   string
+}
+
 type ApplicationUserUpdateDto struct {
 	Id       string `json:"id" form:"id"`
 	Name     string `json:"name" form:"name" binding:"required"`

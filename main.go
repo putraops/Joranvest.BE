@@ -414,6 +414,7 @@ func main() {
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
 		applicationUserApiRoutes.POST("/changePhone", applicationUserController.ChangePhone)
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
+		applicationUserApiRoutes.POST("/changeDescription", applicationUserController.ChangeDescription)
 		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
 		applicationUserApiRoutes.POST("/register", authController.Register)
 		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)

@@ -17,9 +17,9 @@ import (
 type ApplicationUserController interface {
 	GetDatatables(context *gin.Context)
 	Lookup(context *gin.Context)
-	Update(context *gin.Context)
 	ChangePhone(context *gin.Context)
 	ChangePassword(context *gin.Context)
+	ChangeDescription(context *gin.Context)
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
@@ -72,9 +72,9 @@ func (c *applicationUserController) GetAll(context *gin.Context) {
 	context.JSON(http.StatusOK, res)
 }
 
-func (c *applicationUserController) Update(context *gin.Context) {
-	var applicationUserUpdateDto dto.ApplicationUserUpdateDto
-	errDTO := context.ShouldBind(&applicationUserUpdateDto)
+func (c *applicationUserController) ChangeDescription(context *gin.Context) {
+	var dto dto.ApplicationUserDescriptionDto
+	errDTO := context.ShouldBind(&dto)
 
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to request", errDTO.Error(), helper.EmptyObj{})
@@ -87,11 +87,16 @@ func (c *applicationUserController) Update(context *gin.Context) {
 		panic(errToken.Error())
 	}
 	claims := token.Claims.(jwt.MapClaims)
-	id := fmt.Sprintf("%v", claims["user_id"])
-	applicationUserUpdateDto.Id = id
-	u := c.applicationUserService.Update(applicationUserUpdateDto)
-	res := helper.BuildResponse(true, "Ok!", u)
-	context.JSON(http.StatusOK, res)
+
+	dto.UpdatedBy = fmt.Sprintf("%v", claims["user_id"])
+	result := c.applicationUserService.ChangeDescription(dto)
+	if result.Status {
+		response := helper.BuildResponse(result.Status, "Ok", helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	} else {
+		response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusOK, response)
+	}
 }
 
 func (c *applicationUserController) Profile(context *gin.Context) {

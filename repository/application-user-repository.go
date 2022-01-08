@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
@@ -24,6 +25,7 @@ type ApplicationUserRepository interface {
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
 	UpdateProfilePicture(request request_models.FileRequestDto) helper.Response
+	ChangeDescription(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response
 	VerifyCredential(username string, email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
@@ -171,7 +173,9 @@ func (db *applicationUserConnection) GetViewUserByEmail(username string, email s
 
 func (db *applicationUserConnection) Insert(record models.ApplicationUser) (models.ApplicationUser, error) {
 	record.Id = uuid.New().String()
+	record.IsActive = true
 	record.CreatedBy = record.Id
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.Password = helper.HashAndSalt([]byte(record.Password))
 	res := db.connection.Create(&record)
 
@@ -194,6 +198,26 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 
 	db.connection.Save(&record)
 	return record
+}
+
+func (db *applicationUserConnection) ChangeDescription(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response {
+	commons.Logger()
+	tx := db.connection.Begin()
+
+	var record models.ApplicationUser
+	record = db.GetById(dtoRecord.Id).Data.(models.ApplicationUser)
+	record.Description = dtoRecord.Description
+	record.IsActive = true
+	record.UpdatedBy = dtoRecord.UpdatedBy
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+	res := tx.Save(&record)
+	if res.RowsAffected == 0 {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.ServerResponse(true, "Ok", "", record)
 }
 
 func (db *applicationUserConnection) UpdateProfilePicture(request request_models.FileRequestDto) helper.Response {
