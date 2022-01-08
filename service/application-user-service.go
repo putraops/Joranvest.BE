@@ -19,9 +19,9 @@ type ApplicationUserService interface {
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
+	UpdateProfile(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response
 	ChangePhone(recordDto dto.ChangePhoneDto) helper.Response
 	ChangePassword(recordDto dto.ChangePasswordDto) helper.Response
-	ChangeDescription(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
 	GetAll() []models.ApplicationUser
@@ -86,8 +86,8 @@ func (service *applicationUserService) Update(record dto.ApplicationUserUpdateDt
 	return updatedRecord
 }
 
-func (service *applicationUserService) ChangeDescription(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response {
-	return service.applicationUserRepository.ChangeDescription(dtoRecord)
+func (service *applicationUserService) UpdateProfile(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response {
+	return service.applicationUserRepository.UpdateProfile(dtoRecord)
 }
 
 func (service *applicationUserService) UserProfile(recordId string) models.ApplicationUser {

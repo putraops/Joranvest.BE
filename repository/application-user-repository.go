@@ -24,8 +24,8 @@ type ApplicationUserRepository interface {
 	GetViewUserByUsernameOrEmail(username string, email string) interface{}
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
 	Update(record models.ApplicationUser) models.ApplicationUser
+	UpdateProfile(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response
 	UpdateProfilePicture(request request_models.FileRequestDto) helper.Response
-	ChangeDescription(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response
 	VerifyCredential(username string, email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	GetByEmail(email string) models.ApplicationUser
@@ -200,13 +200,21 @@ func (db *applicationUserConnection) Update(record models.ApplicationUser) model
 	return record
 }
 
-func (db *applicationUserConnection) ChangeDescription(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response {
+func (db *applicationUserConnection) UpdateProfile(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response {
 	commons.Logger()
 	tx := db.connection.Begin()
 
 	var record models.ApplicationUser
 	record = db.GetById(dtoRecord.Id).Data.(models.ApplicationUser)
-	record.Description = dtoRecord.Description
+
+	if dtoRecord.Title != "" {
+		record.Title = dtoRecord.Title
+	}
+
+	if dtoRecord.Description != "" {
+		record.Description = dtoRecord.Description
+	}
+
 	record.IsActive = true
 	record.UpdatedBy = dtoRecord.UpdatedBy
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}

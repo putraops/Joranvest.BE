@@ -17,6 +17,7 @@ type ApplicationUserRegisterDto struct {
 
 type ApplicationUserDescriptionDto struct {
 	Id          string `json:"id" form:"id" binding:"required"`
+	Title       string `json:"title" form:"title"`
 	Description string `json:"description" form:"description"`
 	UpdatedBy   string
 }

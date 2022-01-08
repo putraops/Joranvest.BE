@@ -17,9 +17,9 @@ import (
 type ApplicationUserController interface {
 	GetDatatables(context *gin.Context)
 	Lookup(context *gin.Context)
+	UpdateProfile(context *gin.Context)
 	ChangePhone(context *gin.Context)
 	ChangePassword(context *gin.Context)
-	ChangeDescription(context *gin.Context)
 	Profile(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
@@ -72,7 +72,7 @@ func (c *applicationUserController) GetAll(context *gin.Context) {
 	context.JSON(http.StatusOK, res)
 }
 
-func (c *applicationUserController) ChangeDescription(context *gin.Context) {
+func (c *applicationUserController) UpdateProfile(context *gin.Context) {
 	var dto dto.ApplicationUserDescriptionDto
 	errDTO := context.ShouldBind(&dto)
 
@@ -89,7 +89,7 @@ func (c *applicationUserController) ChangeDescription(context *gin.Context) {
 	claims := token.Claims.(jwt.MapClaims)
 
 	dto.UpdatedBy = fmt.Sprintf("%v", claims["user_id"])
-	result := c.applicationUserService.ChangeDescription(dto)
+	result := c.applicationUserService.UpdateProfile(dto)
 	if result.Status {
 		response := helper.BuildResponse(result.Status, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
