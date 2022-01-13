@@ -30,6 +30,7 @@ type WebinarRepository interface {
 	Update(record models.Webinar) helper.Response
 	UpdateCoverImage(record models.Webinar) helper.Response
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -525,6 +526,17 @@ func (db *webinarConnection) Submit(recordId string, userId string) helper.Respo
 }
 
 func (db *webinarConnection) GetById(recordId string) helper.Response {
+	var record models.Webinar
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *webinarConnection) GetViewById(recordId string) helper.Response {
 	var record entity_view_models.EntityWebinarView
 	db.connection.First(&record, "id = ?", recordId)
 	if record.Id == "" {

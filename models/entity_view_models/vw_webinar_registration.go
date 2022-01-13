@@ -8,29 +8,34 @@ import (
 
 type EntityWebinarRegistrationView struct {
 	models.WebinarRegistration
-	WebinarTitle        string       `json:"webinar_title"`
-	WebinarDescription  string       `json:"webinar_description"`
-	WebinarCategoryId   string       `json:"webinar_category_id"`
-	WebinarCategoryName string       `json:"webinar_category_name"`
-	WebinarStartDate    sql.NullTime `json:"webinar_start_date"`
-	WebinarEndDate      sql.NullTime `json:"webinar_end_date"`
-	MinAge              int          `json:"min_age"`
-	WebinarLevel        string       `json:"webinar_level"`
-	Price               float64      `json:"price"`
-	Discount            float64      `json:"discount"`
-	IsCertificate       bool         `json:"is_certificate"`
-	Reward              int          `json:"reward"`
-	PaymentDate         sql.NullTime `json:"payment_date"`
-	PaymentType         string       `json:"payment_type"`
-	PaymentStatus       int          `json:"payment_status"`
-	SpeakerTitle        string       `json:"speaker_title"`
+	WebinarTitle             string       `json:"webinar_title"`
+	WebinarDescription       string       `json:"webinar_description"`
+	WebinarCategoryId        string       `json:"webinar_category_id"`
+	WebinarCategoryName      string       `json:"webinar_category_name"`
+	WebinarStartDate         sql.NullTime `json:"webinar_start_date"`
+	WebinarEndDate           sql.NullTime `json:"webinar_end_date"`
+	MinAge                   int          `json:"min_age"`
+	WebinarLevel             string       `json:"webinar_level"`
+	Price                    float64      `json:"price"`
+	Discount                 float64      `json:"discount"`
+	IsCertificate            bool         `json:"is_certificate"`
+	Reward                   int          `json:"reward"`
+	PaymentDate              sql.NullTime `json:"payment_date"`
+	PaymentType              string       `json:"payment_type"`
+	PaymentStatus            int          `json:"payment_status"`
+	SpeakerTitle             string       `json:"speaker_title"`
+	WebinarFilepath          string       `json:"webinar_filepath"`
+	WebinarFilepathThumbnail string       `json:"webinar_filepath_thumbnail"`
+	WebinarFilename          string       `json:"webinar_filename"`
+	WebinarFileExtension     string       `json:"webinar_file_extension"`
 
-	Filepath          string `json:"filepath"`
-	FilepathThumbnail string `json:"filepath_thumbnail"`
-	Filename          string `json:"filename"`
-	Extension         string `json:"extension"`
+	UserFullname          string `json:"user_fullname"`
+	UserInitialName       string `json:"user_initial_name"`
+	UserFilepath          string `json:"user_filepath"`
+	UserFilepathThumbnail string `json:"user_filepath_thumbnail"`
+	UserFilename          string `json:"user_filaname"`
+	UserFileExtension     string `json:"user_file_extension"`
 
-	UserFullname      string `json:"user_fullname"`
 	CreatedByFullname string `json:"created_by_fullname"`
 	UserCreateTitle   string `json:"user_create_title"`
 	UpdatedByFullname string `json:"updated_by_fullname"`
@@ -61,6 +66,11 @@ func (EntityWebinarRegistrationView) ViewModel() string {
 	sql.WriteString("  r.webinar_id,")
 	sql.WriteString("  r.application_user_id,")
 	sql.WriteString("  CONCAT(u4.first_name, ' ', u4.last_name) AS user_fullname,")
+	sql.WriteString("  CONCAT(UPPER(LEFT(u4.first_name, 1)), '', UPPER(LEFT(u4.last_name, 1))) AS user_initial_name,")
+	sql.WriteString("  u4.filepath AS user_filepath,")
+	sql.WriteString("  u4.filepath_thumbnail AS user_filepath_thumbnail,")
+	sql.WriteString("  u4.filename AS user_filename,")
+	sql.WriteString("  u4.extension AS user_file_extension,")
 	sql.WriteString("  r.payment_id,")
 	sql.WriteString("  p.payment_date,")
 	sql.WriteString("  p.payment_type,")
@@ -77,10 +87,10 @@ func (EntityWebinarRegistrationView) ViewModel() string {
 	sql.WriteString("  w.discount,")
 	sql.WriteString("  w.is_certificate,")
 	sql.WriteString("  w.reward,")
-	sql.WriteString("  w.filepath,")
-	sql.WriteString("  w.filepath_thumbnail,")
-	sql.WriteString("  w.filename,")
-	sql.WriteString("  w.extension,")
+	sql.WriteString("  w.filepath AS webinar_filepath,")
+	sql.WriteString("  w.filepath_thumbnail AS webinar_filepath_thumbnail,")
+	sql.WriteString("  w.filename AS webinar_filename,")
+	sql.WriteString("  w.extension AS webinar_file_extension,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
 	sql.WriteString("  u4.title AS speaker_title,")

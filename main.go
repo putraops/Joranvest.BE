@@ -331,6 +331,7 @@ func main() {
 		webinarApiRoutes.POST("/submit/:id", webinarController.Submit)
 		webinarApiRoutes.POST("/uploadWebinarCover/:id", filemasterController.UploadWebinarCover)
 		webinarApiRoutes.GET("/getById/:id", webinarController.GetById)
+		webinarApiRoutes.GET("/getViewById/:id", webinarController.GetViewById)
 		webinarApiRoutes.GET("/getWebinarWithRatingByUserId/:webinar_id/:user_id", webinarController.GetWebinarWithRatingByUserId)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)
 	}

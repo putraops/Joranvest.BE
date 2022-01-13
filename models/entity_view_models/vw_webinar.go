@@ -7,6 +7,7 @@ import (
 
 type EntityWebinarView struct {
 	models.Webinar
+	TotalParticipants         int    `json:"total_participants"`
 	OrganizerOrganizationName string `json:"organizer_organization_name"`
 	SpeakerName               string `json:"speaker_name"`
 	WebinarCategoryName       string `json:"webinar_category_name"`
@@ -56,12 +57,13 @@ func (EntityWebinarView) ViewModel() string {
 	sql.WriteString("  r.filename,")
 	sql.WriteString("  r.extension,")
 	sql.WriteString("  r.size,")
+	sql.WriteString("  m.total_participants,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname, ")
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
 	sql.WriteString("FROM public.webinar r ")
 	sql.WriteString("  LEFT JOIN webinar_category c ON c.id = r.webinar_category_id")
-	//sql.WriteString("  LEFT JOIN filemaster f ON f.record_id = r.id")
+	sql.WriteString("  LEFT JOIN LATERAL get_webinar_participants(r.id::text) m(total_participants) ON true")
 	sql.WriteString("  LEFT JOIN application_user u1 ON u1.id = r.created_by")
 	sql.WriteString("  LEFT JOIN application_user u2 ON u2.id = r.updated_by")
 	sql.WriteString("  LEFT JOIN application_user u3 ON u3.id = r.submitted_by")

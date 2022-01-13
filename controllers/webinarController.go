@@ -22,6 +22,7 @@ type WebinarController interface {
 	GetPaginationRegisteredByUser(context *gin.Context)
 	DeleteById(context *gin.Context)
 	GetById(context *gin.Context)
+	GetViewById(context *gin.Context)
 	GetWebinarWithRatingByUserId(context *gin.Context)
 	Save(context *gin.Context)
 	Submit(context *gin.Context)
@@ -163,6 +164,22 @@ func (c *webinarController) GetById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 	}
 	result := c.webinarService.GetById(id)
+	if !result.Status {
+		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, response)
+	} else {
+		response := helper.BuildResponse(true, "Ok", result.Data)
+		context.JSON(http.StatusOK, response)
+	}
+}
+
+func (c *webinarController) GetViewById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.webinarService.GetViewById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, response)
