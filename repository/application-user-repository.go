@@ -174,6 +174,7 @@ func (db *applicationUserConnection) GetViewUserByEmail(username string, email s
 func (db *applicationUserConnection) Insert(record models.ApplicationUser) (models.ApplicationUser, error) {
 	record.Id = uuid.New().String()
 	record.IsActive = true
+	record.IsEmailVerified = true
 	record.CreatedBy = record.Id
 	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	record.Password = helper.HashAndSalt([]byte(record.Password))
