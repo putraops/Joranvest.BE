@@ -1,20 +1,25 @@
 package entity_view_models
 
 import (
-	"database/sql"
 	"joranvest/models"
 	"strings"
+	"time"
 )
 
 type EntityMembershipUserView struct {
 	models.MembershipUser
-	PaymenyDate        sql.NullTime `json:"payment_date"`
-	PaymentType        string       `json:"payment_type"`
-	CreatedByFullname  string       `json:"created_by_fullname"`
-	UserCreateTitle    string       `json:"user_create_title"`
-	UpdatedByFullname  string       `json:"updated_by_fullname"`
-	SubmittedFullname  string       `json:"submitted_by_fullname"`
-	MembershipFullname string       `json:"membership_user_fullname"`
+	MembershipName         string     `json:"membership_name"`
+	MembershipDuration     float64    `json:"membership_duration"`
+	MembershipUserFullname string     `json:"membership_user_fullname"`
+	MembershipPaymentDate  *time.Time `json:"membership_payment_date"`
+	MembershipExpiredDate  *time.Time `json:"membership_expired_date"`
+	PaymentPrice           float64    `json:"payment_price"`
+	PaymentUniqueNumber    float64    `json:"payment_unique_number"`
+	PaymentType            string     `json:"payment_type"`
+	CreatedByFullname      string     `json:"created_by_fullname"`
+	UserCreateTitle        string     `json:"user_create_title"`
+	UpdatedByFullname      string     `json:"updated_by_fullname"`
+	SubmittedFullname      string     `json:"submitted_by_fullname"`
 }
 
 func (EntityMembershipUserView) TableName() string {
@@ -39,12 +44,16 @@ func (EntityMembershipUserView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.membership_id,")
+	sql.WriteString("  m.name AS membership_name,")
+	sql.WriteString("  m.duration AS membership_duration,")
 	sql.WriteString("  CONCAT(u4.first_name, ' ', u4.last_name) AS membership_user_fullname,")
 	sql.WriteString("  r.application_user_id,")
 	sql.WriteString("  r.payment_id,")
-	sql.WriteString("  p.payment_date,")
+	sql.WriteString("  p.payment_date AS membership_payment_date,")
 	sql.WriteString("  p.payment_type,")
-	sql.WriteString("  r.expired_date,")
+	sql.WriteString("  p.price AS payment_price,")
+	sql.WriteString("  p.unique_number AS payment_unique_number,")
+	sql.WriteString("  r.expired_date AS membership_expired_date,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")

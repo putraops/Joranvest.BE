@@ -22,6 +22,8 @@ type WebinarRegistrationController interface {
 	Save(context *gin.Context)
 	IsWebinarRegistered(context *gin.Context)
 	DeleteById(context *gin.Context)
+
+	SendWebinarInformationByWebinarId(context *gin.Context)
 }
 
 type webinarRegistrationController struct {
@@ -155,4 +157,16 @@ func (c *webinarRegistrationController) DeleteById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *webinarRegistrationController) SendWebinarInformationByWebinarId(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+
+	result := c.webinarRegistrationService.SendWebinarInformationViaEmail(id)
+	response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
+	context.JSON(http.StatusOK, response)
 }

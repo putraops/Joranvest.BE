@@ -75,7 +75,6 @@ var (
 	webinarCategoryService         service.WebinarCategoryService         = service.NewWebinarCategoryService(webinarCategoryRepository)
 	webinarService                 service.WebinarService                 = service.NewWebinarService(webinarRepository)
 	webinarSpeakerService          service.WebinarSpeakerService          = service.NewWebinarSpeakerService(webinarSpeakerRepository)
-	webinarRegistrationService     service.WebinarRegistrationService     = service.NewWebinarRegistrationService(webinarRegistrationRepository)
 	sectorService                  service.SectorService                  = service.NewSectorService(sectorRepository)
 	tagService                     service.TagService                     = service.NewTagService(tagRepository)
 	technicalAnalysisService       service.TechnicalAnalysisService       = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
@@ -88,6 +87,7 @@ var (
 	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
 	paymentService                 service.PaymentService                 = service.NewPaymentService(paymentRepository)
 	emailService                   service.EmailService                   = service.NewEmailService(emailRepository)
+	webinarRegistrationService     service.WebinarRegistrationService     = service.NewWebinarRegistrationService(webinarRegistrationRepository, emailService)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, emailService, jwtService)
 	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
@@ -351,6 +351,7 @@ func main() {
 		webinarRegistrationApiRoutes.POST("/getPagination", webinarRegistrationController.GetPagination)
 		webinarRegistrationApiRoutes.GET("/getById/:id", webinarRegistrationController.GetById)
 		webinarRegistrationApiRoutes.GET("/getViewById/:id", webinarRegistrationController.GetViewById)
+		webinarRegistrationApiRoutes.GET("/sendWebinarInformationByWebinarId/:id", webinarRegistrationController.SendWebinarInformationByWebinarId)
 		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
 		webinarRegistrationApiRoutes.GET("/isWebinarRegistered/:id", webinarRegistrationController.IsWebinarRegistered)
 		webinarRegistrationApiRoutes.DELETE("/deleteById/:id", webinarRegistrationController.DeleteById)
@@ -387,9 +388,9 @@ func main() {
 		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
 	}
 
-	membershipUserApiRoutes := r.Group("api/membershipUser")
+	membershipUserApiRoutes := r.Group("api/membership_user")
 	{
-		membershipUserApiRoutes.POST("/getDatatables", membershipUserController.GetDatatables)
+		membershipUserApiRoutes.POST("/getPagination", membershipUserController.GetPagination)
 		membershipUserApiRoutes.GET("/getAll", membershipUserController.GetAll)
 		membershipUserApiRoutes.POST("/save", membershipUserController.Save)
 		membershipUserApiRoutes.GET("/getById/:id", membershipUserController.GetById)

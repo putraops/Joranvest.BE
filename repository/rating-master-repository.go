@@ -130,7 +130,7 @@ func (db *ratingMasterConnection) Insert(record models.RatingMaster) helper.Resp
 
 	record.Id = uuid.New().String()
 	record.IsActive = true
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	if err := tx.Create(&record).Error; err != nil {
 		log.Error(db.serviceRepository.getCurrentFuncName())
@@ -158,7 +158,7 @@ func (db *ratingMasterConnection) Update(record models.RatingMaster) helper.Resp
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
 		log.Error(db.serviceRepository.getCurrentFuncName())

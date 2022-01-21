@@ -175,7 +175,7 @@ func (db *applicationUserConnection) Insert(record models.ApplicationUser) (mode
 	record.Id = uuid.New().String()
 	record.IsActive = true
 	record.CreatedBy = record.Id
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	record.Password = helper.HashAndSalt([]byte(record.Password))
 	res := db.connection.Create(&record)
 
@@ -217,7 +217,7 @@ func (db *applicationUserConnection) UpdateProfile(dtoRecord dto.ApplicationUser
 
 	record.IsActive = true
 	record.UpdatedBy = dtoRecord.UpdatedBy
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
@@ -243,7 +243,7 @@ func (db *applicationUserConnection) UpdateProfilePicture(request request_models
 	record.Extension = request.Extension
 	record.Size = request.Size
 	record.UpdatedBy = request.UpdatedBy
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {

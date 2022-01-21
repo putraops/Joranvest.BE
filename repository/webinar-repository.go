@@ -180,7 +180,7 @@ func (db *webinarConnection) GetPagination(request commons.Pagination2ndRequest)
 	}
 
 	if isNearest {
-		t := time.Now()
+		t := time.Now().Local().UTC()
 		year := t.Year()
 		month := t.Month()
 		day := t.Day()
@@ -435,7 +435,7 @@ func (db *webinarConnection) Insert(record models.Webinar) helper.Response {
 
 	record.Id = uuid.New().String()
 	record.IsActive = true
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
@@ -460,7 +460,7 @@ func (db *webinarConnection) Update(record models.Webinar) helper.Response {
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
@@ -486,7 +486,7 @@ func (db *webinarConnection) UpdateCoverImage(record models.Webinar) helper.Resp
 	oldRecord.Extension = record.Extension
 	oldRecord.Size = record.Size
 	oldRecord.UpdatedBy = record.UpdatedBy
-	oldRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	oldRecord.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	res := tx.Save(&oldRecord)
 	if res.RowsAffected == 0 {
@@ -513,7 +513,7 @@ func (db *webinarConnection) Submit(recordId string, userId string) helper.Respo
 	}
 
 	existingRecord.SubmittedBy = userId
-	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&existingRecord)
 	if res.RowsAffected == 0 {
 		log.Error(db.serviceRepository.getCurrentFuncName())

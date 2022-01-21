@@ -19,6 +19,7 @@ type WebinarRegistrationRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
+	GetParticipantsByWebinarId(webinarId string) []entity_view_models.EntityWebinarRegistrationView
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
 	Insert(record models.WebinarRegistration) helper.Response
@@ -183,11 +184,17 @@ func (db *webinarRegistrationConnection) GetAll(filter map[string]interface{}) [
 	return records
 }
 
+func (db *webinarRegistrationConnection) GetParticipantsByWebinarId(webinarId string) []entity_view_models.EntityWebinarRegistrationView {
+	var records []entity_view_models.EntityWebinarRegistrationView
+	db.connection.Where("webinar_id = ?", webinarId).Find(&records)
+	return records
+}
+
 func (db *webinarRegistrationConnection) Insert(record models.WebinarRegistration) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
@@ -212,7 +219,7 @@ func (db *webinarRegistrationConnection) Update(record models.WebinarRegistratio
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

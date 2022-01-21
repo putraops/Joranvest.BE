@@ -201,8 +201,8 @@ func (db *articleCategoryConnection) Insert(record models.ArticleCategory) helpe
 	fmt.Println(record.ParentId)
 	fmt.Println(record.ParentId)
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -225,7 +225,7 @@ func (db *articleCategoryConnection) Update(record models.ArticleCategory) helpe
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

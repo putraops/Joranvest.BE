@@ -20,7 +20,7 @@ import (
 
 type MembershipUserRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.MembershipUser
 	Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
@@ -113,7 +113,7 @@ func (db *membershipUserConnection) GetDatatables(request commons.DataTableReque
 	return res
 }
 
-func (db *membershipUserConnection) GetPagination(request commons.PaginationRequest) interface{} {
+func (db *membershipUserConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityMembershipUserView
 
@@ -147,13 +147,20 @@ func (db *membershipUserConnection) GetPagination(request commons.PaginationRequ
 	// #region filter
 	var filters = ""
 	total_filter := 0
-	for k, v := range request.Filter {
-		if v != "" {
-			if total_filter > 0 {
-				filters += "AND "
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
 			}
-			filters += fmt.Sprintf("%v = '%v' ", k, v)
-			total_filter++
 		}
 	}
 	// #endregion
@@ -199,7 +206,7 @@ func (db *membershipUserConnection) SetMembership(membershipId string, payment m
 	}
 	membershipUser.OwnerId = payment.OwnerId
 	membershipUser.ApplicationUserId = payment.CreatedBy
-	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	membershipUser.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	membershipUser.ExpiredDate = sql.NullTime{
 		Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
 		Valid: true,
@@ -220,9 +227,9 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 
 	//-- Payment Record
 	payment.Id = uuid.New().String()
-	payment.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	payment.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	if payment.PaymentStatus == 200 {
-		payment.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+		payment.PaymentDate = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	}
 	if err := tx.Create(&payment).Error; err != nil {
 		tx.Rollback()
@@ -250,7 +257,7 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 
 	membershipUser.Id = uuid.New().String()
 	membershipUser.PaymentId = payment.Id
-	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	membershipUser.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	if err := tx.Create(&membershipUser).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -280,7 +287,7 @@ func (db *membershipUserConnection) Update(record models.MembershipUser) helper.
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

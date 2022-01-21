@@ -9,7 +9,7 @@ import (
 
 type MembershipUserService interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.MembershipUser
 	Insert(record models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
@@ -32,7 +32,7 @@ func (service *membershipUserService) GetDatatables(request commons.DataTableReq
 	return service.membershipUserRepository.GetDatatables(request)
 }
 
-func (service *membershipUserService) GetPagination(request commons.PaginationRequest) interface{} {
+func (service *membershipUserService) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	return service.membershipUserRepository.GetPagination(request)
 }
 

@@ -195,13 +195,13 @@ func (db *articleConnection) Insert(record models.Article) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	for i := 0; i < len(record.ArticleTag); i++ {
 		record.ArticleTag[i].Id = uuid.New().String()
 		record.ArticleTag[i].EntityId = record.EntityId
 		record.ArticleTag[i].CreatedBy = record.CreatedBy
-		record.ArticleTag[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		record.ArticleTag[i].CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 		record.ArticleTag[i].ArticleId = record.Id
 	}
 
@@ -243,7 +243,7 @@ func (db *articleConnection) Update(record models.Article) helper.Response {
 		record.ArticleTag[i].Id = uuid.New().String()
 		record.ArticleTag[i].EntityId = record.EntityId
 		record.ArticleTag[i].CreatedBy = record.CreatedBy
-		record.ArticleTag[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		record.ArticleTag[i].CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 		record.ArticleTag[i].ArticleId = record.Id
 	}
 	if len(record.ArticleTag) > 0 {
@@ -257,7 +257,7 @@ func (db *articleConnection) Update(record models.Article) helper.Response {
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
@@ -278,7 +278,7 @@ func (db *articleConnection) Submit(recordId string, userId string) helper.Respo
 	}
 
 	existingRecord.SubmittedBy = userId
-	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&existingRecord)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

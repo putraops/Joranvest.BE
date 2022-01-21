@@ -139,8 +139,8 @@ func (db *roleMemberConnection) Insert(record models.RoleMember) helper.Response
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -163,7 +163,7 @@ func (db *roleMemberConnection) Update(record models.RoleMember) helper.Response
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

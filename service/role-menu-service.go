@@ -40,8 +40,8 @@ func (service *roleMenuService) Insert(record dto.InsertRoleMenuDto) helper.Resp
 
 	var newRecord models.RoleMenu
 	newRecord.Id = uuid.New().String()
-	newRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	newRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	newRecord.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	newRecord.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	newRecord.ApplicationMenuId = record.ApplicationMenuId
 	newRecord.RoleId = record.RoleId
 	records = append(records, newRecord)
@@ -50,8 +50,8 @@ func (service *roleMenuService) Insert(record dto.InsertRoleMenuDto) helper.Resp
 		for _, v := range record.ChildrenIds {
 			var newRecord models.RoleMenu
 			newRecord.Id = uuid.New().String()
-			newRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-			newRecord.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+			newRecord.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+			newRecord.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 			newRecord.ApplicationMenuId = v
 			newRecord.RoleId = record.RoleId
 			records = append(records, newRecord)

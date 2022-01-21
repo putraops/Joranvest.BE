@@ -201,14 +201,14 @@ func (db *fundamentalAnalysisConnection) Insert(record models.FundamentalAnalysi
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 
 	for i := 0; i < len(record.FundamentalAnalysisTag); i++ {
 		record.FundamentalAnalysisTag[i].Id = uuid.New().String()
 		record.FundamentalAnalysisTag[i].OwnerId = record.OwnerId
 		record.FundamentalAnalysisTag[i].EntityId = record.EntityId
 		record.FundamentalAnalysisTag[i].CreatedBy = record.CreatedBy
-		record.FundamentalAnalysisTag[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		record.FundamentalAnalysisTag[i].CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 		record.FundamentalAnalysisTag[i].FundamentalAnalysisId = record.Id
 	}
 
@@ -251,7 +251,7 @@ func (db *fundamentalAnalysisConnection) Update(record models.FundamentalAnalysi
 		record.FundamentalAnalysisTag[i].OwnerId = record.OwnerId
 		record.FundamentalAnalysisTag[i].EntityId = record.EntityId
 		record.FundamentalAnalysisTag[i].CreatedBy = record.CreatedBy
-		record.FundamentalAnalysisTag[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		record.FundamentalAnalysisTag[i].CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 		record.FundamentalAnalysisTag[i].FundamentalAnalysisId = record.Id
 	}
 	if len(record.FundamentalAnalysisTag) > 0 {
@@ -265,7 +265,7 @@ func (db *fundamentalAnalysisConnection) Update(record models.FundamentalAnalysi
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
@@ -289,7 +289,7 @@ func (db *fundamentalAnalysisConnection) Submit(recordId string, userId string) 
 	}
 
 	existingRecord.SubmittedBy = userId
-	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	existingRecord.SubmittedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
 	res := tx.Save(&existingRecord)
 	if res.RowsAffected == 0 {
 		log.Error(db.serviceRepository.getCurrentFuncName())
