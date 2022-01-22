@@ -284,7 +284,7 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
                                     <tr>
                                     <td>
                                         <p class="text-center">
-                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo-joranvest.png" alt="Joranvest"/>
+                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
                                         </p>
                                         <h1 class="text-center text-bold">Selamat datang di Joranvest</h1>
                                         <p class="text-center">Untuk menyelesaikan Registrasi akun Anda, Silahkan Verifikasi Email Anda dengan cara menekan tombol di bawah.</p>
@@ -577,7 +577,7 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
                                     <tr>
                                     <td>
                                         <p class="text-center">
-                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo-joranvest.png" alt="Joranvest"/>
+                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
                                         </p>
                                         <h1 class="text-center text-bold">Selamat Akun anda sudah terverifikasi</h1>
                                         <p class="text-center">Tekan tombol dibawah ini untuk login ke dalam Aplikasi.</p>
@@ -870,7 +870,7 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
                                     <tr>
                                     <td>
                                         <p class="text-center">
-                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo-joranvest.png" alt="Joranvest"/>
+                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
                                         </p>
                                         <h1 class="text-center text-bold">Selamat datang di Joranvest</h1>
                                         <p class="text-center">Untuk menyelesaikan Registrasi akun Anda, Silahkan Verifikasi Email Anda dengan cara menekan tombol di bawah.</p>
