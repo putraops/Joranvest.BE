@@ -7,6 +7,7 @@ import (
 
 type EntityPaymentView struct {
 	models.Payment
+	PaymentUserFullname   string `json:"payment_user_fullname"`
 	MembershipId          string `json:"membership_id"`
 	MembershipName        string `json:"membership_name"`
 	MembershipDuration    string `json:"membership_duration"`
@@ -41,6 +42,8 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.record_id,")
+	sql.WriteString("  r.application_user_id,")
+	sql.WriteString("  CONCAT(u4.first_name, ' ', u4.last_name) AS payment_user_fullname,")
 	sql.WriteString("  r.coupon_id,")
 	sql.WriteString("  r.order_number,")
 	sql.WriteString("  m.id AS membership_id,")
@@ -74,6 +77,7 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.submitted_by ")
+	sql.WriteString("LEFT JOIN application_user u4 ON u4.id = r.application_user_id ")
 	return sql.String()
 }
 func (EntityPaymentView) Migration() map[string]string {

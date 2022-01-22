@@ -579,7 +579,7 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
                                         <p class="text-center">
                                             <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
                                         </p>
-                                        <h1 class="text-center text-bold">Selamat Akun anda sudah terverifikasi</h1>
+                                        <h1 class="text-center text-bold">Selamat Akun anda telah Terverifikasi</h1>
                                         <p class="text-center">Tekan tombol dibawah ini untuk login ke dalam Aplikasi.</p>
 
                                         <p class="text-center">

@@ -311,8 +311,11 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 		} else if viewRecord.WebinarTitle != "" {
 			//.. Insert Webinar Registration
 			var webinarRegistrationRecord models.WebinarRegistration
+			webinarRegistrationRecord.CreatedBy = req.UpdatedBy
+			webinarRegistrationRecord.PaymentId = req.Id
 			webinarRegistrationRecord.ApplicationUserId = paymentRecord.CreatedBy
 			webinarRegistrationRecord.WebinarId = viewRecord.RecordId
+
 			res := db.webinarRegistrationRepo.Insert(webinarRegistrationRecord)
 			if !res.Status {
 				return res
