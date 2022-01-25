@@ -214,8 +214,8 @@ func (db *tagConnection) Insert(record models.Tag) helper.Response {
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%v,", err))
@@ -242,7 +242,7 @@ func (db *tagConnection) Update(record models.Tag) helper.Response {
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := db.connection.Save(&record)
 	if res.RowsAffected == 0 {
 		log.Error(fmt.Sprintf("%v,", res.Error))

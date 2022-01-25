@@ -412,7 +412,7 @@ func main() {
 
 	applicationUserApiRoutes := r.Group("api/application_user")
 	{
-		applicationUserApiRoutes.POST("/getDatatables", applicationUserController.GetDatatables)
+		applicationUserApiRoutes.POST("/getPagination", applicationUserController.GetPagination)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
 		applicationUserApiRoutes.POST("/changePhone", applicationUserController.ChangePhone)
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)

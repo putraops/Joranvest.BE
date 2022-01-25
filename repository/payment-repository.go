@@ -148,11 +148,11 @@ func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Res
 
 	record.Id = uuid.New().String()
 	if record.PaymentStatus == 200 {
-		record.PaymentDate = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+		record.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
 	} else {
-		record.PaymentDateExpired = sql.NullTime{Time: time.Now().Local().UTC().AddDate(0, 0, 1), Valid: true}
+		record.PaymentDateExpired = sql.NullTime{Time: time.Now().AddDate(0, 0, 1), Valid: true}
 	}
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	if err := tx.Save(&record).Error; err != nil {
 		tx.Rollback()
@@ -181,7 +181,7 @@ func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Res
 		}
 		membershipUser.OwnerId = record.OwnerId
 		membershipUser.ApplicationUserId = record.CreatedBy
-		membershipUser.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+		membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 		membershipUser.ExpiredDate = sql.NullTime{
 			Time:  record.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
 			Valid: true,
@@ -207,11 +207,11 @@ func (db *paymentConnection) WebinarPayment(record models.Payment) helper.Respon
 
 	record.Id = uuid.New().String()
 	if record.PaymentStatus == 200 {
-		record.PaymentDate = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+		record.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
 	} else {
-		record.PaymentDateExpired = sql.NullTime{Time: time.Now().Local().UTC().AddDate(0, 0, 1), Valid: true}
+		record.PaymentDateExpired = sql.NullTime{Time: time.Now().AddDate(0, 0, 1), Valid: true}
 	}
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	if err := tx.Save(&record).Error; err != nil {
 		tx.Rollback()
@@ -240,7 +240,7 @@ func (db *paymentConnection) WebinarPayment(record models.Payment) helper.Respon
 		}
 		webinarRegistrationRecord.OwnerId = record.OwnerId
 		webinarRegistrationRecord.ApplicationUserId = record.CreatedBy
-		webinarRegistrationRecord.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+		webinarRegistrationRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 		if err := tx.Create(&webinarRegistrationRecord).Error; err != nil {
 			tx.Rollback()
@@ -269,7 +269,7 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
@@ -291,7 +291,7 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 	paymentRecord.PaymentStatus = req.PaymentStatus
 	paymentRecord.UpdatedBy = req.UpdatedBy
-	paymentRecord.PaymentDate = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	paymentRecord.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
 	paymentRecord.UpdatedAt = paymentRecord.PaymentDate
 
 	var viewRecord entity_view_models.EntityPaymentView

@@ -15,7 +15,7 @@ import (
 
 //-- This is user contract
 type ApplicationUserService interface {
-	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	Lookup(request helper.ReactSelectRequest) helper.Response
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
@@ -42,8 +42,8 @@ func NewApplicationUserService(repo repository.ApplicationUserRepository, emailS
 	}
 }
 
-func (service *applicationUserService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
-	return service.applicationUserRepository.GetDatatables(request)
+func (service *applicationUserService) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	return service.applicationUserRepository.GetPagination(request)
 }
 
 func (service *applicationUserService) Lookup(r helper.ReactSelectRequest) helper.Response {

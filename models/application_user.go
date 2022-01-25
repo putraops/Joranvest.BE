@@ -15,6 +15,8 @@ type ApplicationUser struct {
 	UpdatedBy         string       `gorm:"type:varchar(50)" json:"updated_by"`
 	ApprovedAt        sql.NullTime `gorm:"type:timestamp;default:null" json:"approved_at"`
 	ApprovedBy        string       `gorm:"type:varchar(50)" json:"approved_by"`
+	SubmittedAt       sql.NullTime `gorm:"type:timestamp" json:"submitted_at"`
+	SubmittedBy       string       `gorm:"type:varchar(50)" json:"submitted_by"`
 	EntityId          string       `gorm:"type:varchar(50);null" json:"entity_id"`
 	FirstName         string       `gorm:"type:varchar(50)" json:"first_name"`
 	LastName          string       `gorm:"type:varchar(50)" json:"last_name"`

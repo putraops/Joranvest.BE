@@ -194,7 +194,7 @@ func (db *webinarRegistrationConnection) Insert(record models.WebinarRegistratio
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
@@ -219,7 +219,7 @@ func (db *webinarRegistrationConnection) Update(record models.WebinarRegistratio
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

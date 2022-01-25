@@ -68,8 +68,8 @@ func (db *filemasterConnection) SingleUpload(record models.Filemaster) helper.Re
 	}
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -90,8 +90,8 @@ func (db *filemasterConnection) UploadByType(record models.Filemaster) helper.Re
 	}
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -112,8 +112,8 @@ func (db *filemasterConnection) UploadProfilePicture(record models.Filemaster) h
 	}
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -128,8 +128,8 @@ func (db *filemasterConnection) Insert(record models.Filemaster) helper.Response
 	tx := db.connection.Begin()
 
 	record.Id = uuid.New().String()
-	record.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&record).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})

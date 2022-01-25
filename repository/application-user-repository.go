@@ -18,7 +18,7 @@ import (
 )
 
 type ApplicationUserRepository interface {
-	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	Lookup(req map[string]interface{}) []models.ApplicationUser
 	GetViewUserByEmail(username string, email string) interface{}
 	GetViewUserByUsernameOrEmail(username string, email string) interface{}
@@ -55,68 +55,67 @@ func NewApplicationUserRepository(db *gorm.DB) ApplicationUserRepository {
 	}
 }
 
-func (db *applicationUserConnection) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
+func (db *applicationUserConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	var response commons.PaginationResponse
 	var records []entity_view_models.EntityApplicationUserView
-	var res commons.DataTableResponse
 
-	var conditions = ""
-	var orderpart = ""
-	if request.Draw == 1 && request.DataTableDefaultOrder.Column != "" {
-		var column = request.DataTableDefaultOrder.Column
-		orderpart = column + " " + request.DataTableDefaultOrder.Dir
-	} else {
-		var column = request.DataTableColumn[request.DataTableOrder[0].Column].Name
-		orderpart = column + " " + request.DataTableOrder[0].Dir
+	page := request.Page
+	if page == 0 {
+		page = 1
 	}
-	start := fmt.Sprintf("%v", request.Start)
-	length := fmt.Sprintf("%v", (request.Start + request.Length))
 
-	if len(request.Filter) > 0 {
-		for _, s := range request.Filter {
-			conditions += " AND (" + s.Column + " = '" + s.Value + "') "
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
 		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
 	}
+	// #endregion
 
-	if request.Search.Value != "" {
-		conditions += " AND ("
-		var totalFilter int = 0
-		for _, s := range request.DataTableColumn {
-			if s.Searchable {
-				if totalFilter > 0 {
-					conditions += " OR "
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
 				}
-				conditions += fmt.Sprintf("LOWER(CAST (%v AS varchar))", s.Name) + " LIKE '%" + request.Search.Value + "%' "
-				totalFilter++
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
 			}
 		}
-		conditions += ")"
 	}
+	// #endregion
 
-	var sql strings.Builder
-	var sqlCount strings.Builder
-	sql.WriteString(fmt.Sprintf("SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY %s) peta_rn, ", orderpart))
-	sql.WriteString(strings.Replace(db.viewQuery, "SELECT", "", -1))
-	sql.WriteString(" WHERE 1 = 1 ")
-	sql.WriteString(conditions)
-	sql.WriteString(") peta_paged ")
-	sql.WriteString(fmt.Sprintf("WHERE peta_rn > %s AND peta_rn <= %s ", start, length))
-	db.connection.Raw(sql.String()).Scan(&records)
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
-	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
-	sqlCount.WriteString("WHERE 1=1")
-	sqlCount.WriteString(conditions)
-	db.connection.Raw(sqlCount.String()).Scan(&res.RecordsFiltered)
+	var count int64
+	db.connection.Model(&entity_view_models.EntityApplicationUserView{}).Where(filters).Count(&count)
 
-	res.Draw = request.Draw
-	if len(records) > 0 {
-		res.RecordsTotal = res.RecordsFiltered
-		res.DataRow = records
-	} else {
-		res.RecordsTotal = 0
-		res.RecordsFiltered = 0
-		res.DataRow = []entity_view_models.EntityMembershipView{}
-	}
-	return res
+	response.Data = records
+	response.Total = int(count)
+	return response
 }
 
 func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models.ApplicationUser {
@@ -175,7 +174,7 @@ func (db *applicationUserConnection) Insert(record models.ApplicationUser) (mode
 	record.Id = uuid.New().String()
 	record.IsActive = true
 	record.CreatedBy = record.Id
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.Password = helper.HashAndSalt([]byte(record.Password))
 	res := db.connection.Create(&record)
 
@@ -217,7 +216,7 @@ func (db *applicationUserConnection) UpdateProfile(dtoRecord dto.ApplicationUser
 
 	record.IsActive = true
 	record.UpdatedBy = dtoRecord.UpdatedBy
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
@@ -243,7 +242,7 @@ func (db *applicationUserConnection) UpdateProfilePicture(request request_models
 	record.Extension = request.Extension
 	record.Size = request.Size
 	record.UpdatedBy = request.UpdatedBy
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {

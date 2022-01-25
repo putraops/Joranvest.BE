@@ -102,7 +102,7 @@ func (db *webinarSpeakerConnection) Insert(records []models.WebinarSpeaker, spea
 
 		for i := 0; i < len(records); i++ {
 			records[i].Id = uuid.New().String()
-			records[i].CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+			records[i].CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 		}
 
 		if err := tx.Create(&records).Error; err != nil {

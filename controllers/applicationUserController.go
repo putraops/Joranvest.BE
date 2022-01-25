@@ -15,7 +15,7 @@ import (
 )
 
 type ApplicationUserController interface {
-	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	Lookup(context *gin.Context)
 	UpdateProfile(context *gin.Context)
 	ChangePhone(context *gin.Context)
@@ -41,14 +41,24 @@ func NewApplicationUserController(applicationUserService service.ApplicationUser
 	}
 }
 
-func (c *applicationUserController) GetDatatables(context *gin.Context) {
-	var dt commons.DataTableRequest
-	errDTO := context.Bind(&dt)
+// @Tags         ApplicationUser
+// @Security 	 ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body commons.Pagination2ndRequest true "body"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
+// @Router       /application_user/getPagination [post]
+func (c *applicationUserController) GetPagination(context *gin.Context) {
+	var req commons.Pagination2ndRequest
+	errDTO := context.Bind(&req)
 	if errDTO != nil {
-		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		res := helper.BuildResponse(false, errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
+		return
 	}
-	var result = c.applicationUserService.GetDatatables(dt)
+
+	var result = c.applicationUserService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

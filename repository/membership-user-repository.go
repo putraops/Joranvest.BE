@@ -206,7 +206,7 @@ func (db *membershipUserConnection) SetMembership(membershipId string, payment m
 	}
 	membershipUser.OwnerId = payment.OwnerId
 	membershipUser.ApplicationUserId = payment.CreatedBy
-	membershipUser.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	membershipUser.ExpiredDate = sql.NullTime{
 		Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
 		Valid: true,
@@ -227,9 +227,9 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 
 	//-- Payment Record
 	payment.Id = uuid.New().String()
-	payment.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	payment.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if payment.PaymentStatus == 200 {
-		payment.PaymentDate = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+		payment.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
 	}
 	if err := tx.Create(&payment).Error; err != nil {
 		tx.Rollback()
@@ -257,7 +257,7 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 
 	membershipUser.Id = uuid.New().String()
 	membershipUser.PaymentId = payment.Id
-	membershipUser.CreatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := tx.Create(&membershipUser).Error; err != nil {
 		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
@@ -287,7 +287,7 @@ func (db *membershipUserConnection) Update(record models.MembershipUser) helper.
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now().Local().UTC(), Valid: true}
+	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})

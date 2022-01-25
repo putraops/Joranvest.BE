@@ -51,9 +51,9 @@ func (j *jwtService) GenerateToken(UserID string, EntityId string) string {
 		UserID,
 		EntityId,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().UTC().AddDate(1, 0, 0).Unix(),
+			ExpiresAt: time.Now().AddDate(1, 0, 0).Unix(),
 			Issuer:    j.issuer,
-			IssuedAt:  time.Now().Local().UTC().Unix(),
+			IssuedAt:  time.Now().Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
