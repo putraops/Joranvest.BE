@@ -23,7 +23,7 @@ type WebinarRegistrationController interface {
 	IsWebinarRegistered(context *gin.Context)
 	DeleteById(context *gin.Context)
 
-	SendWebinarInformationByWebinarId(context *gin.Context)
+	SendMeetingInformation(context *gin.Context)
 }
 
 type webinarRegistrationController struct {
@@ -159,14 +159,18 @@ func (c *webinarRegistrationController) DeleteById(context *gin.Context) {
 	}
 }
 
-func (c *webinarRegistrationController) SendWebinarInformationByWebinarId(context *gin.Context) {
-	id := context.Param("id")
-	if id == "" {
-		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
-		context.JSON(http.StatusBadRequest, response)
+func (c *webinarRegistrationController) SendMeetingInformation(context *gin.Context) {
+	result := helper.Response{}
+	var dto dto.SendWebinarInformationDto
+
+	errDTO := context.Bind(&dto)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+		return
 	}
 
-	result := c.webinarRegistrationService.SendWebinarInformationViaEmail(id)
+	result = c.webinarRegistrationService.SendWebinarInformationViaEmail(dto)
 	response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
 	context.JSON(http.StatusOK, response)
 }

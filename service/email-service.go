@@ -3,11 +3,14 @@ package service
 import (
 	"fmt"
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
+	"joranvest/models/entity_view_models"
 	"joranvest/repository"
 	"os"
 	"runtime"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +20,7 @@ import (
 type EmailService interface {
 	SendEmailVerification(to []string, userId string) helper.Response
 	SendEmailVerified(to []string) helper.Response
-	SendWebinarInformationToParticipants(to []string) helper.Response
+	SendWebinarInformationToParticipants(dto dto.SendWebinarInformationDto, participant entity_view_models.EntityWebinarRegistrationView)
 }
 
 type emailService struct {
@@ -95,16 +98,15 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
                         display:block;
                         margin:0 auto !important;
                         /* makes it centered */
-                        max-width: 700px;
-                        width: 700px;
+                        max-width: 630px;
+                        width: 630px;
                         padding: 10px;
                     }
                     .content{
                         box-sizing:border-box;
                         margin: 30px auto 30px auto;
-                        max-width: 700px;
+                        max-width: 630px;
                         /*padding: 20px 50px 20px 50px;*/
-                        min-height: 50vh;
                         display:flex;
                         flex-direction: column;
                         justify-content: center;
@@ -619,30 +621,56 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
 	return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
 }
 
-func (service *emailService) SendWebinarInformationToParticipants(to []string) helper.Response {
+func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWebinarInformationDto, participant entity_view_models.EntityWebinarRegistrationView) {
+
+	//--- Participants
+	var to = []string{participant.UserEmail}
+	var subject = "Webinar #" + participant.WebinarTitle
+
+	var webinarDate string
+	webinarStartDate := strconv.Itoa(participant.WebinarStartDate.Time.Day()) + " " + helper.ConvertMonthNameENGtoID(participant.WebinarStartDate.Time.Month().String()) + " " + strconv.Itoa(participant.WebinarStartDate.Time.Year())
+	webinarEndDate := strconv.Itoa(participant.WebinarEndDate.Time.Day()) + " " + helper.ConvertMonthNameENGtoID(participant.WebinarEndDate.Time.Month().String()) + " " + strconv.Itoa(participant.WebinarEndDate.Time.Year())
+
+	webinarStartTime := strconv.Itoa(participant.WebinarStartDate.Time.Hour()) + "." + strconv.Itoa(participant.WebinarStartDate.Time.Hour())
+	webinarEndTime := strconv.Itoa(participant.WebinarEndDate.Time.Hour()) + "." + strconv.Itoa(participant.WebinarEndDate.Time.Hour())
+
+	if webinarStartDate == webinarEndDate {
+		webinarDate = webinarStartDate
+	} else if webinarStartDate == webinarEndDate {
+		webinarDate = webinarStartDate + " - " + webinarEndDate
+	}
+
+	webinarDate += " | Pukul "
+	if webinarStartTime == webinarEndTime {
+		webinarDate += webinarStartTime
+	} else {
+		webinarDate += webinarStartTime + " - " + webinarEndTime
+	}
+	webinarDate += " WIB"
+
 	commons.Logger()
 	err := godotenv.Load()
 	if err != nil {
 		log.Error(service.getCurrentFuncName())
+		log.Error(participant.WebinarTitle)
 		log.Error("Failed to get SMTP Configuration")
-		return helper.ServerResponse(false, "Failed to get SMTP Configuration", "", helper.EmptyObj{})
 	}
 
 	smtpHost := os.Getenv("CONFIG_SMTP_HOST")
 	smtpPort, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
 	if err != nil {
 		log.Error(service.getCurrentFuncName())
+		log.Error(participant.WebinarTitle)
 		log.Error("Failed to Convert Port")
-		return helper.ServerResponse(false, "Failed to Convert Port", "", helper.EmptyObj{})
 	}
 	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
 	smtpEmail := os.Getenv("CONFIG_AUTH_EMAIL_NO_REPLY")
 	smtpPassword := os.Getenv("CONFIG_AUTH_PASSWORD_NO_REPLY")
+
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", smtpSenderName)
 	mailer.SetHeader("To", to...)
-	// mailer.SetAddressHeader("Cc", "tralalala@gmail.com", "Tra Lala La")
-	mailer.SetHeader("Subject", "Webinar Information")
+	mailer.SetHeader("Subject", subject)
 	mailer.SetBody("text/html", `<!doctype html>
         <html>
             <head>
@@ -681,20 +709,28 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
                         display:block;
                         margin:0 auto !important;
                         /* makes it centered */
-                        max-width: 700px;
-                        width: 700px;
+                        max-width: 630px;
+                        width: 630px;
                         padding: 10px;
                     }
-                    .content{
+                    .content-main{
                         box-sizing:border-box;
-                        margin: 30px auto 30px auto;
-                        max-width: 700px;
+                        margin: 40px auto 0px auto;
+                        max-width: 630px;
                         /*padding: 20px 50px 20px 50px;*/
                         min-height: 50vh;
                         display:flex;
                         flex-direction: column;
                         justify-content: center;
                         align-items: center;
+                    }
+                    .content-footer{
+                        box-sizing: border-box;
+                   
+                        margin-left: auto;
+                        margin-right: auto;
+                        
+                        max-width: 630px;
                     }
 
                     #tbl-button {
@@ -704,13 +740,24 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
 
                     .main{
                         background:#ffffff;
-                        border-radius:5px;
+                        border-radius: 0px;
                         width:100%;
                         border: 1px solid #dee2e6;
                     }
                     .body-wrapper{
                         box-sizing:border-box;
-                        padding: 60px 30px 5px 30px; 
+                        padding: 40px 30px 20px 30px; 
+                    }
+
+                    .footer {
+                        background: #343a40!important;
+                        color: white !important;
+                        border-radius: 0px;
+                        width:100%;
+                    }
+                    .footer-wrapper{
+                        box-sizing:border-box;
+                        padding: 25px 30px 25px 30px; 
                     }
 
                     /* Typograpghy */
@@ -739,6 +786,10 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
                     }
                     .text-white {
                         color: white !important;
+                    }
+                    
+                    .mb-0 {
+                        margin-bottom: 0px !important;
                     }
 
                     p,ul,ol{
@@ -803,8 +854,8 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
                     .joranvest-logo {
                         margin-right: auto;
                         margin-left: auto;
-                        margin-bottom: 10px;
-                        width: 45%;
+                        margin-bottom: 5px;
+                        width: 35%;
                     }
 
                     @media only screen and (max-width:620px){
@@ -858,41 +909,92 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
                 </style>
                 </head>
                 <body class="">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
-                <tr>
-                    <td>&nbsp;</td>
-                    <td class="container">
-                    <div class="content">
-                    <table role="presentation" class="main shadow">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
                         <tr>
-                            <td class="body-wrapper">
-                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                            <td>&nbsp;</td>
+                            <td class="container" style="padding-bottom: 0px !important;">
+                                <div class="content-main">
+                                <table role="presentation" class="main shadow">
                                     <tr>
-                                    <td>
-                                        <p class="text-center">
-                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
-                                        </p>
-                                        <h1 class="text-center text-bold">Selamat datang di Joranvest</h1>
-                                        <p class="text-center">Untuk menyelesaikan Registrasi akun Anda, Silahkan Verifikasi Email Anda dengan cara menekan tombol di bawah.</p>
+                                        <td class="body-wrapper">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                <td>
+                                                    <p class="text-center">
+                                                        <a href="https://joranvest.com">
+                                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
+                                                        </a>
+                                                    </p>
+                                                    <hr />
+                                                    
+                                                    <p class="mb-0">Halo Kak `+participant.UserFirstName+`,</p>
+                                                    <p>Terima Kasih telah bergabung bersama Webinar.</p>
 
-                                        <p class="text-center">
-                                        </p>
-                                    
-                                        <hr style="margin-top: 30px;" />
-                                        <p class="no-reply text-center">Email ini adalah email otomatis. Mohon untuk tidak membalas email ini.</p>
-                                    </td>
+                                                    <p><a href="#">
+                                                        <img style="width: 100%"
+                                                            src="https://api.joranvest.com/`+participant.WebinarFilepath+`" />
+                                                    </a><p>
+
+                                                    <p class="mb-0"><strong>Topic: </strong>LIVE WEBINAR: #`+participant.WebinarTitle+`</p>
+                                                    <p><strong>Time: </strong> `+webinarDate+`</p>
+                                                    
+                                                    <p>Catat Informasinya!</p>
+                                                    <p class="mb-0">Join Zoom Meeting</p>
+                                                    <p>`+dto.MeetingUrl+`</p>
+                                                        
+                                                    <p class="mb-0">Meeting ID: `+dto.MeetingId+`</p>
+                                                    <p>Passcode: `+dto.Passcode+` <span style="font-size: font-size: 12px; color: red; font-style: italic;">(Jangan lupa password ini)</span></p>
+
+                                                    <p>Room mulai dibuka 30 menit sebelum acara dimulai dan pastikan menggunakan Nama yang sama dengan Akun di JORANVEST.<p>
+
+                                                    <p>Sampai bertemu dan Terima Kasih banyak atas partisipasinya</p>
+                                                    
+                                                    <p class="mb-0">Salam Hangat,</p>
+                                                    <span>Admin JORANVEST</span>
+                                                </td>
+                                                </tr>
+                                            </table>
+                                        </td>
                                     </tr>
-                                </table>
+                                    </table>
+                                </div>
                             </td>
+                            <td>&nbsp;</td>
                         </tr>
-                        </table>
-                        
-                    </div>
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-                </table>
-            </body>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td class="container"  style="padding-top: 0px !important;">
+                                <div class="content-footer text-white">
+                                <table role="presentation" class="footer shadow">
+                                    <tr>
+                                        <td class="footer-wrapper">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <div>
+                                                            <p class="text-center">Temukan kami</p>
+                                                            <p class="text-center">
+                                                                <a href="facebook.com/joranvest"><img style="margin-right: 5px;" src="" alt="Facebook" /></a>
+                                                                <a href="linkedin.com/company/joranvest"/><img style="margin-right: 5px;" src="" alt="LinkedIn" /></a>
+                                                                <a href="instagram.com/joranvest"/><img style="margin-right: 5px;" src="" alt="Instagram" /></a>
+                                                                <a href="twitter.com/joranvest"/><img style="margin-right: 5px;" src="" alt="Twitter" /></a>
+                                                                <a href="api.whatsapp.com/send?phone=6281228822774"/><img style="margin-right: 5px;" src="" alt="Whatsapp Business" /></a>
+                                                                <a href="t.me/joranvest"/><img style="margin-right: 5px;" src="" alt="Telegram" /></a>
+                                                            </p>
+                                                            <p class="mb-0 text-center">Copyright © `+strconv.Itoa(time.Now().Year())+` Joranvest, All rights reserved.</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    </table>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </table>
+                </body>
         </html>`)
 
 	dialer := gomail.NewDialer(
@@ -904,11 +1006,11 @@ func (service *emailService) SendWebinarInformationToParticipants(to []string) h
 
 	errSend := dialer.DialAndSend(mailer)
 	if err != nil {
+		log.Error("Error Send Email....")
+		log.Error(participant.WebinarTitle)
 		log.Error(service.getCurrentFuncName())
 		log.Error(fmt.Sprintf("%v,", errSend))
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", errSend), fmt.Sprintf("%v,", errSend), helper.EmptyObj{})
 	}
-	return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
 }
 
 func (service *emailService) getCurrentFuncName() string {

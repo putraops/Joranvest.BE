@@ -179,8 +179,8 @@ func main() {
 	defer config.CloseDatabaseConnection(db)
 	//getCardToken()
 
-	r := gin.New()
-	// r := gin.Default()
+	// r := gin.New()
+	r := gin.Default()
 
 	// programatically set swagger info
 	docs.SwaggerInfo.Title = "Swagger Example API"
@@ -351,7 +351,7 @@ func main() {
 		webinarRegistrationApiRoutes.POST("/getPagination", webinarRegistrationController.GetPagination)
 		webinarRegistrationApiRoutes.GET("/getById/:id", webinarRegistrationController.GetById)
 		webinarRegistrationApiRoutes.GET("/getViewById/:id", webinarRegistrationController.GetViewById)
-		webinarRegistrationApiRoutes.GET("/sendWebinarInformationByWebinarId/:id", webinarRegistrationController.SendWebinarInformationByWebinarId)
+		webinarRegistrationApiRoutes.POST("/sendMeetingInformation", webinarRegistrationController.SendMeetingInformation)
 		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
 		webinarRegistrationApiRoutes.GET("/isWebinarRegistered/:id", webinarRegistrationController.IsWebinarRegistered)
 		webinarRegistrationApiRoutes.DELETE("/deleteById/:id", webinarRegistrationController.DeleteById)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
@@ -18,7 +19,7 @@ type WebinarRegistrationService interface {
 	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 
-	SendWebinarInformationViaEmail(webinarId string) helper.Response
+	SendWebinarInformationViaEmail(request dto.SendWebinarInformationDto) helper.Response
 }
 
 type webinarRegistrationService struct {
@@ -70,15 +71,17 @@ func (service *webinarRegistrationService) DeleteById(recordId string) helper.Re
 	return service.webinarRegistrationRepository.DeleteById(recordId)
 }
 
-func (service *webinarRegistrationService) SendWebinarInformationViaEmail(webinarId string) helper.Response {
+func (service *webinarRegistrationService) SendWebinarInformationViaEmail(request dto.SendWebinarInformationDto) helper.Response {
 	var result helper.Response
-	var participants = service.webinarRegistrationRepository.GetParticipantsByWebinarId(webinarId)
+	var participants = service.webinarRegistrationRepository.GetParticipantsByWebinarId(request.WebinarId)
 	if len(participants) > 0 {
-		var temp []string
 		for _, item := range participants {
-			temp = append(temp, item.UserEmail)
+			service.emailService.SendWebinarInformationToParticipants(request, item)
 		}
-		result = service.emailService.SendWebinarInformationToParticipants(temp)
+		result.Data = helper.EmptyObj{}
+		result.Errors = helper.EmptyObj{}
+		result.Message = "Email Sent"
+		result.Status = true
 	} else {
 		result.Data = helper.EmptyObj{}
 		result.Errors = helper.EmptyObj{}
