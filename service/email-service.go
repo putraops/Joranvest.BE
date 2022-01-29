@@ -631,8 +631,8 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
 	webinarStartDate := strconv.Itoa(participant.WebinarStartDate.Time.Day()) + " " + helper.ConvertMonthNameENGtoID(participant.WebinarStartDate.Time.Month().String()) + " " + strconv.Itoa(participant.WebinarStartDate.Time.Year())
 	webinarEndDate := strconv.Itoa(participant.WebinarEndDate.Time.Day()) + " " + helper.ConvertMonthNameENGtoID(participant.WebinarEndDate.Time.Month().String()) + " " + strconv.Itoa(participant.WebinarEndDate.Time.Year())
 
-	webinarStartTime := strconv.Itoa(participant.WebinarStartDate.Time.Hour()) + "." + strconv.Itoa(participant.WebinarStartDate.Time.Hour())
-	webinarEndTime := strconv.Itoa(participant.WebinarEndDate.Time.Hour()) + "." + strconv.Itoa(participant.WebinarEndDate.Time.Hour())
+	webinarStartTime := strconv.Itoa(participant.WebinarStartDate.Time.Hour()) + "." + strconv.Itoa(participant.WebinarStartDate.Time.Minute())
+	webinarEndTime := strconv.Itoa(participant.WebinarEndDate.Time.Hour()) + "." + strconv.Itoa(participant.WebinarEndDate.Time.Minute())
 
 	if webinarStartDate == webinarEndDate {
 		webinarDate = webinarStartDate
