@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"joranvest/models"
 	"strings"
+	"time"
 )
 
 type EntityWebinarRegistrationView struct {
@@ -19,6 +20,8 @@ type EntityWebinarRegistrationView struct {
 	Price                    float64      `json:"price"`
 	Discount                 float64      `json:"discount"`
 	IsCertificate            bool         `json:"is_certificate"`
+	IsInvitationSent         bool         `json:"is_invitation_sent"`
+	InvitationSentAt         *time.Time   `json:"invitation_sent_at"`
 	Reward                   int          `json:"reward"`
 	PaymentDate              sql.NullTime `json:"payment_date"`
 	PaymentType              string       `json:"payment_type"`
@@ -66,6 +69,8 @@ func (EntityWebinarRegistrationView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.webinar_id,")
+	sql.WriteString("  r.is_invitation_sent,")
+	sql.WriteString("  r.invitation_sent_at,")
 	sql.WriteString("  r.application_user_id,")
 	sql.WriteString("  u4.first_name AS user_first_name,")
 	sql.WriteString("  CONCAT(u4.first_name, ' ', u4.last_name) AS user_fullname,")

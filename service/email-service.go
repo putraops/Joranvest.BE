@@ -726,11 +726,10 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
                     }
                     .content-footer{
                         box-sizing: border-box;
-                   
                         margin-left: auto;
                         margin-right: auto;
-                        
                         max-width: 630px;
+                        margin-bottom: 50px;
                     }
 
                     #tbl-button {
@@ -750,7 +749,7 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
                     }
 
                     .footer {
-                        background: #343a40!important;
+                        background: #111111!important;
                         color: white !important;
                         border-radius: 0px;
                         width:100%;
@@ -972,16 +971,16 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
                                                 <tr>
                                                     <td>
                                                         <div>
-                                                            <p class="text-center">Temukan kami</p>
+                                                            <p class="text-center">Temukan Kami</p>
                                                             <p class="text-center">
-                                                                <a href="facebook.com/joranvest"><img style="margin-right: 5px;" src="" alt="Facebook" /></a>
-                                                                <a href="linkedin.com/company/joranvest"/><img style="margin-right: 5px;" src="" alt="LinkedIn" /></a>
-                                                                <a href="instagram.com/joranvest"/><img style="margin-right: 5px;" src="" alt="Instagram" /></a>
-                                                                <a href="twitter.com/joranvest"/><img style="margin-right: 5px;" src="" alt="Twitter" /></a>
-                                                                <a href="api.whatsapp.com/send?phone=6281228822774"/><img style="margin-right: 5px;" src="" alt="Whatsapp Business" /></a>
-                                                                <a href="t.me/joranvest"/><img style="margin-right: 5px;" src="" alt="Telegram" /></a>
+                                                                <a href="facebook.com/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px;" src="https://joranvest.com/assets/icons/icon-white-facebook.png" alt="Facebook" /></a>
+                                                                <a href="instagram.com/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-instagram.png" alt="Instagram" /></a>
+                                                                <a href="twitter.com/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-twitter.png" alt="Twitter" /></a>
+                                                                <a href="api.whatsapp.com/send?phone=6281228822774"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-whatsapp.png" alt="Whatsapp Business" /></a>
+                                                                <a href="t.me/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-telegram.png" alt="Telegram" /></a>
                                                             </p>
-                                                            <p class="mb-0 text-center">Copyright © `+strconv.Itoa(time.Now().Year())+` Joranvest, All rights reserved.</p>
+                                                            <p class="mb-0 text-center">Copyright © `+strconv.Itoa(time.Now().Year())+` Joranvest</p>
+                                                            <p class="mb-0 text-center">All rights reserved</p>
                                                         </div>
                                                     </td>
                                                 </tr>

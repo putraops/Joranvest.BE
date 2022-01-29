@@ -23,6 +23,7 @@ type WebinarRegistrationController interface {
 	IsWebinarRegistered(context *gin.Context)
 	DeleteById(context *gin.Context)
 
+	SendInvitation(context *gin.Context)
 	SendMeetingInformation(context *gin.Context)
 }
 
@@ -157,6 +158,22 @@ func (c *webinarRegistrationController) DeleteById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *webinarRegistrationController) SendInvitation(context *gin.Context) {
+	result := helper.Response{}
+	var dto dto.SendWebinarInformationDto
+
+	errDTO := context.Bind(&dto)
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result = c.webinarRegistrationService.SendInvitation(dto)
+	response := helper.BuildResponse(result.Status, result.Message, helper.EmptyObj{})
+	context.JSON(http.StatusOK, response)
 }
 
 func (c *webinarRegistrationController) SendMeetingInformation(context *gin.Context) {

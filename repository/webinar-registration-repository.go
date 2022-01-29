@@ -19,11 +19,13 @@ type WebinarRegistrationRepository interface {
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.WebinarRegistration
+	GetParticipantsByIds(ids []string) []entity_view_models.EntityWebinarRegistrationView
 	GetParticipantsByWebinarId(webinarId string) []entity_view_models.EntityWebinarRegistrationView
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
 	Insert(record models.WebinarRegistration) helper.Response
 	Update(record models.WebinarRegistration) helper.Response
+	UpdateInvitationStatusById(id string)
 	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
@@ -190,6 +192,12 @@ func (db *webinarRegistrationConnection) GetParticipantsByWebinarId(webinarId st
 	return records
 }
 
+func (db *webinarRegistrationConnection) GetParticipantsByIds(ids []string) []entity_view_models.EntityWebinarRegistrationView {
+	var records []entity_view_models.EntityWebinarRegistrationView
+	db.connection.Debug().Where("id IN ?", ids).Find(&records)
+	return records
+}
+
 func (db *webinarRegistrationConnection) Insert(record models.WebinarRegistration) helper.Response {
 	tx := db.connection.Begin()
 
@@ -228,6 +236,10 @@ func (db *webinarRegistrationConnection) Update(record models.WebinarRegistratio
 	tx.Commit()
 	db.connection.Preload(clause.Associations).Find(&record)
 	return helper.ServerResponse(true, "Ok", "", record)
+}
+
+func (db *webinarRegistrationConnection) UpdateInvitationStatusById(id string) {
+	db.connection.Exec("UPDATE webinar_registration SET is_invitation_sent = true, invitation_sent_at = ? WHERE id = ?", sql.NullTime{Time: time.Now(), Valid: true}, id)
 }
 
 func (db *webinarRegistrationConnection) GetById(recordId string) helper.Response {

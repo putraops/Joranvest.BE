@@ -351,6 +351,7 @@ func main() {
 		webinarRegistrationApiRoutes.POST("/getPagination", webinarRegistrationController.GetPagination)
 		webinarRegistrationApiRoutes.GET("/getById/:id", webinarRegistrationController.GetById)
 		webinarRegistrationApiRoutes.GET("/getViewById/:id", webinarRegistrationController.GetViewById)
+		webinarRegistrationApiRoutes.POST("/sendInvitation", webinarRegistrationController.SendInvitation)
 		webinarRegistrationApiRoutes.POST("/sendMeetingInformation", webinarRegistrationController.SendMeetingInformation)
 		webinarRegistrationApiRoutes.POST("/save", webinarRegistrationController.Save)
 		webinarRegistrationApiRoutes.GET("/isWebinarRegistered/:id", webinarRegistrationController.IsWebinarRegistered)

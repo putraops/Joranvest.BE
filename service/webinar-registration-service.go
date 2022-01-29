@@ -19,6 +19,7 @@ type WebinarRegistrationService interface {
 	IsWebinarRegistered(webinarId string, userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 
+	SendInvitation(request dto.SendWebinarInformationDto) helper.Response
 	SendWebinarInformationViaEmail(request dto.SendWebinarInformationDto) helper.Response
 }
 
@@ -69,6 +70,27 @@ func (service *webinarRegistrationService) IsWebinarRegistered(webinarId string,
 
 func (service *webinarRegistrationService) DeleteById(recordId string) helper.Response {
 	return service.webinarRegistrationRepository.DeleteById(recordId)
+}
+
+func (service *webinarRegistrationService) SendInvitation(request dto.SendWebinarInformationDto) helper.Response {
+	var result helper.Response
+	var participants = service.webinarRegistrationRepository.GetParticipantsByIds(request.WebinarRegistrationIds)
+	if len(participants) > 0 {
+		for _, item := range participants {
+			service.emailService.SendWebinarInformationToParticipants(request, item)
+			service.webinarRegistrationRepository.UpdateInvitationStatusById(item.Id)
+		}
+		result.Data = helper.EmptyObj{}
+		result.Errors = helper.EmptyObj{}
+		result.Message = "Email Sent"
+		result.Status = true
+	} else {
+		result.Data = helper.EmptyObj{}
+		result.Errors = helper.EmptyObj{}
+		result.Message = "There is no Participants"
+		result.Status = false
+	}
+	return result
 }
 
 func (service *webinarRegistrationService) SendWebinarInformationViaEmail(request dto.SendWebinarInformationDto) helper.Response {
