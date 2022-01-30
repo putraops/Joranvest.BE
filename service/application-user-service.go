@@ -26,7 +26,8 @@ type ApplicationUserService interface {
 	GetViewById(recordId string) helper.Response
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
-	RecoverPassword(recordId string, oldPassword string) helper.Response
+	ResetPasswordByEmail(email string) helper.Response
+	RecoverPassword(dto dto.RecoverPasswordDto) helper.Response
 	EmailVerificationById(recordId string) helper.Response
 }
 
@@ -146,8 +147,19 @@ func (service *applicationUserService) ChangePhone(recordDto dto.ChangePhoneDto)
 	return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 }
 
-func (service *applicationUserService) RecoverPassword(recordId string, oldPassword string) helper.Response {
-	return service.applicationUserRepository.RecoverPassword(recordId, oldPassword)
+func (service *applicationUserService) RecoverPassword(dto dto.RecoverPasswordDto) helper.Response {
+	user := service.applicationUserRepository.GetById(dto.UserId)
+
+	if user.Data.(models.ApplicationUser).Id == "" {
+		return helper.Response{
+			Status:  false,
+			Message: "User tidak ditemukan. Gagal untuk mengubah Password",
+			Data:    helper.EmptyObj{},
+			Errors:  helper.EmptyObj{},
+		}
+	}
+
+	return service.applicationUserRepository.RecoverPassword(user.Data.(models.ApplicationUser).Id, dto.NewPassword)
 }
 
 func (service *applicationUserService) EmailVerificationById(recordId string) helper.Response {
@@ -159,4 +171,16 @@ func (service *applicationUserService) EmailVerificationById(recordId string) he
 		service.emailService.SendEmailVerified(to)
 	}
 	return res
+}
+
+func (service *applicationUserService) ResetPasswordByEmail(email string) helper.Response {
+	var response helper.Response
+	user := service.applicationUserRepository.GetByEmail(email)
+	if user.Id == "" {
+		response.Status = false
+		response.Message = "Email tidak terdaftar."
+		response.Data = helper.EmptyObj{}
+		return response
+	}
+	return service.emailService.ResetPassword(user)
 }

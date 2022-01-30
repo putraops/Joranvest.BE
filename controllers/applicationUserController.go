@@ -26,6 +26,7 @@ type ApplicationUserController interface {
 	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	RecoverPassword(context *gin.Context)
+	ResetPassword(context *gin.Context)
 	EmailVerificationById(context *gin.Context)
 }
 
@@ -230,8 +231,20 @@ func (c *applicationUserController) RecoverPassword(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	result := c.applicationUserService.RecoverPassword(recordDto.Id, recordDto.OldPassword)
+	result := c.applicationUserService.RecoverPassword(recordDto)
 	response := helper.BuildResponse(true, "Ok!", result)
+	context.JSON(http.StatusOK, response)
+}
+
+func (c *applicationUserController) ResetPassword(context *gin.Context) {
+	var email string
+	qry := context.Request.URL.Query()
+
+	if _, found := qry["email"]; found {
+		email = fmt.Sprint(qry["email"][0])
+	}
+
+	response := c.applicationUserService.ResetPasswordByEmail(email)
 	context.JSON(http.StatusOK, response)
 }
 

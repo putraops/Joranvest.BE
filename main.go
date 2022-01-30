@@ -419,6 +419,7 @@ func main() {
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
 		applicationUserApiRoutes.POST("/updateProfile", applicationUserController.UpdateProfile)
 		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
+		applicationUserApiRoutes.POST("/resetPassword", applicationUserController.ResetPassword)
 		applicationUserApiRoutes.POST("/register", authController.Register)
 		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
 		applicationUserApiRoutes.PATCH("/emailVerificationById/:id", applicationUserController.EmailVerificationById)

@@ -16,8 +16,13 @@ type ChangePasswordDto struct {
 }
 
 type RecoverPasswordDto struct {
-	Id          string `json:"id" form:"id"`
-	OldPassword string `json:"old_password" form:"old_password" binding:"required"`
+	UserId      string `json:"user_id" form:"user_id" binding:"required"`
+	Email       string `json:"email" form:"email" binding:"required"`
+	NewPassword string `json:"new_password" form:"new_password" binding:"required"`
+}
+
+type ResetPasswordDto struct {
+	Email string `json:"email" form:"email" binding:"required"`
 }
 
 type ChangePhoneDto struct {
