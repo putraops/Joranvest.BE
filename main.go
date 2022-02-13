@@ -59,10 +59,11 @@ var (
 	ratingMasterRepository            repository.RatingMasterRepository            = repository.NewRatingMasterRepository(db)
 	paymentRepository                 repository.PaymentRepository                 = repository.NewPaymentRepository(db)
 	emailRepository                   repository.EmailRepository                   = repository.NewEmailRepository(db)
+	emailLoggingRepository            repository.EmailLoggingRepository            = repository.NewEmailLoggingRepository(db)
 
 	jwtService                     service.JWTService                     = service.NewJWTService()
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
-	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository, emailService)
+	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository, emailLoggingRepository, emailService)
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
@@ -87,7 +88,7 @@ var (
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
 	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
 	paymentService                 service.PaymentService                 = service.NewPaymentService(paymentRepository)
-	emailService                   service.EmailService                   = service.NewEmailService(emailRepository)
+	emailService                   service.EmailService                   = service.NewEmailService(emailRepository, emailLoggingRepository)
 	webinarRegistrationService     service.WebinarRegistrationService     = service.NewWebinarRegistrationService(webinarRegistrationRepository, emailService)
 
 	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, emailService, jwtService)

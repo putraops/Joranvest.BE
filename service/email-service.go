@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"fmt"
 	"joranvest/commons"
 	"joranvest/dto"
@@ -20,13 +21,14 @@ import (
 
 type EmailService interface {
 	SendEmailVerification(to []string, userId string) helper.Response
-	SendEmailVerified(to []string) helper.Response
+	SendEmailVerified(email string) helper.Response
 	ResetPassword(user models.ApplicationUser) helper.Response
 	SendWebinarInformationToParticipants(dto dto.SendWebinarInformationDto, participant entity_view_models.EntityWebinarRegistrationView)
 }
 
 type emailService struct {
-	emailRepository repository.EmailRepository
+	emailRepository        repository.EmailRepository
+	emailLoggingRepository repository.EmailLoggingRepository
 	helper.AppSession
 	serverName   string
 	smtpHost     string
@@ -35,14 +37,15 @@ type emailService struct {
 	smtpPassword string
 }
 
-func NewEmailService(emailRepository repository.EmailRepository) EmailService {
+func NewEmailService(emailRepository repository.EmailRepository, emailLoggingRepository repository.EmailLoggingRepository) EmailService {
 	return &emailService{
-		emailRepository: emailRepository,
-		serverName:      os.Getenv("FRONTEND_URL"),
-		smtpHost:        os.Getenv("CONFIG_SMTP_HOST"),
-		smtpPort:        os.Getenv("CONFIG_SMTP_PORT"),
-		smtpUsername:    os.Getenv("CONFIG_SMTP_USERNAME"),
-		smtpPassword:    os.Getenv("CONFIG_SMTP_PASSWORD"),
+		emailRepository:        emailRepository,
+		emailLoggingRepository: emailLoggingRepository,
+		serverName:             os.Getenv("FRONTEND_URL"),
+		smtpHost:               os.Getenv("CONFIG_SMTP_HOST"),
+		smtpPort:               os.Getenv("CONFIG_SMTP_PORT"),
+		smtpUsername:           os.Getenv("CONFIG_SMTP_USERNAME"),
+		smtpPassword:           os.Getenv("CONFIG_SMTP_PASSWORD"),
 	}
 }
 
@@ -335,7 +338,9 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
 	return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
 }
 
-func (service *emailService) SendEmailVerified(to []string) helper.Response {
+func (service *emailService) SendEmailVerified(email string) helper.Response {
+	var to = []string{email}
+
 	commons.Logger()
 	err := godotenv.Load()
 	if err != nil {
@@ -586,7 +591,7 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
                                         <p class="text-center">
                                             <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
                                         </p>
-                                        <h1 class="text-center text-bold">Selamat Akun anda telah Terverifikasi</h1>
+                                        <h1 class="text-center text-bold">Selamat Akun Kamu Telah Terverifikasi</h1>
                                         <p class="text-center">Tekan tombol dibawah ini untuk login ke dalam Aplikasi.</p>
 
                                         <p class="text-center">
@@ -617,12 +622,21 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
 		service.smtpPassword,
 	)
 
-	errSend := dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error(service.getCurrentFuncName())
-		log.Error(fmt.Sprintf("%v,", errSend))
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", errSend), fmt.Sprintf("%v,", errSend), helper.EmptyObj{})
+	var emailLoggingRecord models.EmailLogging
+	emailLoggingRecord.Email = email
+	emailLoggingRecord.MailType = commons.MailTypeAccountVerifed
+	emailLoggingRecord.LastSent = sql.NullTime{Time: time.Now(), Valid: true}
+	res := service.emailLoggingRepository.Insert(emailLoggingRecord)
+
+	if res.Status {
+		errSend := dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error(service.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", errSend))
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", errSend), fmt.Sprintf("%v,", errSend), helper.EmptyObj{})
+		}
 	}
+
 	return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
 }
 

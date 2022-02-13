@@ -33,12 +33,14 @@ type ApplicationUserService interface {
 
 type applicationUserService struct {
 	applicationUserRepository repository.ApplicationUserRepository
+	emailLoggingRepository    repository.EmailLoggingRepository
 	emailService              EmailService
 }
 
-func NewApplicationUserService(repo repository.ApplicationUserRepository, emailService EmailService) ApplicationUserService {
+func NewApplicationUserService(repo repository.ApplicationUserRepository, emailLoggingRepo repository.EmailLoggingRepository, emailService EmailService) ApplicationUserService {
 	return &applicationUserService{
 		applicationUserRepository: repo,
+		emailLoggingRepository:    emailLoggingRepo,
 		emailService:              emailService,
 	}
 }
@@ -167,8 +169,11 @@ func (service *applicationUserService) EmailVerificationById(recordId string) he
 	res := service.applicationUserRepository.EmailVerificationById(recordId)
 	if res.Status {
 		var record = res.Data.(models.ApplicationUser)
-		to := []string{record.Email}
-		service.emailService.SendEmailVerified(to)
+
+		var total = service.emailLoggingRepository.GetLastIntervalLogging(record.Email, commons.MailTypeAccountVerifed, 10)
+		if total <= commons.MaxSendEmailOneInterval {
+			service.emailService.SendEmailVerified(record.Email)
+		}
 	}
 	return res
 }
