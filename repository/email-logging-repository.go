@@ -111,29 +111,13 @@ func (db *emailLoggingConnection) GetPagination(request commons.Pagination2ndReq
 }
 
 func (db *emailLoggingConnection) GetLastIntervalLogging(email string, mailType string, intervalMinutes int) int64 {
-
-	// var string lastSent
-
-	noww := sql.NullTime{Time: time.Now().Add(time.Minute), Valid: true}
-	fmt.Println(noww)
-
-	tes := sql.NullTime{Time: time.Now().Add(time.Minute * (-1 * time.Duration(intervalMinutes))), Valid: true}
-	fmt.Println(tes)
+	nowTime := sql.NullTime{Time: time.Now().Add(time.Minute), Valid: true}
+	lastInterval := sql.NullTime{Time: time.Now().Add(time.Minute * (-1 * time.Duration(intervalMinutes))), Valid: true}
 
 	var total int64
 	db.connection.Debug().Model(&models.EmailLogging{}).
-		Where("email = ? AND (last_sent BETWEEN ? AND ?)", email, tes, noww).
+		Where("email = ? AND (last_sent BETWEEN ? AND ?)", email, lastInterval, nowTime).
 		Count(&total)
-
-	fmt.Println(total)
-
-	// db.connection.Where(&record, "email = ? AND last_sent = ?", email, mailType).Count()
-	// if record.Id == "" {
-	// 	res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-	// 	return res
-	// }
-	// res := helper.ServerResponse(true, "Ok", "", record)
-	// return res
 	return total
 }
 

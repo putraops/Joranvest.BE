@@ -1,6 +1,8 @@
 package commons
 
 const (
-	MailTypeAccountVerifed = "AccountVerified"
+	MailTypeAccountVerification = "EmailVerification"
+	MailTypeEmailVerified       = "AccountVerified"
+	MailInterval                = 10
+	MaxSendEmailOneInterval     = 5
 )
-const MaxSendEmailOneInterval = 5

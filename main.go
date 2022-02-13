@@ -513,11 +513,6 @@ func main() {
 		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
 	}
 
-	emailApiRoutes := r.Group("api/email")
-	{
-		emailApiRoutes.POST("/sendEmailVerification", emailController.SendEmailVerification)
-	}
-
 	webhookRoutes := r.Group("webhook/payment")
 	{
 		webhookRoutes.POST("/gateway", paymentController.HookForXendit)

@@ -170,7 +170,7 @@ func (service *applicationUserService) EmailVerificationById(recordId string) he
 	if res.Status {
 		var record = res.Data.(models.ApplicationUser)
 
-		var total = service.emailLoggingRepository.GetLastIntervalLogging(record.Email, commons.MailTypeAccountVerifed, 10)
+		var total = service.emailLoggingRepository.GetLastIntervalLogging(record.Email, commons.MailTypeEmailVerified, commons.MailInterval)
 		if total <= commons.MaxSendEmailOneInterval {
 			service.emailService.SendEmailVerified(record.Email)
 		}

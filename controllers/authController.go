@@ -117,8 +117,7 @@ func (c *authController) Register(ctx *gin.Context) {
 			token := c.jwtService.GenerateToken(createdUser.Id, createdUser.EntityId)
 
 			// Send Email Verification
-			to := []string{createdUser.Email}
-			c.emailService.SendEmailVerification(to, createdUser.Id)
+			c.emailService.SendEmailVerification(createdUser.Email, createdUser.Id)
 
 			createdUser.Token = token
 			response := helper.BuildResponse(true, "Ok!", createdUser)

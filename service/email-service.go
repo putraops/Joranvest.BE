@@ -20,7 +20,7 @@ import (
 )
 
 type EmailService interface {
-	SendEmailVerification(to []string, userId string) helper.Response
+	SendEmailVerification(email string, userId string) helper.Response
 	SendEmailVerified(email string) helper.Response
 	ResetPassword(user models.ApplicationUser) helper.Response
 	SendWebinarInformationToParticipants(dto dto.SendWebinarInformationDto, participant entity_view_models.EntityWebinarRegistrationView)
@@ -49,7 +49,13 @@ func NewEmailService(emailRepository repository.EmailRepository, emailLoggingRep
 	}
 }
 
-func (service *emailService) SendEmailVerification(to []string, userId string) helper.Response {
+func (service *emailService) SendEmailVerification(email string, userId string) helper.Response {
+	var total = service.emailLoggingRepository.GetLastIntervalLogging(email, commons.MailTypeAccountVerification, commons.MaxSendEmailOneInterval)
+	if total > commons.MaxSendEmailOneInterval {
+		return helper.ServerResponse(false, "Email Already Sent", "", helper.EmptyObj{})
+	}
+
+	var to = []string{email}
 	commons.Logger()
 	err := godotenv.Load()
 	if err != nil {
@@ -329,12 +335,21 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
 		service.smtpPassword,
 	)
 
-	errSend := dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error(service.getCurrentFuncName())
-		log.Error(fmt.Sprintf("%v,", errSend))
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", errSend), fmt.Sprintf("%v,", errSend), helper.EmptyObj{})
+	var emailLoggingRecord models.EmailLogging
+	emailLoggingRecord.Email = email
+	emailLoggingRecord.MailType = commons.MailTypeAccountVerification
+	emailLoggingRecord.LastSent = sql.NullTime{Time: time.Now(), Valid: true}
+	res := service.emailLoggingRepository.Insert(emailLoggingRecord)
+
+	if res.Status {
+		errSend := dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error(service.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", errSend))
+			return helper.ServerResponse(false, fmt.Sprintf("%v,", errSend), fmt.Sprintf("%v,", errSend), helper.EmptyObj{})
+		}
 	}
+
 	return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
 }
 
@@ -624,7 +639,7 @@ func (service *emailService) SendEmailVerified(email string) helper.Response {
 
 	var emailLoggingRecord models.EmailLogging
 	emailLoggingRecord.Email = email
-	emailLoggingRecord.MailType = commons.MailTypeAccountVerifed
+	emailLoggingRecord.MailType = commons.MailTypeEmailVerified
 	emailLoggingRecord.LastSent = sql.NullTime{Time: time.Now(), Valid: true}
 	res := service.emailLoggingRepository.Insert(emailLoggingRecord)
 
