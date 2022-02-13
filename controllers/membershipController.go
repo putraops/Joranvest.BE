@@ -121,15 +121,11 @@ func (c *membershipController) GetById(context *gin.Context) {
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
+
 	result := c.membershipService.GetById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusBadRequest, response)
-	} else {
-		response := helper.BuildResponse(true, "Ok", result.Data)
-		context.JSON(http.StatusOK, response)
-	}
+	context.JSON(http.StatusOK, result)
 }
 
 func (c *membershipController) GetViewById(context *gin.Context) {
@@ -139,16 +135,11 @@ func (c *membershipController) GetViewById(context *gin.Context) {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		log.Error("membershipController: Failed to Get Id")
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
+
 	result := c.membershipService.GetViewById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		log.Error(response.Errors)
-		context.JSON(http.StatusOK, response)
-	} else {
-		response := helper.BuildResponse(true, "Ok", result.Data)
-		context.JSON(http.StatusOK, response)
-	}
+	context.JSON(http.StatusOK, result)
 }
 
 func (c *membershipController) DeleteById(context *gin.Context) {

@@ -1,11 +1,14 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/xendit/xendit-go"
 
 	"joranvest/commons"
 	"joranvest/dto"
@@ -13,6 +16,7 @@ import (
 	"joranvest/midtrans"
 	"joranvest/midtrans/coreapi"
 	"joranvest/models"
+	"joranvest/payment_gateway/xendit/ewallet"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
@@ -22,26 +26,95 @@ import (
 type PaymentController interface {
 	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
+	GetByProviderRecordId(context *gin.Context)
+	GetByProviderReferenceId(context *gin.Context)
+	GetEWalletPaymentStatusByReferenceId(context *gin.Context)
 	GetUniqueNumber(context *gin.Context)
+	UpdateWalletPaymentStatus(context *gin.Context)
 	DeleteById(context *gin.Context)
 	MembershipPayment(context *gin.Context)
 	WebinarPayment(context *gin.Context)
 	UpdatePaymentStatus(context *gin.Context)
 	CreateTokenIdByCard(context *gin.Context)
+	CreateEWalletPayment(context *gin.Context)
 	Charge(context *gin.Context)
+	HookForXendit(context *gin.Context)
 }
 
 type paymentController struct {
 	paymentService service.PaymentService
 	jwtService     service.JWTService
 	helper.AppSession
+	//ewallet ewallet.Payment
 }
 
 func NewPaymentController(paymentService service.PaymentService, jwtService service.JWTService) PaymentController {
 	return &paymentController{
 		paymentService: paymentService,
 		jwtService:     jwtService,
+		//ewallet:        ewallet.NewPaymentRequest(&gin.Context{}),
+		// orderService: service.NewOrderService(db, jwtService),
 	}
+}
+
+func (c *paymentController) HookForXendit(context *gin.Context) {
+	commons.Logger()
+	var callbackBody dto.CallbackBodyDto
+
+	responseToken := context.GetHeader("x-callback-token")
+	callbackToken := os.Getenv("XENDIT_CALLBACK_TOKEN")
+
+	if responseToken != callbackToken {
+		log.Error("Callback Token and Response Token is not match. [Payment Gateway: Xendit]")
+		log.Error("Please check the Callback Token.")
+		context.JSON(http.StatusUnauthorized, nil)
+		return
+	}
+
+	errDto := context.Bind(&callbackBody)
+	if errDto != nil {
+		log.Error("Failed to Bind CallbackDto [Payment Gateway: Xendit]")
+		context.JSON(http.StatusBadRequest, nil)
+	}
+
+	myMap := make(map[string]interface{})
+	myMap = callbackBody.Data
+
+	// convert map to json
+	jsonString, errMarshal := json.Marshal(myMap)
+	if errMarshal != nil {
+		log.Error("Error to Marshal json string from dto.Data")
+		context.JSON(http.StatusBadRequest, nil)
+	}
+	xenditCharge := xendit.EWalletCharge{}
+	json.Unmarshal(jsonString, &xenditCharge)
+
+	fmt.Println("------------------------------------------------------")
+	fmt.Println("---------------------- Status ------------------------")
+	fmt.Println(xenditCharge.Status)
+	fmt.Println(xenditCharge.Metadata["record_id"])
+
+	var paymentRecordId string = xenditCharge.Metadata["record_id"].(string)
+	fmt.Println("------------------------------------------------------")
+	fmt.Println("---------------------- Status ------------------------")
+	fmt.Println(paymentRecordId)
+	if xenditCharge.Status != string(ewallet.XenditPaymentStatusPending) {
+		var paymentStatus int = commons.RejectedPaymentStatus
+		if xenditCharge.Status == string(ewallet.XenditPaymentStatusSucceeded) {
+			paymentStatus = commons.PaidPaymentStatus
+		}
+
+		c.paymentService.UpdateWalletPaymentStatus(dto.UpdatePaymentStatusDto{
+			Id:            paymentRecordId,
+			PaymentStatus: paymentStatus,
+			UpdatedBy:     xenditCharge.Metadata["user_id"].(string),
+		})
+	}
+	fmt.Println("------------------------------------------------------")
+	fmt.Println("------------------------------------------------------")
+	//get Body
+	context.JSON(http.StatusOK, helper.EmptyObj{})
+	return
 }
 
 func (c *paymentController) GetPagination(context *gin.Context) {
@@ -123,6 +196,50 @@ func (c *paymentController) WebinarPayment(context *gin.Context) {
 	}
 }
 
+func (c *paymentController) CreateEWalletPayment(context *gin.Context) {
+	var dto ewallet.PaymentDto
+	errDto := context.Bind(&dto)
+	if errDto != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDto.Error(), helper.EmptyObj{})
+		log.Error("EWalletCharge: Bind Dto")
+		log.Error(fmt.Sprintf("%v,", errDto.Error()))
+		context.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	dto.Context = context
+	response := c.paymentService.CreateEWalletPayment(dto)
+	context.JSON(http.StatusOK, response)
+}
+
+func (c *paymentController) GetEWalletPaymentStatusByReferenceId(context *gin.Context) {
+	reference_id := context.Param("reference_id")
+	if reference_id == "" {
+		response := helper.BuildErrorResponse("Failed to get reference_id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := c.paymentService.GetEWalletPaymentStatus(context, reference_id)
+	context.JSON(http.StatusOK, response)
+	return
+}
+
+func (c *paymentController) UpdateWalletPaymentStatus(context *gin.Context) {
+	var dto dto.UpdatePaymentStatusDto
+	errDto := context.Bind(&dto)
+	if errDto != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDto.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	dto.Context = context
+	response := c.paymentService.UpdateWalletPaymentStatus(dto)
+	context.JSON(http.StatusOK, response)
+	return
+}
+
 func (c *paymentController) UpdatePaymentStatus(context *gin.Context) {
 	result := helper.Response{}
 	var recordDto dto.UpdatePaymentStatusDto
@@ -154,15 +271,35 @@ func (c *paymentController) GetById(context *gin.Context) {
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
+
 	result := c.paymentService.GetById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
-	} else {
-		response := helper.BuildResponse(true, "Ok", result.Data)
-		context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *paymentController) GetByProviderRecordId(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+		return
 	}
+
+	result := c.paymentService.GetByProviderRecordId(id)
+	context.JSON(http.StatusOK, result)
+}
+
+func (c *paymentController) GetByProviderReferenceId(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	result := c.paymentService.GetByProviderReferenceId(id)
+	context.JSON(http.StatusOK, result)
 }
 
 func (c *paymentController) DeleteById(context *gin.Context) {
@@ -170,7 +307,9 @@ func (c *paymentController) DeleteById(context *gin.Context) {
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
+
 	var result = c.paymentService.DeleteById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
@@ -227,6 +366,7 @@ func (c *paymentController) Charge(context *gin.Context) {
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
+		return
 	}
 	//result := helper.Response{}
 

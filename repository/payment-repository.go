@@ -18,6 +18,7 @@ import (
 )
 
 type PaymentRepository interface {
+	Insert(record models.Payment) helper.Response
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Payment
 	GetUniqueNumber() int
@@ -26,6 +27,8 @@ type PaymentRepository interface {
 	Update(record models.Payment) helper.Response
 	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
 	GetById(recordId string) helper.Response
+	GetByProviderRecordId(id string) helper.Response
+	GetByProviderReferenceId(id string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -201,6 +204,21 @@ func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Res
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 
+func (db *paymentConnection) Insert(record models.Payment) helper.Response {
+	commons.Logger()
+	tx := db.connection.Begin()
+	if err := tx.Create(&record).Error; err != nil {
+		tx.Rollback()
+		log.Error(db.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err))
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	db.connection.Find(&record)
+	return helper.ServerResponse(true, "Ok", "", record)
+}
+
 func (db *paymentConnection) WebinarPayment(record models.Payment) helper.Response {
 	commons.Logger()
 	tx := db.connection.Begin()
@@ -281,23 +299,29 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 }
 
 func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
+	commons.Logger()
+
 	tx := db.connection.Begin()
 	var paymentRecord models.Payment
 	db.connection.First(&paymentRecord, "id = ?", req.Id)
 	if req.Id == "" {
+		log.Error("Record not found")
+		log.Error("Function: UpdatePaymentStatus")
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
 	}
 
 	paymentRecord.PaymentStatus = req.PaymentStatus
 	paymentRecord.UpdatedBy = req.UpdatedBy
-	paymentRecord.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
 	paymentRecord.UpdatedAt = paymentRecord.PaymentDate
+	paymentRecord.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
 
 	var viewRecord entity_view_models.EntityPaymentView
 	db.connection.First(&viewRecord, "id = ?", req.Id)
 	if req.Id == "" {
+		log.Error("Record not found")
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		tx.Rollback()
 		return res
 	}
 
@@ -306,6 +330,7 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 			//.. Insert Membership User
 			res := db.membershipUserRepository.SetMembership(viewRecord.RecordId, paymentRecord)
 			if !res.Status {
+				tx.Rollback()
 				return res
 			}
 		} else if viewRecord.WebinarTitle != "" {
@@ -318,6 +343,7 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 			res := db.webinarRegistrationRepo.Insert(webinarRegistrationRecord)
 			if !res.Status {
+				tx.Rollback()
 				return res
 			}
 		}
@@ -325,6 +351,7 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 	res := tx.Save(&paymentRecord)
 	if res.RowsAffected == 0 {
+		tx.Rollback()
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
 	}
 
@@ -339,6 +366,30 @@ func (db *paymentConnection) GetById(recordId string) helper.Response {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res
 	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *paymentConnection) GetByProviderRecordId(id string) helper.Response {
+	var record models.Payment
+	db.connection.First(&record, "provider_record_id = ?", id)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *paymentConnection) GetByProviderReferenceId(id string) helper.Response {
+	var record models.Payment
+	db.connection.First(&record, "provider_reference_id = ?", id)
+	if record.Id == "" {
+		fmt.Println("Record not found")
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	fmt.Println(record.Id)
 	res := helper.ServerResponse(true, "Ok", "", record)
 	return res
 }

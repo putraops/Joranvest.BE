@@ -28,13 +28,21 @@ type EmailService interface {
 type emailService struct {
 	emailRepository repository.EmailRepository
 	helper.AppSession
-	serverName string
+	serverName   string
+	smtpHost     string
+	smtpPort     string
+	smtpUsername string
+	smtpPassword string
 }
 
 func NewEmailService(emailRepository repository.EmailRepository) EmailService {
 	return &emailService{
 		emailRepository: emailRepository,
 		serverName:      os.Getenv("FRONTEND_URL"),
+		smtpHost:        os.Getenv("CONFIG_SMTP_HOST"),
+		smtpPort:        os.Getenv("CONFIG_SMTP_PORT"),
+		smtpUsername:    os.Getenv("CONFIG_SMTP_USERNAME"),
+		smtpPassword:    os.Getenv("CONFIG_SMTP_PASSWORD"),
 	}
 }
 
@@ -47,20 +55,17 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
 		return helper.ServerResponse(false, "Failed to get SMTP Configuration", "", helper.EmptyObj{})
 	}
 
-	smtpHost := os.Getenv("CONFIG_SMTP_HOST")
-	smtpPort, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
+	smtpPort, err := strconv.Atoi(service.smtpPort)
 	if err != nil {
 		log.Error(service.getCurrentFuncName())
 		log.Error("Failed to Convert Port")
 		return helper.ServerResponse(false, "Failed to Convert Port", "", helper.EmptyObj{})
 	}
+
 	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
-	smtpEmail := os.Getenv("CONFIG_AUTH_EMAIL_NO_REPLY")
-	smtpPassword := os.Getenv("CONFIG_AUTH_PASSWORD_NO_REPLY")
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", smtpSenderName)
 	mailer.SetHeader("To", to...)
-	// mailer.SetAddressHeader("Cc", "tralalala@gmail.com", "Tra Lala La")
 	mailer.SetHeader("Subject", "Verifikasi Email")
 	mailer.SetBody("text/html", `<!doctype html>
         <html>
@@ -315,10 +320,10 @@ func (service *emailService) SendEmailVerification(to []string, userId string) h
         </html>`)
 
 	dialer := gomail.NewDialer(
-		smtpHost,
+		service.smtpHost,
 		smtpPort,
-		smtpEmail,
-		smtpPassword,
+		service.smtpUsername,
+		service.smtpPassword,
 	)
 
 	errSend := dialer.DialAndSend(mailer)
@@ -339,16 +344,14 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
 		return helper.ServerResponse(false, "Failed to get SMTP Configuration", "", helper.EmptyObj{})
 	}
 
-	smtpHost := os.Getenv("CONFIG_SMTP_HOST")
-	smtpPort, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
+	smtpPort, err := strconv.Atoi(service.smtpPort)
 	if err != nil {
 		log.Error(service.getCurrentFuncName())
 		log.Error("Failed to Convert Port")
 		return helper.ServerResponse(false, "Failed to Convert Port", "", helper.EmptyObj{})
 	}
+
 	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
-	smtpEmail := os.Getenv("CONFIG_AUTH_EMAIL_NO_REPLY")
-	smtpPassword := os.Getenv("CONFIG_AUTH_PASSWORD_NO_REPLY")
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", smtpSenderName)
 	mailer.SetHeader("To", to...)
@@ -608,10 +611,10 @@ func (service *emailService) SendEmailVerified(to []string) helper.Response {
         </html>`)
 
 	dialer := gomail.NewDialer(
-		smtpHost,
+		service.smtpHost,
 		smtpPort,
-		smtpEmail,
-		smtpPassword,
+		service.smtpUsername,
+		service.smtpPassword,
 	)
 
 	errSend := dialer.DialAndSend(mailer)
@@ -637,17 +640,14 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
 		log.Error("Failed to get SMTP Configuration")
 	}
 
-	smtpHost := os.Getenv("CONFIG_SMTP_HOST")
-	smtpPort, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
+	smtpPort, err := strconv.Atoi(service.smtpPort)
 	if err != nil {
 		log.Error(service.getCurrentFuncName())
 		log.Error(user)
 		log.Error("Failed to Convert Port")
 	}
-	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
-	smtpEmail := os.Getenv("CONFIG_AUTH_EMAIL_NO_REPLY")
-	smtpPassword := os.Getenv("CONFIG_AUTH_PASSWORD_NO_REPLY")
 
+	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", smtpSenderName)
 	mailer.SetHeader("To", to...)
@@ -966,10 +966,10 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
         </html>`)
 
 	dialer := gomail.NewDialer(
-		smtpHost,
+		service.smtpHost,
 		smtpPort,
-		smtpEmail,
-		smtpPassword,
+		service.smtpUsername,
+		service.smtpPassword,
 	)
 
 	errSend := dialer.DialAndSend(mailer)
@@ -1018,16 +1018,13 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
 		log.Error("Failed to get SMTP Configuration")
 	}
 
-	smtpHost := os.Getenv("CONFIG_SMTP_HOST")
-	smtpPort, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
+	smtpPort, err := strconv.Atoi(service.smtpPort)
 	if err != nil {
 		log.Error(service.getCurrentFuncName())
 		log.Error(participant.WebinarTitle)
 		log.Error("Failed to Convert Port")
 	}
 	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
-	smtpEmail := os.Getenv("CONFIG_AUTH_EMAIL_NO_REPLY")
-	smtpPassword := os.Getenv("CONFIG_AUTH_PASSWORD_NO_REPLY")
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", smtpSenderName)
@@ -1359,10 +1356,10 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
         </html>`)
 
 	dialer := gomail.NewDialer(
-		smtpHost,
+		service.smtpHost,
 		smtpPort,
-		smtpEmail,
-		smtpPassword,
+		service.smtpUsername,
+		service.smtpPassword,
 	)
 
 	errSend := dialer.DialAndSend(mailer)

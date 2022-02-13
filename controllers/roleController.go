@@ -16,7 +16,7 @@ import (
 
 type RoleController interface {
 	Lookup(context *gin.Context)
-	GetDatatables(context *gin.Context)
+	GetPagination(context *gin.Context)
 	GetById(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
@@ -48,14 +48,14 @@ func (c *roleController) Lookup(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func (c *roleController) GetDatatables(context *gin.Context) {
-	var dt commons.DataTableRequest
-	errDTO := context.Bind(&dt)
+func (c *roleController) GetPagination(context *gin.Context) {
+	var req commons.Pagination2ndRequest
+	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
 	}
-	var result = c.roleService.GetDatatables(dt)
+	var result = c.roleService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 

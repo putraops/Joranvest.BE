@@ -4,7 +4,7 @@ import (
 	"database/sql"
 )
 
-type Role struct {
+type TeamRole struct {
 	Id          string       `gorm:"type:varchar(50);primary_key" json:"id"`
 	IsActive    bool         `gorm:"type:bool;default:1" json:"is_active"`
 	IsLocked    bool         `gorm:"type:bool" json:"is_locked"`
@@ -17,11 +17,14 @@ type Role struct {
 	SubmittedBy string       `gorm:"type:varchar(50)" json:"submitted_by"`
 	ApprovedAt  sql.NullTime `gorm:"type:timestamp;default:null" json:"approved_at"`
 	ApprovedBy  string       `gorm:"type:varchar(50)" json:"approved_by"`
-	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
-	Name        string       `gorm:"type:varchar(50);unique" json:"name"`
-	Description string       `gorm:"type:text" json:"description"`
+
+	RoleId string `gorm:"type:varchar(50);not null" json:"role_id"`
+	TeamId string `gorm:"type:varchar(50);not null" json:"team_id"`
+
+	Role Role `gorm:"foreignkey:RoleId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"role"`
+	Team Team `gorm:"foreignkey:TeamId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"team"`
 }
 
-func (Role) TableName() string {
-	return "role"
+func (TeamRole) TableName() string {
+	return "team_role"
 }

@@ -2,6 +2,8 @@ package dto
 
 import (
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 //PaymentDto is a model that client use when updating a book
@@ -31,4 +33,14 @@ type UpdatePaymentStatusDto struct {
 	Id            string `json:"id" form:"id"`
 	PaymentStatus int    `json:"payment_status" form:"payment_status"`
 	UpdatedBy     string
+	Context       *gin.Context
+}
+
+type CallbackBodyDto struct {
+	Event      string                 `json:"event" form:"event"`
+	BusinessId string                 `json:"business_id" form:"business_id"`
+	Created    *time.Time             `json:"created" form:"created"`
+	Data       map[string]interface{} `json:"data" form:"data"`
+	UpdatedBy  string
+	Context    *gin.Context
 }

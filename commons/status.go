@@ -1,10 +1,12 @@
 package commons
 
 const (
-	DraftPaymentStatus  = 1
-	DownPaymentStatus   = 2
-	CancelPaymentStatus = 3
-	FullPaymentStatus   = 200
+	DraftPaymentStatus    = 1
+	PendingPaymentStatus  = 2
+	CancelPaymentStatus   = 3
+	RejectedPaymentStatus = 3
+	FullPaymentStatus     = 200
+	PaidPaymentStatus     = 200
 )
 
 const (

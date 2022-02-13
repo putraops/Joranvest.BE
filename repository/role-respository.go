@@ -17,7 +17,7 @@ import (
 
 type RoleRepository interface {
 	Lookup(req map[string]interface{}) []models.Role
-	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Role
 	Insert(t models.Role) helper.Response
 	Update(record models.Role) helper.Response
@@ -39,6 +39,84 @@ func NewRoleRepository(db *gorm.DB) RoleRepository {
 		viewQuery:         entity_view_models.EntityRoleView.ViewModel(entity_view_models.EntityRoleView{}),
 		serviceRepository: NewServiceRepository(db),
 	}
+}
+
+func (db *roleConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	var response commons.PaginationResponse
+	var records []entity_view_models.EntityRoleView
+	var recordsUnfilter []entity_view_models.EntityRoleView
+
+	page := request.Page
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize := request.Size
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	// #region order
+	var orders = "COALESCE(submitted_at, created_at) DESC"
+	order_total := 0
+	for k, v := range request.Order {
+		if order_total == 0 {
+			orders = ""
+		} else {
+			orders += ", "
+		}
+		orders += fmt.Sprintf("%v %v ", k, v)
+		order_total++
+	}
+	// #endregion
+
+	// #region filter
+	var filters = ""
+	total_filter := 0
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
+			}
+		}
+	}
+	// #endregion
+
+	offset := (page - 1) * pageSize
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+
+	// #region Get Total Data for Pagination
+	result := db.connection.Where(filters).Find(&recordsUnfilter)
+	if result.Error != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", result.Error), fmt.Sprintf("%v,", result.Error), helper.EmptyObj{})
+	}
+	response.Total = int(result.RowsAffected)
+	// #endregion
+
+	response.Data = records
+	return response
+}
+
+func (db *roleConnection) GetAll(filter map[string]interface{}) []models.Role {
+	var records []models.Role
+	if len(filter) == 0 {
+		db.connection.Find(&records)
+	} else if len(filter) != 0 {
+		db.connection.Where(filter).Find(&records)
+	}
+	return records
 }
 
 func (db *roleConnection) Lookup(req map[string]interface{}) []models.Role {
@@ -74,80 +152,6 @@ func (db *roleConnection) Lookup(req map[string]interface{}) []models.Role {
 	fmt.Println("Query: ", sqlQuery.String())
 
 	db.connection.Raw(sqlQuery.String()).Scan(&records)
-	return records
-}
-
-func (db *roleConnection) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
-	var records []entity_view_models.EntityRoleView
-	var res commons.DataTableResponse
-
-	var conditions = ""
-	var orderpart = ""
-	if request.Draw == 1 && request.DataTableDefaultOrder.Column != "" {
-		var column = request.DataTableDefaultOrder.Column
-		orderpart = column + " " + request.DataTableDefaultOrder.Dir
-	} else {
-		var column = request.DataTableColumn[request.DataTableOrder[0].Column].Name
-		orderpart = column + " " + request.DataTableOrder[0].Dir
-	}
-	start := fmt.Sprintf("%v", request.Start)
-	length := fmt.Sprintf("%v", (request.Start + request.Length))
-
-	if len(request.Filter) > 0 {
-		for _, s := range request.Filter {
-			conditions += " AND (" + s.Column + " = '" + s.Value + "') "
-		}
-	}
-
-	if request.Search.Value != "" {
-		conditions += " AND ("
-		var totalFilter int = 0
-		for _, s := range request.DataTableColumn {
-			if s.Searchable {
-				if totalFilter > 0 {
-					conditions += " OR "
-				}
-				conditions += fmt.Sprintf("LOWER(CAST (%v AS varchar))", s.Name) + " LIKE '%" + request.Search.Value + "%' "
-				totalFilter++
-			}
-		}
-		conditions += ")"
-	}
-
-	var sql strings.Builder
-	var sqlCount strings.Builder
-	sql.WriteString(fmt.Sprintf("SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY %s) peta_rn, ", orderpart))
-	sql.WriteString(strings.Replace(db.viewQuery, "SELECT", "", -1))
-	sql.WriteString(" WHERE 1 = 1 ")
-	sql.WriteString(conditions)
-	sql.WriteString(") peta_paged ")
-	sql.WriteString(fmt.Sprintf("WHERE peta_rn > %s AND peta_rn <= %s ", start, length))
-	db.connection.Raw(sql.String()).Scan(&records)
-
-	sqlCount.WriteString(db.serviceRepository.ConvertViewQueryIntoViewCount(db.viewQuery))
-	sqlCount.WriteString("WHERE 1=1")
-	sqlCount.WriteString(conditions)
-	db.connection.Raw(sqlCount.String()).Scan(&res.RecordsFiltered)
-
-	res.Draw = request.Draw
-	if len(records) > 0 {
-		res.RecordsTotal = res.RecordsFiltered
-		res.DataRow = records
-	} else {
-		res.RecordsTotal = 0
-		res.RecordsFiltered = 0
-		res.DataRow = []entity_view_models.EntityRoleView{}
-	}
-	return res
-}
-
-func (db *roleConnection) GetAll(filter map[string]interface{}) []models.Role {
-	var records []models.Role
-	if len(filter) == 0 {
-		db.connection.Find(&records)
-	} else if len(filter) != 0 {
-		db.connection.Where(filter).Find(&records)
-	}
 	return records
 }
 

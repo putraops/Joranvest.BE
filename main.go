@@ -11,6 +11,7 @@ import (
 	// _ "github.com/swaggo/gin-swagger/example/basic/docs"
 
 	"joranvest/docs"
+	"joranvest/middleware"
 
 	"gorm.io/gorm"
 
@@ -59,8 +60,8 @@ var (
 	paymentRepository                 repository.PaymentRepository                 = repository.NewPaymentRepository(db)
 	emailRepository                   repository.EmailRepository                   = repository.NewEmailRepository(db)
 
-	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	jwtService                     service.JWTService                     = service.NewJWTService()
+	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
 	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository, emailService)
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
@@ -452,7 +453,7 @@ func main() {
 
 	roleApiRoutes := r.Group("api/role")
 	{
-		roleApiRoutes.POST("/getDatatables", roleController.GetDatatables)
+		roleApiRoutes.POST("/getPagination", roleController.GetPagination)
 		roleApiRoutes.GET("/lookup", roleController.Lookup)
 		roleApiRoutes.POST("/save", roleController.Save)
 		roleApiRoutes.GET("/getById/:id", roleController.GetById)
@@ -494,13 +495,18 @@ func main() {
 		ratingMasterApiRoutes.DELETE("/deleteById/:id", ratingMasterController.DeleteById)
 	}
 
-	paymentApiRoutes := r.Group("api/payment")
+	paymentApiRoutes := r.Group("api/payment", middleware.AuthorizeJWT(jwtService))
 	{
 		paymentApiRoutes.POST("/getPagination", paymentController.GetPagination)
 		paymentApiRoutes.POST("/createTokenByCard", paymentController.CreateTokenIdByCard)
 		paymentApiRoutes.GET("/getById/:id", paymentController.GetById)
+		paymentApiRoutes.GET("/getByProviderRecordId/:id", paymentController.GetByProviderRecordId)
+		paymentApiRoutes.GET("/getByProviderReferenceId/:id", paymentController.GetByProviderReferenceId)
+		paymentApiRoutes.GET("/getEWalletPaymentStatusByReferenceId/:reference_id", paymentController.GetEWalletPaymentStatusByReferenceId)
+		paymentApiRoutes.POST("/updateWalletPaymentStatus", paymentController.UpdateWalletPaymentStatus)
 		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
 		paymentApiRoutes.POST("/charge", paymentController.Charge)
+		paymentApiRoutes.POST("/createEWalletPayment", paymentController.CreateEWalletPayment)
 		paymentApiRoutes.POST("/membershipPayment", paymentController.MembershipPayment)
 		paymentApiRoutes.POST("/webinarPayment", paymentController.WebinarPayment)
 		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
@@ -509,6 +515,11 @@ func main() {
 	emailApiRoutes := r.Group("api/email")
 	{
 		emailApiRoutes.POST("/sendEmailVerification", emailController.SendEmailVerification)
+	}
+
+	webhookRoutes := r.Group("webhook/payment")
+	{
+		webhookRoutes.POST("/gateway", paymentController.HookForXendit)
 	}
 	// #endregion
 

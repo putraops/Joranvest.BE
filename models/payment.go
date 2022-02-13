@@ -39,6 +39,11 @@ type Payment struct {
 	CardType      string `gorm:"type:varchar(30)" json:"card_type"`
 	ExpMonth      int    `gorm:"type:int" json:"exp_month"`
 	ExpYear       int    `gorm:"type:int" json:"exp_year"`
+
+	ProviderName        string `gorm:"type:varchar(50)" json:"provider_name"`
+	ProviderRecordId    string `gorm:"type:varchar(50)" json:"provider_record_id"`
+	ProviderReferenceId string `gorm:"type:varchar(50)" json:"provider_reference_id"`
+	ProviderBusinessId  string `gorm:"type:varchar(50)" json:"provider_business_id"`
 }
 
 func (Payment) TableName() string {

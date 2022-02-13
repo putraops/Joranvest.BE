@@ -9,7 +9,7 @@ import (
 
 type RoleService interface {
 	Lookup(request helper.Select2Request) helper.Response
-	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Role
 	Insert(record models.Role) helper.Response
 	Update(record models.Role) helper.Response
@@ -69,8 +69,8 @@ func (service *roleService) Lookup(r helper.Select2Request) helper.Response {
 	return helper.ServerResponse(true, "Ok", "", ary)
 }
 
-func (service *roleService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
-	return service.roleRepository.GetDatatables(request)
+func (service *roleService) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	return service.roleRepository.GetPagination(request)
 }
 
 func (service *roleService) GetAll(filter map[string]interface{}) []models.Role {
