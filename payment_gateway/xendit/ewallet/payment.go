@@ -89,7 +89,6 @@ func (r apiRequesterMock) CreateEWalletCharge(dto PaymentDto) (*xendit.EWalletCh
 		log.Error(chargeErr.ErrorCode)
 		return nil, chargeErr
 	}
-	charge.ExternalData = successRedirectUrl
 	return charge, nil
 }
 
