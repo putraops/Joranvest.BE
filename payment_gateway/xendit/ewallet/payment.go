@@ -79,7 +79,7 @@ func (r apiRequesterMock) CreateEWalletCharge(dto PaymentDto) (*xendit.EWalletCh
 		},
 	}
 
-	fmt.Println("tess")
+	//fmt.Println("tess")
 	charge, chargeErr := ewallet.CreateEWalletCharge(&data)
 	if chargeErr != nil {
 		log.Error("Function: CreateEWalletCharge")

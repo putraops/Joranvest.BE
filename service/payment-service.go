@@ -10,6 +10,7 @@ import (
 	"joranvest/models"
 	payment_gateway_providers "joranvest/payment_gateway"
 	"joranvest/payment_gateway/xendit/ewallet"
+	"joranvest/payment_gateway/xendit/qrcode"
 	"joranvest/repository"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ type PaymentService interface {
 	MembershipPayment(record models.Payment) helper.Response
 	WebinarPayment(record models.Payment) helper.Response
 	CreateEWalletPayment(dto ewallet.PaymentDto) helper.Response
+	CreateQRCode(dto qrcode.QRCodeDto) helper.Response
 	Update(record models.Payment) helper.Response
 	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
 	GetById(recordId string) helper.Response
@@ -67,6 +69,49 @@ func (service *paymentService) MembershipPayment(record models.Payment) helper.R
 }
 func (service *paymentService) WebinarPayment(record models.Payment) helper.Response {
 	return service.paymentRepository.WebinarPayment(record)
+}
+
+func (service *paymentService) CreateQRCode(dto qrcode.QRCodeDto) helper.Response {
+	token := dto.Context.GetHeader("Authorization")
+
+	userIdentity := service.jwtService.GetUserByToken(token)
+	xenditService := qrcode.NewQRCode(dto.Context)
+
+	var newRecord = models.Payment{}
+	newRecord.Id = uuid.New().String()
+	newRecord.RecordId = dto.RecordId //-- WebinarId or MembershipId
+
+	dto.RecordId = newRecord.Id //-- RecordId replace by NewPaymentId
+	dto.ApplicationUserId = userIdentity.UserId
+	res, err := xenditService.CreateQRCode(dto)
+	if err != nil {
+		return helper.ServerResponse(false, fmt.Sprintf("%v", err.Message), "", helper.EmptyObj{})
+	}
+
+	newRecord.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	newRecord.IsActive = true
+	newRecord.EntityId = userIdentity.EntityId
+	newRecord.CreatedBy = userIdentity.UserId
+	newRecord.OwnerId = userIdentity.UserId
+	newRecord.ApplicationUserId = userIdentity.UserId
+	newRecord.Currency = "IDR"
+	newRecord.OrderNumber = fmt.Sprintf("%v/QR/%v/%v/%v", "JORAN", strconv.Itoa(time.Now().Year()), helper.NumberMonthToRoman(int(time.Now().Month())), strings.ToUpper((strconv.Itoa(time.Now().Nanosecond()))[0:5]))
+
+	newRecord.PaymentType = string(qrcode.QRChannelCodeQRIS)
+	newRecord.PaymentStatus = 2
+	newRecord.Price = int(dto.Amount)
+	newRecord.UniqueNumber = 0
+	newRecord.PaymentDateExpired = sql.NullTime{Time: time.Now().Add(time.Minute * 5), Valid: true}
+	newRecord.ProviderName = string(payment_gateway_providers.Xendit)
+	newRecord.ProviderRecordId = res.ID
+
+	var result helper.Response
+	result = service.paymentRepository.Insert(newRecord)
+	if !result.Status {
+		return result
+	}
+
+	return helper.ServerResponse(true, "Ok", "", res)
 }
 
 func (service *paymentService) CreateEWalletPayment(dto ewallet.PaymentDto) helper.Response {

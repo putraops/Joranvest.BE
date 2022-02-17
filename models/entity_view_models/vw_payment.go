@@ -42,6 +42,7 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.record_id,")
+	sql.WriteString("  r.is_extend_membership,")
 	sql.WriteString("  r.application_user_id,")
 	sql.WriteString("  CONCAT(u4.first_name, ' ', u4.last_name) AS payment_user_fullname,")
 	sql.WriteString("  r.coupon_id,")

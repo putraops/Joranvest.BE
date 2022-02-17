@@ -19,6 +19,7 @@ type MembershipUserController interface {
 	GetPagination(context *gin.Context)
 	GetAll(context *gin.Context)
 	GetById(context *gin.Context)
+	GetByUserLogin(context *gin.Context)
 	DeleteById(context *gin.Context)
 	Save(context *gin.Context)
 }
@@ -125,6 +126,7 @@ func (c *membershipUserController) GetById(context *gin.Context) {
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
 	result := c.membershipUserService.GetById(id)
 	if !result.Status {
@@ -134,6 +136,14 @@ func (c *membershipUserController) GetById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+func (c *membershipUserController) GetByUserLogin(context *gin.Context) {
+	authHeader := context.GetHeader("Authorization")
+	userIdentity := c.jwtService.GetUserByToken(authHeader)
+
+	response := c.membershipUserService.GetByUserId(userIdentity.UserId)
+	context.JSON(http.StatusOK, response)
 }
 
 func (c *membershipUserController) DeleteById(context *gin.Context) {

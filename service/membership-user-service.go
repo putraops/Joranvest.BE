@@ -14,6 +14,7 @@ type MembershipUserService interface {
 	Insert(record models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
 	GetById(recordId string) helper.Response
+	GetByUserId(userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -50,6 +51,10 @@ func (service *membershipUserService) Update(record models.MembershipUser) helpe
 
 func (service *membershipUserService) GetById(recordId string) helper.Response {
 	return service.membershipUserRepository.GetById(recordId)
+}
+
+func (service *membershipUserService) GetByUserId(userId string) helper.Response {
+	return service.membershipUserRepository.GetByUserId(userId)
 }
 
 func (service *membershipUserService) DeleteById(recordId string) helper.Response {

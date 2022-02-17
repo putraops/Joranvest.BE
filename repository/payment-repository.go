@@ -37,6 +37,7 @@ type paymentConnection struct {
 	serviceRepository        ServiceRepository
 	membershipUserRepository MembershipUserRepository
 	webinarRegistrationRepo  WebinarRegistrationRepository
+	membershipRepository     MembershipRepository
 	filemasterRepository     FilemasterRepository
 	tableName                string
 	viewQuery                string
@@ -50,6 +51,7 @@ func NewPaymentRepository(db *gorm.DB) PaymentRepository {
 		serviceRepository:        NewServiceRepository(db),
 		membershipUserRepository: NewMembershipUserRepository(db),
 		webinarRegistrationRepo:  NewWebinarRegistrationRepository(db),
+		membershipRepository:     NewMembershipRepository(db),
 		filemasterRepository:     NewFilemasterRepository(db),
 	}
 }
@@ -327,11 +329,45 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 	if paymentRecord.PaymentStatus == 200 {
 		if viewRecord.MembershipName != "" {
-			//.. Insert Membership User
-			res := db.membershipUserRepository.SetMembership(viewRecord.RecordId, paymentRecord)
-			if !res.Status {
-				tx.Rollback()
-				return res
+			//.. Check Exist
+			curentMembershipUserResponse := db.membershipUserRepository.GetExistMembershipByUserId(paymentRecord.ApplicationUserId)
+			if curentMembershipUserResponse.Status {
+				paymentRecord.IsExtendMembership = true
+
+				var membershipUserRecord models.MembershipUser
+				membershipUserRecord = curentMembershipUserResponse.Data.(models.MembershipUser)
+
+				//-- Get Membership Record
+				membershipResponse := db.membershipRepository.GetById(paymentRecord.RecordId)
+				if membershipResponse.Status {
+					membershipUserRecord.MembershipId = membershipResponse.Data.(models.Membership).Id
+				} else {
+					log.Error("Membership Record Not Found")
+					tx.Rollback()
+					return membershipResponse
+				}
+
+				membershipUserRecord.ExpiredDate = sql.NullTime{
+					Time:  membershipUserRecord.ExpiredDate.Time.AddDate(0, int(membershipResponse.Data.(models.Membership).Duration), 1),
+					Valid: true,
+				}
+				membershipUserRecord.MembershipId = paymentRecord.RecordId
+				membershipUserRecord.PaymentId = paymentRecord.Id
+
+				//-- Update Membershipuser
+				res := tx.Save(&membershipUserRecord)
+				if res.RowsAffected == 0 {
+					tx.Rollback()
+					return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+				}
+
+			} else {
+				//.. Insert Membership User
+				res := db.membershipUserRepository.SetMembership(viewRecord.RecordId, paymentRecord)
+				if !res.Status {
+					tx.Rollback()
+					return res
+				}
 			}
 		} else if viewRecord.WebinarTitle != "" {
 			//.. Insert Webinar Registration

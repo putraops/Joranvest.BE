@@ -12,6 +12,7 @@ type EntityMembershipUserView struct {
 	MembershipDuration     float64    `json:"membership_duration"`
 	MembershipUserFullname string     `json:"membership_user_fullname"`
 	MembershipPaymentDate  *time.Time `json:"membership_payment_date"`
+	MembershipStartDate    *time.Time `json:"membership_start_date"`
 	MembershipExpiredDate  *time.Time `json:"membership_expired_date"`
 	PaymentPrice           float64    `json:"payment_price"`
 	PaymentUniqueNumber    float64    `json:"payment_unique_number"`
@@ -53,6 +54,9 @@ func (EntityMembershipUserView) ViewModel() string {
 	sql.WriteString("  p.payment_type,")
 	sql.WriteString("  p.price AS payment_price,")
 	sql.WriteString("  p.unique_number AS payment_unique_number,")
+	sql.WriteString("  r.started_date,")
+	sql.WriteString("  r.expired_date,")
+	sql.WriteString("  r.started_date AS membership_started_date,")
 	sql.WriteString("  r.expired_date AS membership_expired_date,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")

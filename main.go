@@ -397,6 +397,7 @@ func main() {
 		membershipUserApiRoutes.GET("/getAll", membershipUserController.GetAll)
 		membershipUserApiRoutes.POST("/save", membershipUserController.Save)
 		membershipUserApiRoutes.GET("/getById/:id", membershipUserController.GetById)
+		membershipUserApiRoutes.GET("/getByUserLogin", membershipUserController.GetByUserLogin)
 		membershipUserApiRoutes.DELETE("/deleteById/:id", membershipUserController.DeleteById)
 	}
 
@@ -508,6 +509,7 @@ func main() {
 		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
 		paymentApiRoutes.POST("/charge", paymentController.Charge)
 		paymentApiRoutes.POST("/createEWalletPayment", paymentController.CreateEWalletPayment)
+		paymentApiRoutes.POST("/createQRCode", paymentController.CreateQRCode)
 		paymentApiRoutes.POST("/membershipPayment", paymentController.MembershipPayment)
 		paymentApiRoutes.POST("/webinarPayment", paymentController.WebinarPayment)
 		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)

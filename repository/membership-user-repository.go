@@ -26,6 +26,8 @@ type MembershipUserRepository interface {
 	Update(record models.MembershipUser) helper.Response
 	SetMembership(membershipId string, payment models.Payment) helper.Response
 	GetById(recordId string) helper.Response
+	GetByUserId(userId string) helper.Response
+	GetExistMembershipByUserId(userId string) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -207,6 +209,7 @@ func (db *membershipUserConnection) SetMembership(membershipId string, payment m
 	membershipUser.OwnerId = payment.OwnerId
 	membershipUser.ApplicationUserId = payment.CreatedBy
 	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	membershipUser.StartedDate = payment.PaymentDate
 	membershipUser.ExpiredDate = sql.NullTime{
 		Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
 		Valid: true,
@@ -300,7 +303,29 @@ func (db *membershipUserConnection) Update(record models.MembershipUser) helper.
 
 func (db *membershipUserConnection) GetById(recordId string) helper.Response {
 	var record models.MembershipUser
-	db.connection.Preload("Emiten").First(&record, "id = ?", recordId)
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *membershipUserConnection) GetByUserId(userId string) helper.Response {
+	var record models.MembershipUser
+	db.connection.Debug().First(&record, "application_user_id = ?", userId)
+	if record.Id == "" {
+		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		return res
+	}
+	res := helper.ServerResponse(true, "Ok", "", record)
+	return res
+}
+
+func (db *membershipUserConnection) GetExistMembershipByUserId(userId string) helper.Response {
+	var record models.MembershipUser
+	db.connection.First(&record, "application_user_id = ? AND (started_date <= ? AND expired_date >= ?)", userId, sql.NullTime{Time: time.Now(), Valid: true}, sql.NullTime{Time: time.Now(), Valid: true})
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

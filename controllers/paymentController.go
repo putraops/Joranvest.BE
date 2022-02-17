@@ -17,6 +17,7 @@ import (
 	"joranvest/midtrans/coreapi"
 	"joranvest/models"
 	"joranvest/payment_gateway/xendit/ewallet"
+	"joranvest/payment_gateway/xendit/qrcode"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
@@ -37,6 +38,7 @@ type PaymentController interface {
 	UpdatePaymentStatus(context *gin.Context)
 	CreateTokenIdByCard(context *gin.Context)
 	CreateEWalletPayment(context *gin.Context)
+	CreateQRCode(context *gin.Context)
 	Charge(context *gin.Context)
 	HookForXendit(context *gin.Context)
 }
@@ -66,6 +68,8 @@ func (c *paymentController) HookForXendit(context *gin.Context) {
 
 	if responseToken != callbackToken {
 		log.Error("Callback Token and Response Token is not match. [Payment Gateway: Xendit]")
+		log.Error(fmt.Sprintf("Response Token: %v", responseToken))
+		log.Error(fmt.Sprintf("Callback Token: %v", callbackToken))
 		log.Error("Please check the Callback Token.")
 		context.JSON(http.StatusUnauthorized, nil)
 		return
@@ -194,6 +198,22 @@ func (c *paymentController) WebinarPayment(context *gin.Context) {
 			context.JSON(http.StatusOK, response)
 		}
 	}
+}
+
+func (c *paymentController) CreateQRCode(context *gin.Context) {
+	var dto qrcode.QRCodeDto
+	errDto := context.Bind(&dto)
+	if errDto != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDto.Error(), helper.EmptyObj{})
+		log.Error("CreateQRCode: Bind Dto")
+		log.Error(fmt.Sprintf("%v,", errDto.Error()))
+		context.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	dto.Context = context
+	response := c.paymentService.CreateQRCode(dto)
+	context.JSON(http.StatusOK, response)
 }
 
 func (c *paymentController) CreateEWalletPayment(context *gin.Context) {

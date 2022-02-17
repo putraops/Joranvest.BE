@@ -21,6 +21,7 @@ type Payment struct {
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
 	RecordId           string       `gorm:"type:varchar(50)" json:"record_id"`
+	IsExtendMembership bool         `gorm:"type:bool;default:0" json:"is_extend_membership"`
 	ApplicationUserId  string       `gorm:"type:varchar(50)" json:"application_user_id"`
 	CouponId           string       `gorm:"type:varchar(50)" json:"coupon_id"`
 	OrderNumber        string       `gorm:"type:varchar(50)" json:"order_number"`
