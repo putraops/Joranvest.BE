@@ -58,9 +58,9 @@ func (r apiRequesterMock) CreateEWalletCharge(dto PaymentDto) (*xendit.EWalletCh
 	if dto.PaymentType == string(xendit.EWalletTypeLINKAJA) {
 		channelCode = string(EWalletChannelCodeLINKAJA)
 		channelProperties["success_redirect_url"] = successRedirectUrl
-	} else if dto.PaymentType == string(xendit.EWalletTypeSHOPEEPAY) {
-		channelCode = string(EWalletChannelCodeSHOPEEPAY)
-		channelProperties["success_redirect_url"] = successRedirectUrl
+		// } else if dto.PaymentType == string(xendit.EWalletTypeSHOPEEPAY) {
+		// 	channelCode = string(EWalletChannelCodeSHOPEEPAY)
+		// 	channelProperties["success_redirect_url"] = successRedirectUrl
 	} else if dto.PaymentType == string(xendit.EWalletTypeDANA) {
 		channelCode = string(EWalletChannelCodeDANA)
 		channelProperties["success_redirect_url"] = successRedirectUrl
