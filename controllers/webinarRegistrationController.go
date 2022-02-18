@@ -66,11 +66,12 @@ func (c *webinarRegistrationController) GetById(context *gin.Context) {
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
 	result := c.webinarRegistrationService.GetById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusOK, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
@@ -82,11 +83,12 @@ func (c *webinarRegistrationController) GetViewById(context *gin.Context) {
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
 	result := c.webinarRegistrationService.GetViewById(id)
 	if !result.Status {
 		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
+		context.JSON(http.StatusOK, response)
 	} else {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
