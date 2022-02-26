@@ -18,6 +18,12 @@ type Response struct {
 	Data    interface{} `json:"data"`
 }
 
+type Result struct {
+	Status  bool        `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
 type EmptyObj struct{}
 
 func BuildResponse(status bool, message string, data interface{}) JSONResponse {
@@ -47,6 +53,15 @@ func ServerResponse(status bool, message string, err string, data interface{}) R
 		Status:  status,
 		Message: message,
 		Errors:  splittedErros,
+		Data:    data,
+	}
+	return res
+}
+
+func StandartResult(status bool, message string, data interface{}) Result {
+	res := Result{
+		Status:  status,
+		Message: message,
 		Data:    data,
 	}
 	return res

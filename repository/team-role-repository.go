@@ -16,32 +16,32 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type RoleRepository interface {
+type TeamRoleRepository interface {
 	GetPagination(request commons.Pagination2ndRequest) interface{}
-	GetAll(filter map[string]interface{}) []models.Role
-	Insert(t models.Role) helper.Result
-	Update(record models.Role) helper.Response
+	GetAll(filter map[string]interface{}) []models.TeamRole
+	Insert(t models.TeamRole) helper.Result
+	Update(record models.TeamRole) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
 
-	OpenTransaction(trxHandle *gorm.DB) roleRepository
+	OpenTransaction(trxHandle *gorm.DB) teamRoleRepository
 }
 
-type roleRepository struct {
+type teamRoleRepository struct {
 	DB                *gorm.DB
 	serviceRepository ServiceRepository
 	tableName         string
 	viewQuery         string
 }
 
-func NewRoleRepository(db *gorm.DB) RoleRepository {
-	return roleRepository{
+func NewTeamRoleRepository(db *gorm.DB) TeamRoleRepository {
+	return teamRoleRepository{
 		DB:                db,
 		serviceRepository: NewServiceRepository(db),
 	}
 }
 
-func (r roleRepository) GetPagination(request commons.Pagination2ndRequest) interface{} {
+func (r teamRoleRepository) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityRoleView
 	var recordsUnfilter []entity_view_models.EntityRoleView
@@ -109,8 +109,8 @@ func (r roleRepository) GetPagination(request commons.Pagination2ndRequest) inte
 	return response
 }
 
-func (r roleRepository) GetAll(filter map[string]interface{}) []models.Role {
-	var records []models.Role
+func (r teamRoleRepository) GetAll(filter map[string]interface{}) []models.TeamRole {
+	var records []models.TeamRole
 	if len(filter) == 0 {
 		r.DB.Find(&records)
 	} else if len(filter) != 0 {
@@ -119,20 +119,19 @@ func (r roleRepository) GetAll(filter map[string]interface{}) []models.Role {
 	return records
 }
 
-func (r roleRepository) Insert(record models.Role) helper.Result {
+func (r teamRoleRepository) Insert(record models.TeamRole) helper.Result {
 	record.Id = uuid.New().String()
 	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	if err := r.DB.Create(&record).Error; err != nil {
-		fmt.Println("asdasd")
-		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
+		return helper.StandartResult(false, fmt.Sprintf("%v,", err), helper.EmptyObj{})
 	}
 
 	return helper.StandartResult(true, "Ok", record)
 }
 
-func (r roleRepository) Update(record models.Role) helper.Response {
-	var oldRecord models.Role
+func (r teamRoleRepository) Update(record models.TeamRole) helper.Response {
+	var oldRecord models.TeamRole
 	r.DB.First(&oldRecord, "id = ?", record.Id)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
@@ -142,7 +141,6 @@ func (r roleRepository) Update(record models.Role) helper.Response {
 	record.IsActive = oldRecord.IsActive
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
-	record.EntityId = oldRecord.EntityId
 	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	res := r.DB.Save(&record)
 	if res.RowsAffected == 0 {
@@ -153,8 +151,8 @@ func (r roleRepository) Update(record models.Role) helper.Response {
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 
-func (r roleRepository) GetById(recordId string) helper.Response {
-	var record models.Role
+func (r teamRoleRepository) GetById(recordId string) helper.Response {
+	var record models.TeamRole
 	r.DB.First(&record, "id = ?", recordId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
@@ -164,8 +162,8 @@ func (r roleRepository) GetById(recordId string) helper.Response {
 	return res
 }
 
-func (r roleRepository) DeleteById(recordId string) helper.Response {
-	var record models.Role
+func (r teamRoleRepository) DeleteById(recordId string) helper.Response {
+	var record models.TeamRole
 	r.DB.First(&record, "id = ?", recordId)
 
 	if record.Id == "" {
@@ -180,7 +178,7 @@ func (r roleRepository) DeleteById(recordId string) helper.Response {
 	}
 }
 
-func (r roleRepository) OpenTransaction(trxHandle *gorm.DB) roleRepository {
+func (r teamRoleRepository) OpenTransaction(trxHandle *gorm.DB) teamRoleRepository {
 	if trxHandle == nil {
 		log.Error("Transaction Database not found")
 		log.Error(r.serviceRepository.getCurrentFuncName())

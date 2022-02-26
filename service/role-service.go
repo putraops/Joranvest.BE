@@ -2,93 +2,78 @@ package service
 
 import (
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
+
+	"github.com/mashingan/smapping"
+	"gorm.io/gorm"
 )
 
 type RoleService interface {
-	Lookup(request helper.Select2Request) helper.Response
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Role
-	Insert(record models.Role) helper.Response
+	Insert(dto dto.RoleDto) helper.Result
 	Update(record models.Role) helper.Response
 	GetById(recordId string) helper.Response
 	DeleteById(recordId string) helper.Response
+
+	OpenTransaction(*gorm.DB) roleService
 }
 
 type roleService struct {
-	roleRepository repository.RoleRepository
-	helper.AppSession
+	DB                 *gorm.DB
+	jwtService         JWTService
+	roleRepository     repository.RoleRepository
+	teamRepository     repository.TeamRepository
+	teamRoleRepository repository.TeamRoleRepository
 }
 
-func NewRoleService(repo repository.RoleRepository) RoleService {
-	return &roleService{
-		roleRepository: repo,
+func NewRoleService(db *gorm.DB, jwtService JWTService) RoleService {
+	return roleService{
+		DB:                 db,
+		jwtService:         jwtService,
+		roleRepository:     repository.NewRoleRepository(db),
+		teamRepository:     repository.NewTeamRepository(db),
+		teamRoleRepository: repository.NewTeamRoleRepository(db),
 	}
 }
 
-func (service *roleService) Lookup(r helper.Select2Request) helper.Response {
-	var ary helper.Select2Response
-
-	request := make(map[string]interface{})
-	request["qry"] = r.Q
-	request["condition"] = helper.DataFilter{
-		Request: []helper.Operator{
-			{
-				Operator: "like",
-				Field:    r.Field,
-				Value:    r.Q,
-			},
-		},
-	}
-
-	result := service.roleRepository.Lookup(request)
-	if len(result) > 0 {
-		for _, record := range result {
-			var p = helper.Select2Item{
-				Id:          record.Id,
-				Text:        record.Name,
-				Description: "",
-				Selected:    true,
-				Disabled:    false,
-			}
-			ary.Results = append(ary.Results, p)
-		}
-	} else {
-		var p = helper.Select2Item{
-			Id:          "",
-			Text:        "No result found",
-			Description: "",
-			Selected:    true,
-			Disabled:    true,
-		}
-		ary.Results = append(ary.Results, p)
-	}
-	ary.Count = len(result)
-	return helper.ServerResponse(true, "Ok", "", ary)
+func (r roleService) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	return r.roleRepository.GetPagination(request)
 }
 
-func (service *roleService) GetPagination(request commons.Pagination2ndRequest) interface{} {
-	return service.roleRepository.GetPagination(request)
+func (r roleService) GetAll(filter map[string]interface{}) []models.Role {
+	return r.roleRepository.GetAll(filter)
 }
 
-func (service *roleService) GetAll(filter map[string]interface{}) []models.Role {
-	return service.roleRepository.GetAll(filter)
+func (r roleService) Insert(dto dto.RoleDto) helper.Result {
+	authHeader := dto.Context.GetHeader("Authorization")
+	userIdentity := r.jwtService.GetUserByToken(authHeader)
+
+	//-- Map Dto to Role
+	var roleRecord models.Role
+	smapping.FillStruct(&roleRecord, smapping.MapFields(&dto))
+	roleRecord.CreatedBy = userIdentity.UserId
+	roleRecord.EntityId = userIdentity.UserId
+
+	return r.roleRepository.Insert(roleRecord)
 }
 
-func (service *roleService) Insert(record models.Role) helper.Response {
-	return service.roleRepository.Insert(record)
+func (r roleService) Update(record models.Role) helper.Response {
+	return r.roleRepository.Update(record)
 }
 
-func (service *roleService) Update(record models.Role) helper.Response {
-	return service.roleRepository.Update(record)
+func (r roleService) GetById(recordId string) helper.Response {
+	return r.roleRepository.GetById(recordId)
 }
 
-func (service *roleService) GetById(recordId string) helper.Response {
-	return service.roleRepository.GetById(recordId)
+func (r roleService) DeleteById(recordId string) helper.Response {
+	return r.roleRepository.DeleteById(recordId)
 }
 
-func (service *roleService) DeleteById(recordId string) helper.Response {
-	return service.roleRepository.DeleteById(recordId)
+func (r roleService) OpenTransaction(trxHandle *gorm.DB) roleService {
+	r.roleRepository = r.roleRepository.OpenTransaction(trxHandle)
+	return r
 }

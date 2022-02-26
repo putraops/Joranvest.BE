@@ -82,7 +82,6 @@ var (
 	technicalAnalysisService       service.TechnicalAnalysisService       = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
 	fundamentalAnalysisService     service.FundamentalAnalysisService     = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
 	fundamentalAnalysisTagService  service.FundamentalAnalysisTagService  = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
-	roleService                    service.RoleService                    = service.NewRoleService(roleRepository)
 	roleMemberService              service.RoleMemberService              = service.NewRoleMemberService(roleMemberRepository)
 	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
@@ -112,7 +111,7 @@ var (
 	technicalAnalysisController       controllers.TechnicalAnalysisController       = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
 	fundamentalAnalysisController     controllers.FundamentalAnalysisController     = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
 	fundamentalAnalysisTagController  controllers.FundamentalAnalysisTagController  = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
-	roleController                    controllers.RoleController                    = controllers.NewRoleController(roleService, jwtService)
+	roleController                    controllers.RoleController                    = controllers.NewRoleController(db, jwtService)
 	roleMemberController              controllers.RoleMemberController              = controllers.NewRoleMemberController(roleMemberService, jwtService)
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
@@ -453,10 +452,9 @@ func main() {
 		fundamentalAnalysisTagApiRoutes.GET("/getAll", fundamentalAnalysisTagController.GetAll)
 	}
 
-	roleApiRoutes := r.Group("api/role")
+	roleApiRoutes := r.Group("api/role", middleware.DBTransactionMiddleware(db))
 	{
 		roleApiRoutes.POST("/getPagination", roleController.GetPagination)
-		roleApiRoutes.GET("/lookup", roleController.Lookup)
 		roleApiRoutes.POST("/save", roleController.Save)
 		roleApiRoutes.GET("/getById/:id", roleController.GetById)
 		roleApiRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
