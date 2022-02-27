@@ -99,6 +99,7 @@ var (
 	filemasterController              controllers.FilemasterController              = controllers.NewFilemasterController(filemasterService, jwtService)
 	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
 	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
+	educationCategoryController       controllers.EducationCategoryController       = controllers.NewEducationCategoryController(db, jwtService)
 	articleCategoryController         controllers.ArticleCategoryController         = controllers.NewArticleCategoryController(articleCategoryService, jwtService)
 	articleController                 controllers.ArticleController                 = controllers.NewArticleController(articleService, jwtService)
 	articleTagController              controllers.ArticleTagController              = controllers.NewArticleTagController(articleTagService, jwtService)
@@ -251,6 +252,21 @@ func main() {
 		emitenApiRoutes.POST("/patchingEmiten", emitenController.PatchingEmiten)
 		emitenApiRoutes.GET("/getById/:id", emitenController.GetById)
 		emitenApiRoutes.DELETE("/deleteById/:id", emitenController.DeleteById)
+	}
+
+	educationCategoryApiRoutes := r.Group("api")
+	{
+		educationCategoryWithAuthRoutes := educationCategoryApiRoutes.Group("/auth/educationCategory", middleware.AuthorizeJWT(jwtService))
+		{
+			educationCategoryWithAuthRoutes.POST("/save", educationCategoryController.Save)
+			educationCategoryWithAuthRoutes.DELETE("/deleteById/:id", educationCategoryController.DeleteById)
+		}
+		educationCategoryWithoutAuthRoutes := educationCategoryApiRoutes.Group("/educationCategory")
+		{
+			educationCategoryWithoutAuthRoutes.POST("/getPagination", educationCategoryController.GetPagination)
+			educationCategoryWithoutAuthRoutes.GET("/lookup", educationCategoryController.Lookup)
+			educationCategoryWithoutAuthRoutes.GET("/getById/:id", educationCategoryController.GetById)
+		}
 	}
 
 	applicationMenuCategoryApiRoutes := r.Group("api/application_menu_category")

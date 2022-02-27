@@ -114,6 +114,8 @@ func SetupDatabaseConnection() *gorm.DB {
 
 		&models.RatingMaster{},
 
+		&models.EducationCategory{},
+
 		&models.EmailLogging{},
 		&models.EmailBlacklist{},
 
@@ -200,6 +202,10 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_fundamental_analysis.TableName()] = vw_fundamental_analysis.Migration()
 	var vw_fundamental_analysis_tag = entity_view_models.EntityFundamentalAnalysisTagView{}
 	viewList[vw_fundamental_analysis_tag.TableName()] = vw_fundamental_analysis_tag.Migration()
+
+	//-- Education:: Module Pembelajaran & Recording
+	var vw_education_category = entity_view_models.EntityEducationCategoryView{}
+	viewList[vw_education_category.TableName()] = vw_education_category.Migration()
 
 	var vw_email_logging = entity_view_models.EntityEmailLoggingView{}
 	viewList[vw_email_logging.TableName()] = vw_email_logging.Migration()
