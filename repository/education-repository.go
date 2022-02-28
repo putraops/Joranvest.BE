@@ -24,7 +24,7 @@ type EducationRepository interface {
 	Update(record models.Education) helper.Result
 	GetById(recordId string) helper.Result
 	GetViewById(recordId string) helper.Result
-	DeleteById(recordId string) helper.Response
+	DeleteById(recordId string) helper.Result
 
 	OpenTransaction(trxHandle *gorm.DB) educationRepository
 }
@@ -199,20 +199,32 @@ func (r educationRepository) GetViewById(recordId string) helper.Result {
 	return res
 }
 
-func (r educationRepository) DeleteById(recordId string) helper.Response {
+func (r educationRepository) DeleteById(recordId string) helper.Result {
+	tx := r.DB.Begin()
+
 	var record models.Education
 	r.DB.First(&record, "id = ?", recordId)
 
 	if record.Id == "" {
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-		return res
+		return helper.StandartResult(false, "Record not found", helper.EmptyObj{})
 	} else {
-		res := r.DB.Where("id = ?", recordId).Delete(&record)
-		if res.RowsAffected == 0 {
-			return helper.ServerResponse(false, "Error", fmt.Sprintf("%v", res.Error), helper.EmptyObj{})
+		if errEducation := r.DB.Where("id = ?", recordId).Delete(&record).Error; errEducation != nil {
+			log.Error(r.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", errEducation.Error()))
+			tx.Rollback()
+			return helper.StandartResult(false, fmt.Sprintf("%v", errEducation.Error()), helper.EmptyObj{})
 		}
-		return helper.ServerResponse(true, "Ok", "", helper.EmptyObj{})
 	}
+
+	if errEducationPlaylist := r.DB.Delete(models.EducationPlaylist{}, "education_id = ?", recordId).Error; errEducationPlaylist != nil {
+		log.Error(r.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", errEducationPlaylist.Error()))
+		tx.Rollback()
+		return helper.StandartResult(false, fmt.Sprintf("%v,", errEducationPlaylist.Error()), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.StandartResult(true, "Ok", helper.EmptyObj{})
 }
 
 func (r educationRepository) OpenTransaction(trxHandle *gorm.DB) educationRepository {

@@ -22,7 +22,7 @@ type EducationService interface {
 	RemoveFromPlaylist(recordId string) helper.Result
 	GetViewById(recordId string) helper.Result
 	GetById(recordId string) helper.Result
-	DeleteById(recordId string) helper.Response
+	DeleteById(recordId string) helper.Result
 
 	GetDirectoryConfig(moduleName string, moduleId string, filetype int) string
 	OpenTransaction(*gorm.DB) educationService
@@ -126,7 +126,7 @@ func (r educationService) GetViewById(recordId string) helper.Result {
 	return r.educationRepository.GetViewById(recordId)
 }
 
-func (r educationService) DeleteById(recordId string) helper.Response {
+func (r educationService) DeleteById(recordId string) helper.Result {
 	return r.educationRepository.DeleteById(recordId)
 }
 

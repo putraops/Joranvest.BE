@@ -225,14 +225,8 @@ func (c educationController) DeleteById(context *gin.Context) {
 		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
 	}
-	var result = c.educationService.DeleteById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
-	} else {
-		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
-		context.JSON(http.StatusOK, response)
-	}
+	result := c.educationService.DeleteById(id)
+	context.JSON(http.StatusOK, result)
 }
 
 // @Tags         Education
