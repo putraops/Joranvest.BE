@@ -100,6 +100,7 @@ var (
 	emitenController                  controllers.EmitenController                  = controllers.NewEmitenController(emitenService, jwtService)
 	emitenCategoryController          controllers.EmitenCategoryController          = controllers.NewEmitenCategoryController(emitenCategoryService, jwtService)
 	educationCategoryController       controllers.EducationCategoryController       = controllers.NewEducationCategoryController(db, jwtService)
+	educationController               controllers.EducationController               = controllers.NewEducationController(db, jwtService)
 	articleCategoryController         controllers.ArticleCategoryController         = controllers.NewArticleCategoryController(articleCategoryService, jwtService)
 	articleController                 controllers.ArticleController                 = controllers.NewArticleController(articleService, jwtService)
 	articleTagController              controllers.ArticleTagController              = controllers.NewArticleTagController(articleTagService, jwtService)
@@ -256,16 +257,37 @@ func main() {
 
 	educationCategoryApiRoutes := r.Group("api")
 	{
-		educationCategoryWithAuthRoutes := educationCategoryApiRoutes.Group("/auth/educationCategory", middleware.AuthorizeJWT(jwtService))
+		educationCategoryWithAuthRoutes := educationCategoryApiRoutes.Group("/auth/education_category", middleware.AuthorizeJWT(jwtService))
 		{
 			educationCategoryWithAuthRoutes.POST("/save", educationCategoryController.Save)
 			educationCategoryWithAuthRoutes.DELETE("/deleteById/:id", educationCategoryController.DeleteById)
 		}
-		educationCategoryWithoutAuthRoutes := educationCategoryApiRoutes.Group("/educationCategory")
+		educationCategoryWithoutAuthRoutes := educationCategoryApiRoutes.Group("/education_category")
 		{
 			educationCategoryWithoutAuthRoutes.POST("/getPagination", educationCategoryController.GetPagination)
 			educationCategoryWithoutAuthRoutes.GET("/lookup", educationCategoryController.Lookup)
 			educationCategoryWithoutAuthRoutes.GET("/getById/:id", educationCategoryController.GetById)
+		}
+	}
+
+	educationApiRoutes := r.Group("api")
+	{
+		educationWithAuthRoutes := educationApiRoutes.Group("/auth/education", middleware.AuthorizeJWT(jwtService))
+		{
+			educationWithAuthRoutes.POST("/save", educationController.Save)
+			educationWithAuthRoutes.POST("/uploadEducationCover/:id", educationController.UploadEducationCover)
+			educationWithAuthRoutes.POST("/addToPlaylist", educationController.AddToPlaylist)
+			educationWithAuthRoutes.DELETE("/deleteById/:id", educationController.DeleteById)
+			educationWithAuthRoutes.DELETE("/removeFromPlaylistById/:id", educationController.RemoveFromPlaylistById)
+		}
+		educationWithoutAuthRoutes := educationApiRoutes.Group("/education")
+		{
+			educationWithoutAuthRoutes.POST("/getPagination", educationController.GetPagination)
+			educationWithoutAuthRoutes.POST("/getPlaylist", educationController.GetPlaylist)
+			educationWithoutAuthRoutes.GET("/lookup", educationController.Lookup)
+			educationWithoutAuthRoutes.GET("/getById/:id", educationController.GetById)
+			educationWithoutAuthRoutes.GET("/getViewById/:id", educationController.GetViewById)
+			educationWithoutAuthRoutes.GET("/getPlaylistById/:id", educationController.GetPlaylistById)
 		}
 	}
 
@@ -475,6 +497,7 @@ func main() {
 		roleApiRoutes.GET("/getById/:id", roleController.GetById)
 		roleApiRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
 	}
+
 	roleMemberApiRoutes := r.Group("api/role_member")
 	{
 		roleMemberApiRoutes.POST("/getDatatables", roleMemberController.GetDatatables)
@@ -484,6 +507,7 @@ func main() {
 		roleMemberApiRoutes.GET("/getUsersInRole/:roleId", roleMemberController.GetUsersInRole)
 		roleMemberApiRoutes.GET("/getUsersNotInRole/:roleId/:search", roleMemberController.GetUsersNotInRole)
 	}
+
 	roleMenuApiRoutes := r.Group("api/role_menu")
 	{
 		roleMenuApiRoutes.POST("/save", roleMenuController.Save)

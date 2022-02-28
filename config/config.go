@@ -115,6 +115,8 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.RatingMaster{},
 
 		&models.EducationCategory{},
+		&models.Education{},
+		&models.EducationPlaylist{},
 
 		&models.EmailLogging{},
 		&models.EmailBlacklist{},
@@ -206,6 +208,10 @@ func SetupDatabaseConnection() *gorm.DB {
 	//-- Education:: Module Pembelajaran & Recording
 	var vw_education_category = entity_view_models.EntityEducationCategoryView{}
 	viewList[vw_education_category.TableName()] = vw_education_category.Migration()
+	var vw_education = entity_view_models.EntityEducationView{}
+	viewList[vw_education.TableName()] = vw_education.Migration()
+	var vw_education_playlist = entity_view_models.EntityEducationPlaylistView{}
+	viewList[vw_education_playlist.TableName()] = vw_education_playlist.Migration()
 
 	var vw_email_logging = entity_view_models.EntityEmailLoggingView{}
 	viewList[vw_email_logging.TableName()] = vw_email_logging.Migration()

@@ -41,7 +41,7 @@ func NewEducationCategoryController(db *gorm.DB, jwtService service.JWTService) 
 // @Param        body body commons.Pagination2ndRequest true "body"
 // @Success      200 {object} object
 // @Failure 	 400,404 {object} object
-// @Router       /educationcategory/getPagination [post]
+// @Router       /educationCategory/getPagination [post]
 func (c educationCategoryController) GetPagination(context *gin.Context) {
 	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
