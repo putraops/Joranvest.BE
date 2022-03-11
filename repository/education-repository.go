@@ -22,8 +22,10 @@ type EducationRepository interface {
 	Lookup(request helper.ReactSelectRequest) []models.Education
 	Insert(t models.Education) helper.Result
 	Update(record models.Education) helper.Result
+	Submit(recordId string, submittedBy string) helper.Result
 	GetById(recordId string) helper.Result
 	GetViewById(recordId string) helper.Result
+	GetByPathUrl(pathUrl string) helper.Result
 	DeleteById(recordId string) helper.Result
 
 	OpenTransaction(trxHandle *gorm.DB) educationRepository
@@ -97,7 +99,7 @@ func (r educationRepository) GetPagination(request commons.Pagination2ndRequest)
 	// #endregion
 
 	offset := (page - 1) * pageSize
-	r.DB.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	r.DB.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	// #region Get Total Data for Pagination
 	result := r.DB.Where(filters).Find(&recordsUnfilter)
@@ -177,9 +179,40 @@ func (r educationRepository) Update(record models.Education) helper.Result {
 	return helper.StandartResult(true, "Ok", record)
 }
 
+func (r educationRepository) Submit(recordId string, submittedBy string) helper.Result {
+	tx := r.DB.Begin()
+
+	var currentRecord models.Education
+	r.DB.First(&currentRecord, "id = ?", recordId)
+	if currentRecord.Id == "" {
+		return helper.StandartResult(false, "Record not found", helper.EmptyObj{})
+	}
+
+	if err := r.DB.Model(&currentRecord).Updates(models.Education{SubmittedBy: submittedBy, SubmittedAt: sql.NullTime{Time: time.Now(), Valid: true}}).Error; err != nil {
+		log.Error(r.serviceRepository.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", err.Error()))
+		tx.Rollback()
+		return helper.StandartResult(false, fmt.Sprintf("%v", err.Error()), helper.EmptyObj{})
+	}
+
+	tx.Commit()
+	return helper.StandartResult(true, "Ok", currentRecord)
+}
+
 func (r educationRepository) GetById(recordId string) helper.Result {
 	var record models.Education
 	r.DB.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		res := helper.StandartResult(false, "Record not found", helper.EmptyObj{})
+		return res
+	}
+	res := helper.StandartResult(true, "Ok", record)
+	return res
+}
+
+func (r educationRepository) GetByPathUrl(pathUrl string) helper.Result {
+	var record entity_view_models.EntityEducationView
+	r.DB.First(&record, "path_url = ?", pathUrl)
 	if record.Id == "" {
 		res := helper.StandartResult(false, "Record not found", helper.EmptyObj{})
 		return res

@@ -7,6 +7,7 @@ import (
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
+	"joranvest/models/view_models"
 	"strings"
 	"time"
 
@@ -19,8 +20,10 @@ import (
 type EducationPlaylistRepository interface {
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.EducationPlaylist
+	GetPlaylistByUserId(educationId string, userId string) helper.Result
 	Lookup(request helper.ReactSelectRequest) []models.EducationPlaylist
 	Insert(t models.EducationPlaylist) helper.Result
+	MarkVideoAsWatched(record models.EducationPlaylistUser) helper.Result
 	Update(record models.EducationPlaylist) helper.Result
 	GetById(recordId string) helper.Result
 	DeleteById(recordId string) helper.Result
@@ -120,6 +123,44 @@ func (r educationPlaylistRepository) GetAll(filter map[string]interface{}) []mod
 	return records
 }
 
+func (r educationPlaylistRepository) GetViewAll(filter map[string]interface{}) []entity_view_models.EntityEducationPlaylistView {
+	var records []entity_view_models.EntityEducationPlaylistView
+	if len(filter) == 0 {
+		r.DB.Find(&records).Order("order_index ASC, created_at ASC")
+	} else if len(filter) != 0 {
+		r.DB.Where(filter).Find(&records).Order("order_index ASC, created_at ASC")
+	}
+	return records
+}
+
+func (r educationPlaylistRepository) GetPlaylistByUserId(educationId string, userId string) helper.Result {
+	var records []view_models.EducationPlaylistByUserViewModel
+
+	var sql strings.Builder
+	sql.WriteString("SELECT r.id,")
+	sql.WriteString("  r.is_active,")
+	sql.WriteString("  r.education_id,")
+	sql.WriteString("  e.title AS education_title,")
+	sql.WriteString("  r.title,")
+	sql.WriteString("  r.file_url,")
+	sql.WriteString("  r.description,")
+	sql.WriteString("  r.order_index,")
+	sql.WriteString("  pu.id AS education_playlist_user_id,")
+	sql.WriteString("  CASE WHEN pu.id IS NULL THEN false ELSE true END AS is_watched ")
+	sql.WriteString("FROM education_playlist r ")
+	sql.WriteString("LEFT JOIN education e ON e.id::text = r.education_id::text ")
+	sql.WriteString(fmt.Sprintf("LEFT JOIN LATERAL (SELECT pu.id FROM education_playlist_user pu WHERE r.id = pu.education_playlist_id AND pu.application_user_id = '%v') AS pu ON true ", userId))
+	sql.WriteString(fmt.Sprintf("WHERE e.id = '%v' ", educationId))
+	sql.WriteString("ORDER BY COALESCE(r.order_index, 0) ASC, r.created_at ASC ")
+
+	result := r.DB.Raw(sql.String()).Find(&records)
+	if result.Error != nil {
+		return helper.StandartResult(false, fmt.Sprintf("%v,", result.Error), helper.EmptyObj{})
+	}
+
+	return helper.StandartResult(true, "Ok", records)
+}
+
 func (r educationPlaylistRepository) Lookup(request helper.ReactSelectRequest) []models.EducationPlaylist {
 	records := []models.EducationPlaylist{}
 	r.DB.Order("name asc")
@@ -153,6 +194,20 @@ func (r educationPlaylistRepository) Insert(record models.EducationPlaylist) hel
 		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
 	}
 
+	return helper.StandartResult(true, "Ok", record)
+}
+
+func (r educationPlaylistRepository) MarkVideoAsWatched(record models.EducationPlaylistUser) helper.Result {
+	var currentRecord models.EducationPlaylistUser
+	r.DB.First(&currentRecord, "education_playlist_id = ? AND application_user_id = ?", record.EducationPlaylistId, record.ApplicationUserId)
+	if currentRecord.Id == "" {
+		record.Id = uuid.New().String()
+		record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+		if err := r.DB.Create(&record).Error; err != nil {
+			return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
+		}
+	}
 	return helper.StandartResult(true, "Ok", record)
 }
 

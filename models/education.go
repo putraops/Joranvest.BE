@@ -23,6 +23,7 @@ type Education struct {
 	Title               string `gorm:"type:text;not null" json:"title"`
 	Level               string `gorm:"type:varchar(20)" json:"level"`
 	Description         string `gorm:"type:text" json:"description"`
+	PathUrl             string `gorm:"type:text;uniqueIndex:idx_path_url" json:"path_url"`
 	Filepath            string `gorm:"type:varchar(200)" json:"filepath"`
 	FilepathThumbnail   string `gorm:"type:varchar(200)" json:"filepath_thumbnail"`
 	Filename            string `gorm:"type:varchar(200)" json:"filename"`

@@ -7,6 +7,7 @@ import (
 	"joranvest/models"
 	"joranvest/repository"
 
+	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
 	"gorm.io/gorm"
 )
@@ -16,9 +17,12 @@ type EducationService interface {
 	GetAll(filter map[string]interface{}) []models.Education
 	GetPlaylist(filter map[string]interface{}) []models.EducationPlaylist
 	GetPlaylistById(recordId string) helper.Result
+	GetPlaylistByUserId(educationId string, userId string) helper.Result
 	Lookup(request helper.ReactSelectRequest) helper.Result
 	Save(dto dto.EducationDto) helper.Result
+	Submit(recordId string, context *gin.Context) helper.Result
 	AddToPlaylist(dto dto.EducationPlaylistDto) helper.Result
+	MarkVideoAsWatched(dto dto.EducationPlaylistUserDto) helper.Result
 	RemoveFromPlaylist(recordId string) helper.Result
 	GetViewById(recordId string) helper.Result
 	GetById(recordId string) helper.Result
@@ -77,7 +81,8 @@ func (r educationService) Save(dto dto.EducationDto) helper.Result {
 	//-- Map Dto to Struct
 	var newRecord models.Education
 	smapping.FillStruct(&newRecord, smapping.MapFields(&dto))
-	newRecord.EntityId = userIdentity.UserId
+	newRecord.EntityId = userIdentity.EntityId
+	newRecord.PathUrl = helper.StringToPathUrl(newRecord.Title)
 
 	if dto.Id == "" {
 		newRecord.CreatedBy = userIdentity.UserId
@@ -88,8 +93,32 @@ func (r educationService) Save(dto dto.EducationDto) helper.Result {
 	}
 }
 
+func (r educationService) Submit(recordId string, context *gin.Context) helper.Result {
+	authHeader := context.GetHeader("Authorization")
+	userIdentity := r.jwtService.GetUserByToken(authHeader)
+
+	return r.educationRepository.Submit(recordId, userIdentity.UserId)
+}
+
+func (r educationService) MarkVideoAsWatched(dto dto.EducationPlaylistUserDto) helper.Result {
+	authHeader := dto.Context.GetHeader("Authorization")
+	userIdentity := r.jwtService.GetUserByToken(authHeader)
+
+	//-- Map Dto to Struct
+	var newRecord models.EducationPlaylistUser
+	smapping.FillStruct(&newRecord, smapping.MapFields(&dto))
+	newRecord.EntityId = userIdentity.EntityId
+	newRecord.CreatedBy = userIdentity.UserId
+
+	return r.educationPlaylistRepository.MarkVideoAsWatched(newRecord)
+}
+
 func (r educationService) GetPlaylist(filter map[string]interface{}) []models.EducationPlaylist {
 	return r.educationPlaylistRepository.GetAll(filter)
+}
+
+func (r educationService) GetPlaylistByUserId(educationId string, userId string) helper.Result {
+	return r.educationPlaylistRepository.GetPlaylistByUserId(educationId, userId)
 }
 
 func (r educationService) GetPlaylistById(recordId string) helper.Result {

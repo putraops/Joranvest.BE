@@ -8,6 +8,7 @@ type BaseViewModel struct {
 	Id                    string     `json:"id"`
 	IsActive              bool       `json:"is_active"`
 	IsLocked              bool       `json:"is_locked"`
+	IsSubmitted           bool       `json:"is_submitted"`
 	IsDefault             bool       `json:"is_default"`
 	CreatedAt             *time.Time `json:"created_at"`
 	CreatedBy             string     `json:"created_by"`

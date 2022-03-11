@@ -23,11 +23,15 @@ type EducationController interface {
 	GetPlaylist(context *gin.Context)
 	Lookup(context *gin.Context)
 	Save(context *gin.Context)
+	Submit(context *gin.Context)
+	MarkVideoAsWatched(c *gin.Context)
 	AddToPlaylist(c *gin.Context)
 	RemoveFromPlaylistById(context *gin.Context)
 	GetById(context *gin.Context)
 	GetViewById(context *gin.Context)
+	GetByPathUrl(context *gin.Context)
 	GetPlaylistById(context *gin.Context)
+	GetPlaylistByUserId(context *gin.Context)
 	DeleteById(context *gin.Context)
 
 	UploadEducationCover(context *gin.Context)
@@ -146,6 +150,49 @@ func (r educationController) Save(c *gin.Context) {
 // @Param        id path string true "id"
 // @Success      200 {object} object
 // @Failure 	 400,404 {object} object
+// @Router       /education/submit/{id} [get]
+func (c educationController) Submit(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.educationService.Submit(id, context)
+	context.JSON(http.StatusOK, result)
+}
+
+// @Tags         Education
+// @Security 	 ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body dto.EducationPlaylistUserDto true "dto"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
+// @Router       /auth/education/markVideoAsWatched [post]
+func (r educationController) MarkVideoAsWatched(c *gin.Context) {
+	var result helper.Result
+	var dto dto.EducationPlaylistUserDto
+	dto.Context = c
+
+	errDto := c.Bind(&dto)
+	if errDto != nil {
+		res := helper.StandartResult(false, errDto.Error(), helper.EmptyObj{})
+		c.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result = r.educationService.MarkVideoAsWatched(dto)
+	c.JSON(http.StatusOK, helper.StandartResult(result.Status, result.Message, result.Data))
+	return
+}
+
+// @Tags         Education
+// @Security 	 ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "id"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
 // @Router       /education/getById/{id} [get]
 func (c educationController) GetById(context *gin.Context) {
 	id := context.Param("id")
@@ -191,6 +238,24 @@ func (c educationController) GetViewById(context *gin.Context) {
 // @Security 	 ApiKeyAuth
 // @Accept       json
 // @Produce      json
+// @Param        path_url path string true "path_url"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
+// @Router       /education/getByPathUrl/{path_url} [get]
+func (c educationController) GetByPathUrl(context *gin.Context) {
+	path_url := context.Param("path_url")
+	if path_url == "" {
+		response := helper.BuildErrorResponse("Failed to get by path_url", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+	result := c.educationRepository.GetByPathUrl(path_url)
+	context.JSON(http.StatusOK, result)
+}
+
+// @Tags         Education
+// @Security 	 ApiKeyAuth
+// @Accept       json
+// @Produce      json
 // @Param        id path string true "id"
 // @Success      200 {object} object
 // @Failure 	 400,404 {object} object
@@ -209,6 +274,26 @@ func (c educationController) GetPlaylistById(context *gin.Context) {
 		response := helper.BuildResponse(true, "Ok", result.Data)
 		context.JSON(http.StatusOK, response)
 	}
+}
+
+// @Tags         Education
+// @Security 	 ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "id"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
+// @Router       /education/getPlaylistByUserId/{education_id}/{application_user_id} [get]
+func (c educationController) GetPlaylistByUserId(context *gin.Context) {
+	education_id := context.Param("education_id")
+	application_user_id := context.Param("application_user_id")
+	if education_id == "" || application_user_id == "" {
+		response := helper.BuildErrorResponse("Failed to get education_id or application_user_id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+	}
+
+	result := c.educationService.GetPlaylistByUserId(education_id, application_user_id)
+	context.JSON(http.StatusOK, result)
 }
 
 // @Tags         Education

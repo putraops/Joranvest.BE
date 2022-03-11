@@ -275,6 +275,8 @@ func main() {
 		educationWithAuthRoutes := educationApiRoutes.Group("/auth/education", middleware.AuthorizeJWT(jwtService))
 		{
 			educationWithAuthRoutes.POST("/save", educationController.Save)
+			educationWithAuthRoutes.GET("/submit/:id", educationController.Submit)
+			educationWithAuthRoutes.POST("/markVideoAsWatched", educationController.MarkVideoAsWatched)
 			educationWithAuthRoutes.POST("/uploadEducationCover/:id", educationController.UploadEducationCover)
 			educationWithAuthRoutes.POST("/addToPlaylist", educationController.AddToPlaylist)
 			educationWithAuthRoutes.DELETE("/deleteById/:id", educationController.DeleteById)
@@ -284,7 +286,9 @@ func main() {
 		{
 			educationWithoutAuthRoutes.POST("/getPagination", educationController.GetPagination)
 			educationWithoutAuthRoutes.POST("/getPlaylist", educationController.GetPlaylist)
+			educationWithoutAuthRoutes.GET("/getPlaylistByUserId/:education_id/:application_user_id", educationController.GetPlaylistByUserId)
 			educationWithoutAuthRoutes.GET("/lookup", educationController.Lookup)
+			educationWithoutAuthRoutes.GET("/getByPathUrl/:path_url", educationController.GetByPathUrl)
 			educationWithoutAuthRoutes.GET("/getById/:id", educationController.GetById)
 			educationWithoutAuthRoutes.GET("/getViewById/:id", educationController.GetViewById)
 			educationWithoutAuthRoutes.GET("/getPlaylistById/:id", educationController.GetPlaylistById)

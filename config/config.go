@@ -117,6 +117,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.EducationCategory{},
 		&models.Education{},
 		&models.EducationPlaylist{},
+		&models.EducationPlaylistUser{},
 
 		&models.EmailLogging{},
 		&models.EmailBlacklist{},
@@ -212,6 +213,8 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_education.TableName()] = vw_education.Migration()
 	var vw_education_playlist = entity_view_models.EntityEducationPlaylistView{}
 	viewList[vw_education_playlist.TableName()] = vw_education_playlist.Migration()
+	var vw_education_playlist_user = entity_view_models.EntityEducationPlaylistUserView{}
+	viewList[vw_education_playlist_user.TableName()] = vw_education_playlist_user.Migration()
 
 	var vw_email_logging = entity_view_models.EntityEmailLoggingView{}
 	viewList[vw_email_logging.TableName()] = vw_email_logging.Migration()
