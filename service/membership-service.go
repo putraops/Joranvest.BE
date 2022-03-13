@@ -8,8 +8,9 @@ import (
 )
 
 type MembershipService interface {
+	Lookup(request helper.ReactSelectRequest) helper.Result
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Membership
 	Insert(record models.Membership) helper.Response
 	Update(record models.Membership) helper.Response
@@ -30,11 +31,29 @@ func NewMembershipService(repo repository.MembershipRepository) MembershipServic
 	}
 }
 
+func (service *membershipService) Lookup(request helper.ReactSelectRequest) helper.Result {
+	var ary helper.ReactSelectResponse
+
+	result := service.membershipRepository.Lookup(request)
+	if len(result) > 0 {
+		for _, record := range result {
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.Name,
+				ParentId: "",
+			}
+			ary.Results = append(ary.Results, p)
+		}
+	}
+	ary.Count = len(result)
+	return helper.StandartResult(true, "Ok", ary)
+}
+
 func (service *membershipService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
 	return service.membershipRepository.GetDatatables(request)
 }
 
-func (service *membershipService) GetPagination(request commons.PaginationRequest) interface{} {
+func (service *membershipService) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	return service.membershipRepository.GetPagination(request)
 }
 

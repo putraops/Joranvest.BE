@@ -16,6 +16,7 @@ import (
 )
 
 type MembershipController interface {
+	Lookup(context *gin.Context)
 	GetDatatables(context *gin.Context)
 	GetPagination(context *gin.Context)
 	GetAll(context *gin.Context)
@@ -38,6 +39,30 @@ func NewMembershipController(membershipService service.MembershipService, jwtSer
 	}
 }
 
+// @Tags         Membership
+// @Security 	 ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body helper.ReactSelectRequest true "body"
+// @Param        q query string false "q"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
+// @Router       /membership/lookup [post]
+func (c *membershipController) Lookup(context *gin.Context) {
+	var request helper.ReactSelectRequest
+
+	errDTO := context.Bind(&request)
+	if errDTO != nil {
+		res := helper.StandartResult(false, errDTO.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	var result = c.membershipService.Lookup(request)
+	response := helper.StandartResult(true, "Ok", result.Data)
+	context.JSON(http.StatusOK, response)
+}
+
 func (c *membershipController) GetDatatables(context *gin.Context) {
 	var dt commons.DataTableRequest
 	errDTO := context.Bind(&dt)
@@ -52,7 +77,7 @@ func (c *membershipController) GetDatatables(context *gin.Context) {
 func (c *membershipController) GetPagination(context *gin.Context) {
 	commons.Logger()
 
-	var req commons.PaginationRequest
+	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})

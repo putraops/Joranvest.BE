@@ -14,6 +14,7 @@ type EntityMembershipUserView struct {
 	MembershipPaymentDate  *time.Time `json:"membership_payment_date"`
 	MembershipStartDate    *time.Time `json:"membership_start_date"`
 	MembershipExpiredDate  *time.Time `json:"membership_expired_date"`
+	IsExpired              bool       `json:"is_expired"`
 	PaymentPrice           float64    `json:"payment_price"`
 	PaymentUniqueNumber    float64    `json:"payment_unique_number"`
 	PaymentType            string     `json:"payment_type"`
@@ -58,6 +59,7 @@ func (EntityMembershipUserView) ViewModel() string {
 	sql.WriteString("  r.expired_date,")
 	sql.WriteString("  r.started_date AS membership_started_date,")
 	sql.WriteString("  r.expired_date AS membership_expired_date,")
+	sql.WriteString("  CASE WHEN (r.started_date <= now() AND r.expired_date >= now()) THEN false ELSE TRUE END AS is_expired,")
 	sql.WriteString("  CONCAT(u1.first_name, ' ', u1.last_name) AS created_by_fullname,")
 	sql.WriteString("  u1.title AS user_create_title,")
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS updated_by_fullname,")

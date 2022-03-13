@@ -157,9 +157,9 @@ func (db *membershipUserConnection) GetPagination(request commons.Pagination2ndR
 				}
 
 				if v.Operator == "" {
-					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+					filters += fmt.Sprintf("%v = %v ", v.Field, v.Value)
 				} else {
-					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, helper.GetOperator(v.Operator), v.Value)
 				}
 				total_filter++
 			}

@@ -420,16 +420,24 @@ func main() {
 		sectorApiRoutes.DELETE("/deleteById/:id", sectorController.DeleteById)
 	}
 
-	membershipApiRoutes := r.Group("api/membership")
+	membershipApiRoutes := r.Group("api")
 	{
-		membershipApiRoutes.POST("/getDatatables", membershipController.GetDatatables)
-		membershipApiRoutes.POST("/getPagination", membershipController.GetPagination)
-		membershipApiRoutes.GET("/getAll", membershipController.GetAll)
-		membershipApiRoutes.POST("/save", membershipController.Save)
-		membershipApiRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
-		membershipApiRoutes.GET("/getById/:id", membershipController.GetById)
-		membershipApiRoutes.GET("/getViewById/:id", membershipController.GetViewById)
-		membershipApiRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
+		membershipWithAuthRoutes := membershipApiRoutes.Group("/membership", middleware.AuthorizeJWT(jwtService))
+		{
+			membershipWithAuthRoutes.GET("/lookup", membershipController.Lookup)
+		}
+		membershipWithoutAuthRoutes := membershipApiRoutes.Group("/membership")
+		{
+			membershipWithoutAuthRoutes.POST("/getDatatables", membershipController.GetDatatables)
+			membershipWithoutAuthRoutes.POST("/getPagination", membershipController.GetPagination)
+			membershipWithoutAuthRoutes.GET("/getAll", membershipController.GetAll)
+			membershipWithoutAuthRoutes.POST("/save", membershipController.Save)
+			membershipWithoutAuthRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
+			membershipWithoutAuthRoutes.GET("/getById/:id", membershipController.GetById)
+			membershipWithoutAuthRoutes.GET("/getViewById/:id", membershipController.GetViewById)
+			membershipWithoutAuthRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
+		}
+
 	}
 
 	membershipUserApiRoutes := r.Group("api/membership_user")

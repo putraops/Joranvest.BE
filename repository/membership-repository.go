@@ -16,8 +16,9 @@ import (
 )
 
 type MembershipRepository interface {
+	Lookup(request helper.ReactSelectRequest) []models.Membership
 	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetPagination(request commons.PaginationRequest) interface{}
+	GetPagination(request commons.Pagination2ndRequest) interface{}
 	GetAll(filter map[string]interface{}) []models.Membership
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Response
@@ -41,6 +42,31 @@ func NewMembershipRepository(db *gorm.DB) MembershipRepository {
 		viewQuery:         entity_view_models.EntityMembershipView.ViewModel(entity_view_models.EntityMembershipView{}),
 		serviceRepository: NewServiceRepository(db),
 	}
+}
+
+func (db *membershipConnection) Lookup(request helper.ReactSelectRequest) []models.Membership {
+	records := []models.Membership{}
+	db.connection.Order("name asc")
+
+	var orders = "name ASC"
+	var filters = ""
+	totalFilter := 0
+	for _, field := range request.Field {
+		if totalFilter == 0 {
+			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", strings.ToLower(request.Q), "%'")
+		} else {
+			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", strings.ToLower(request.Q), "%'")
+		}
+		totalFilter++
+	}
+
+	if totalFilter > 0 {
+		filters += ")"
+	}
+
+	offset := (request.Page - 1) * request.Size
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
+	return records
 }
 
 func (db *membershipConnection) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
@@ -107,7 +133,7 @@ func (db *membershipConnection) GetDatatables(request commons.DataTableRequest) 
 	return res
 }
 
-func (db *membershipConnection) GetPagination(request commons.PaginationRequest) interface{} {
+func (db *membershipConnection) GetPagination(request commons.Pagination2ndRequest) interface{} {
 	var response commons.PaginationResponse
 	var records []entity_view_models.EntityMembershipView
 
@@ -141,13 +167,20 @@ func (db *membershipConnection) GetPagination(request commons.PaginationRequest)
 	// #region filter
 	var filters = ""
 	total_filter := 0
-	for k, v := range request.Filter {
-		if v != "" {
-			if total_filter > 0 {
-				filters += "AND "
+	if len(request.Filter) > 0 {
+		for _, v := range request.Filter {
+			if v.Value != "" {
+				if total_filter > 0 {
+					filters += "AND "
+				}
+
+				if v.Operator == "" {
+					filters += fmt.Sprintf("%v %v ", v.Field, v.Value)
+				} else {
+					filters += fmt.Sprintf("%v %v '%v' ", v.Field, v.Operator, v.Value)
+				}
+				total_filter++
 			}
-			filters += fmt.Sprintf("%v = '%v' ", k, v)
-			total_filter++
 		}
 	}
 	// #endregion
