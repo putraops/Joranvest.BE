@@ -108,6 +108,7 @@ var (
 	webinarController                 controllers.WebinarController                 = controllers.NewWebinarController(webinarService, jwtService)
 	webinarSpeakerController          controllers.WebinarSpeakerController          = controllers.NewWebinarSpeakerController(webinarSpeakerService, jwtService)
 	webinarRegistrationController     controllers.WebinarRegistrationController     = controllers.NewWebinarRegistrationController(webinarRegistrationService, jwtService)
+	webinarRecordingController        controllers.WebinarRecordingController        = controllers.NewWebinarRecordingController(db, jwtService)
 	sectorController                  controllers.SectorController                  = controllers.NewSectorController(sectorService, jwtService)
 	tagController                     controllers.TagController                     = controllers.NewTagController(tagService, jwtService)
 	technicalAnalysisController       controllers.TechnicalAnalysisController       = controllers.NewTechnicalAnalysisController(technicalAnalysisService, jwtService)
@@ -377,6 +378,24 @@ func main() {
 		webinarApiRoutes.GET("/getViewById/:id", webinarController.GetViewById)
 		webinarApiRoutes.GET("/getWebinarWithRatingByUserId/:webinar_id/:user_id", webinarController.GetWebinarWithRatingByUserId)
 		webinarApiRoutes.DELETE("/deleteById/:id", webinarController.DeleteById)
+	}
+
+	webinarRecordingApiRoutes := r.Group("api")
+	{
+		webinarRecordingWithAuthRoutes := webinarRecordingApiRoutes.Group("/webinar_recording", middleware.AuthorizeJWT(jwtService))
+		{
+			webinarRecordingWithAuthRoutes.POST("/save", webinarRecordingController.Save)
+			webinarRecordingWithAuthRoutes.GET("/submit/:id", webinarRecordingController.Submit)
+			webinarRecordingWithAuthRoutes.DELETE("/deleteById/:id", webinarRecordingController.DeleteById)
+		}
+		webinarRecordingWithoutAuthRoutes := webinarRecordingApiRoutes.Group("/webinar_recording")
+		{
+			webinarRecordingWithoutAuthRoutes.POST("/getPagination", webinarRecordingController.GetPagination)
+			webinarRecordingWithoutAuthRoutes.GET("/getByPathUrl/:path_url", webinarRecordingController.GetByPathUrl)
+			webinarRecordingWithoutAuthRoutes.GET("/getById/:id", webinarRecordingController.GetById)
+			webinarRecordingWithoutAuthRoutes.GET("/getViewById/:id", webinarRecordingController.GetViewById)
+			webinarRecordingWithoutAuthRoutes.GET("/getByWebinarId/:webinarId", webinarRecordingController.GetByWebinarId)
+		}
 	}
 
 	webinarSpeakerApiRoutes := r.Group("api/webinar_speaker")

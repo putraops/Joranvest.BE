@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"encoding/json"
 	"fmt"
 	"joranvest/helper"
 	"joranvest/models"
@@ -16,6 +17,7 @@ type ServiceRepository interface {
 	ConvertViewQueryIntoViewCount(param string) string
 	ConvertViewQueryIntoViewCountByPublic(param string, tableName string) string
 	getCurrentFuncName() string
+	MapFields(oldRecord interface{}, newRecord interface{}) helper.Result
 }
 
 type serviceConnection struct {
@@ -138,6 +140,46 @@ func (db *serviceConnection) Lookup(req map[string]interface{}, r helper.Select2
 	//fmt.Println("End Get")
 
 	return records
+}
+
+func (db *serviceConnection) MapFields(oldRecord interface{}, newRecord interface{}) helper.Result {
+	var oldRecordMap map[string]interface{}
+	oldRecordJson, _ := json.Marshal(oldRecord)
+	json.Unmarshal(oldRecordJson, &oldRecordMap)
+
+	var newRecordMap map[string]interface{}
+	newRecordJson, _ := json.Marshal(newRecord)
+	json.Unmarshal(newRecordJson, &newRecordMap)
+
+	for key, newValue := range newRecordMap {
+		switch c := newValue.(type) {
+		case bool:
+			if newRecordMap[key] != oldRecordMap[key] {
+				oldRecordMap[key] = newRecordMap[key]
+			}
+		case string, int, int8, int16, int32, int64, float32, float64:
+			if newRecordMap[key] != "" && newRecordMap[key] != oldRecordMap[key] {
+				oldRecordMap[key] = newRecordMap[key]
+			}
+		case map[string]interface{}:
+			//-- Check map is a sql.NullTime
+			if _, isTime := c["Time"]; isTime {
+				if _, isSqlNullTime := c["Valid"]; isSqlNullTime {
+					if c["Valid"].(bool) && newRecordMap[key].(map[string]interface{})["Time"] != oldRecordMap[key].(map[string]interface{})["Time"] {
+						oldRecordMap[key] = newRecordMap[key]
+					}
+				}
+			}
+		default:
+			helper.StandartResult(false, fmt.Sprintf("There is no map for key %v", c), helper.EmptyObj{})
+		}
+	}
+
+	resultObj, err := json.Marshal(oldRecordMap)
+	if err != nil {
+		return helper.StandartResult(false, err.Error(), helper.EmptyObj{})
+	}
+	return helper.StandartResult(true, "Ok", resultObj)
 }
 
 func (db *serviceConnection) getCurrentFuncName() string {

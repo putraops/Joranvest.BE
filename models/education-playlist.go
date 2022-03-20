@@ -22,7 +22,7 @@ type EducationPlaylist struct {
 
 	EducationId string `gorm:"type:varchar(50);not null" json:"education_id"`
 	Title       string `gorm:"type:text;not null" json:"title"`
-	FileUrl     string `gorm:"type:varchar(200)" json:"file_url"`
+	FileUrl     string `gorm:"type:text" json:"file_url"`
 	Description string `gorm:"type:text" json:"description"`
 	OrderIndex  int    `gorm:"type:int" json:"order_index"`
 
