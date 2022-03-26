@@ -20,13 +20,15 @@ type MembershipUser struct {
 	OwnerId     string       `gorm:"type:varchar(50)" json:"owner_id"`
 	EntityId    string       `gorm:"type:varchar(50);null" json:"entity_id"`
 
-	MembershipId      string       `gorm:"type:varchar(50);not null" json:"membership_id"`
 	ApplicationUserId string       `gorm:"type:varchar(50);not null" json:"application_user_id"`
+	MembershipId      *string      `gorm:"type:varchar(50);" json:"membership_id"`
+	ProductId         *string      `gorm:"type:varchar(50);" json:"product_id"`
 	PaymentId         string       `gorm:"type:varchar(50);" json:"payment_id"`
 	StartedDate       sql.NullTime `gorm:"type:timestamp" json:"started_date"`
 	ExpiredDate       sql.NullTime `gorm:"type:timestamp" json:"expired_date"`
 
-	Membership      Membership      `gorm:"foreignkey:MembershipId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"membership"`
+	// Membership      Membership      `gorm:"foreignkey:MembershipId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"membership"`
+	// Product         Product         `gorm:"foreignkey:ProductId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"product"`
 	Payment         Payment         `gorm:"foreignkey:PaymentId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"payment"`
 	ApplicationUser ApplicationUser `gorm:"foreignkey:ApplicationUserId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"application_user"`
 }

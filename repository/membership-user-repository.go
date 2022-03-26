@@ -24,10 +24,10 @@ type MembershipUserRepository interface {
 	GetAll(filter map[string]interface{}) []models.MembershipUser
 	Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
-	SetMembership(membershipId string, payment models.Payment) helper.Response
+	SetMembership(paymentRecord entity_view_models.EntityPaymentView) helper.Response
 	GetById(recordId string) helper.Response
 	GetByUserId(userId string) helper.Response
-	GetExistMembershipByUserId(userId string) helper.Response
+	GetExistMembershipByUserId(userId string, isMembership bool) helper.Response
 	DeleteById(recordId string) helper.Response
 }
 
@@ -38,6 +38,7 @@ type membershipUserConnection struct {
 	membershipRepository MembershipRepository
 	tableName            string
 	viewQuery            string
+	currentTime          time.Time
 }
 
 func NewMembershipUserRepository(db *gorm.DB) MembershipUserRepository {
@@ -48,6 +49,7 @@ func NewMembershipUserRepository(db *gorm.DB) MembershipUserRepository {
 		serviceRepository:    NewServiceRepository(db),
 		filemasterRepository: NewFilemasterRepository(db),
 		membershipRepository: NewMembershipRepository(db),
+		currentTime:          time.Now(),
 	}
 }
 
@@ -188,30 +190,57 @@ func (db *membershipUserConnection) GetAll(filter map[string]interface{}) []mode
 	return records
 }
 
-func (db *membershipUserConnection) SetMembership(membershipId string, payment models.Payment) helper.Response {
+func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_models.EntityPaymentView) helper.Response {
 	commons.Logger()
 	tx := db.connection.Begin()
-	// -- Get Membership Record
-	var membershipRecord models.Membership
-	if err := tx.First(&membershipRecord, "id = ?", membershipId).Error; err != nil || membershipRecord.Id == "" {
-		return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
-	}
 
 	var membershipUser models.MembershipUser
-	membershipUser.Id = uuid.New().String()
-	membershipUser.MembershipId = payment.RecordId
-	membershipUser.PaymentId = payment.Id
-	if payment.UpdatedBy != "" {
-		membershipUser.CreatedBy = payment.UpdatedBy
+	var duration int = 0
+	if paymentRecord.MembershipId != "" {
+		// -- Get Membership Record
+		var membershipRecord models.Membership
+		if err := tx.First(&membershipRecord, "id = ?", paymentRecord.MembershipId).Error; err != nil || membershipRecord.Id == "" {
+			return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+
+		membershipUser.MembershipId = &paymentRecord.RecordId
+		duration = int(membershipRecord.Duration)
+	} else if paymentRecord.ProductId != "" {
+		// -- Get Product Record
+		var productRecord models.Product
+		if err := tx.First(&productRecord, "id = ?", paymentRecord.ProductId).Error; err != nil || productRecord.Id == "" {
+			return helper.ServerResponse(false, "Product Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		}
+
+		membershipUser.ProductId = &paymentRecord.RecordId
+		duration = int(*productRecord.Duration)
 	} else {
-		membershipUser.CreatedBy = payment.CreatedBy
+		return helper.ServerResponse(false, "SetMembership is not recognized", "SetMembership is not recognized", helper.EmptyObj{})
 	}
-	membershipUser.OwnerId = payment.OwnerId
-	membershipUser.ApplicationUserId = payment.CreatedBy
+
+	membershipUser.Id = uuid.New().String()
+	membershipUser.PaymentId = paymentRecord.Id
+	if paymentRecord.UpdatedBy != "" {
+		membershipUser.CreatedBy = paymentRecord.UpdatedBy
+	} else {
+		membershipUser.CreatedBy = paymentRecord.CreatedBy
+	}
+	membershipUser.OwnerId = paymentRecord.OwnerId
+	membershipUser.ApplicationUserId = paymentRecord.CreatedBy
 	membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	membershipUser.StartedDate = payment.PaymentDate
+
+	fmt.Println(paymentRecord)
+	fmt.Println(paymentRecord.PaymentDate)
+	fmt.Println(paymentRecord.PaymentDate)
+
+	// membershipUser.StartedDate = paymentRecord.PaymentDate
+	membershipUser.StartedDate = sql.NullTime{
+		Time:  *paymentRecord.PaymentDate,
+		Valid: true,
+	}
+
 	membershipUser.ExpiredDate = sql.NullTime{
-		Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
+		Time:  paymentRecord.PaymentDate.AddDate(0, duration, 0),
 		Valid: true,
 	}
 
@@ -230,9 +259,10 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 
 	//-- Payment Record
 	payment.Id = uuid.New().String()
-	payment.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	payment.CreatedAt = &db.currentTime
 	if payment.PaymentStatus == 200 {
-		payment.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+		payment_date := time.Now()
+		payment.PaymentDate = &payment_date
 	}
 	if err := tx.Create(&payment).Error; err != nil {
 		tx.Rollback()
@@ -253,7 +283,7 @@ func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser,
 	// Calculate Expired Date
 	if payment.PaymentStatus == 200 {
 		membershipUser.ExpiredDate = sql.NullTime{
-			Time:  payment.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
+			Time:  payment.PaymentDate.AddDate(0, int(membershipRecord.Duration), 0),
 			Valid: true,
 		}
 	}
@@ -323,9 +353,16 @@ func (db *membershipUserConnection) GetByUserId(userId string) helper.Response {
 	return res
 }
 
-func (db *membershipUserConnection) GetExistMembershipByUserId(userId string) helper.Response {
+func (db *membershipUserConnection) GetExistMembershipByUserId(userId string, isMembership bool) helper.Response {
 	var record models.MembershipUser
-	db.connection.First(&record, "application_user_id = ? AND (started_date <= ? AND expired_date >= ?)", userId, sql.NullTime{Time: time.Now(), Valid: true}, sql.NullTime{Time: time.Now(), Valid: true})
+	if isMembership {
+		//-- For check Membership
+		db.connection.First(&record, "application_user_id = ? AND membership_id IS NOT NULL AND (started_date <= ? AND expired_date >= ?)", userId, sql.NullTime{Time: time.Now(), Valid: true}, sql.NullTime{Time: time.Now(), Valid: true})
+	} else {
+		//-- For check Joranvest Chart System
+		db.connection.First(&record, "application_user_id = ? AND product_id IS NOT NULL AND (started_date <= ? AND expired_date >= ?)", userId, sql.NullTime{Time: time.Now(), Valid: true}, sql.NullTime{Time: time.Now(), Valid: true})
+	}
+
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

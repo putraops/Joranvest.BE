@@ -7,17 +7,20 @@ import (
 
 type EntityPaymentView struct {
 	models.Payment
-	PaymentUserFullname   string `json:"payment_user_fullname"`
-	MembershipId          string `json:"membership_id"`
-	MembershipName        string `json:"membership_name"`
-	MembershipDuration    string `json:"membership_duration"`
-	WebinarId             string `json:"webinar_id"`
-	WebinarTitle          string `json:"webinar_title"`
-	WebinarRegistrationId string `json:"webinar_registration_id"`
-	CreatedByFullname     string `json:"created_by_fullname"`
-	UserCreateTitle       string `json:"user_create_title"`
-	UpdatedByFullname     string `json:"updated_by_fullname"`
-	SubmittedFullname     string `json:"submitted_by_fullname"`
+	PaymentUserFullname   string   `json:"payment_user_fullname"`
+	MembershipId          string   `json:"membership_id"`
+	MembershipName        string   `json:"membership_name"`
+	MembershipDuration    *float64 `json:"membership_duration"`
+	WebinarId             string   `json:"webinar_id"`
+	WebinarTitle          string   `json:"webinar_title"`
+	WebinarRegistrationId string   `json:"webinar_registration_id"`
+	ProductId             string   `json:"product_id"`
+	ProductName           string   `json:"product_name"`
+	ProductDuration       *float64 `json:"product_duration"`
+	CreatedByFullname     string   `json:"created_by_fullname"`
+	UserCreateTitle       string   `json:"user_create_title"`
+	UpdatedByFullname     string   `json:"updated_by_fullname"`
+	SubmittedFullname     string   `json:"submitted_by_fullname"`
 }
 
 func (EntityPaymentView) TableName() string {
@@ -53,6 +56,9 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("  w.id AS webinar_id,")
 	sql.WriteString("  w.title AS webinar_title,")
 	sql.WriteString("  wr.id AS webinar_registration_id,")
+	sql.WriteString("  p.id AS product_id,")
+	sql.WriteString("  p.name AS product_name,")
+	sql.WriteString("  p.duration AS product_duration,")
 	sql.WriteString("  r.price,")
 	sql.WriteString("  r.currency,")
 	sql.WriteString("  r.payment_date,")
@@ -79,6 +85,7 @@ func (EntityPaymentView) ViewModel() string {
 	sql.WriteString("LEFT JOIN membership m ON m.id = r.record_id ")
 	sql.WriteString("LEFT JOIN webinar w ON w.id = r.record_id ")
 	sql.WriteString("LEFT JOIN webinar_registration wr ON wr.webinar_id = r.record_id AND wr.application_user_id = r.created_by ")
+	sql.WriteString("LEFT JOIN product p ON p.id = r.record_id ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")
 	sql.WriteString("LEFT JOIN application_user u3 ON u3.id = r.submitted_by ")

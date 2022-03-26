@@ -14,6 +14,9 @@ type EntityMembershipUserView struct {
 	MembershipPaymentDate  *time.Time `json:"membership_payment_date"`
 	MembershipStartDate    *time.Time `json:"membership_start_date"`
 	MembershipExpiredDate  *time.Time `json:"membership_expired_date"`
+	ProductName            string     `json:"product_name"`
+	ProductType            string     `json:"product_type"`
+	ProductDuration        int        `json:"product_duration"`
 	IsExpired              bool       `json:"is_expired"`
 	PaymentPrice           float64    `json:"payment_price"`
 	PaymentUniqueNumber    float64    `json:"payment_unique_number"`
@@ -48,6 +51,10 @@ func (EntityMembershipUserView) ViewModel() string {
 	sql.WriteString("  r.membership_id,")
 	sql.WriteString("  m.name AS membership_name,")
 	sql.WriteString("  m.duration AS membership_duration,")
+	sql.WriteString("  r.product_id,")
+	sql.WriteString("  pr.name AS product_name,")
+	sql.WriteString("  pr.product_type,")
+	sql.WriteString("  pr.duration AS product_duration,")
 	sql.WriteString("  CONCAT(u4.first_name, ' ', u4.last_name) AS membership_user_fullname,")
 	sql.WriteString("  r.application_user_id,")
 	sql.WriteString("  r.payment_id,")
@@ -66,6 +73,7 @@ func (EntityMembershipUserView) ViewModel() string {
 	sql.WriteString("  CONCAT(u3.first_name, ' ', u3.last_name) AS submitted_by_fullname ")
 	sql.WriteString("FROM membership_user r ")
 	sql.WriteString("LEFT JOIN membership m ON m.id = r.membership_id ")
+	sql.WriteString("LEFT JOIN product pr ON pr.id = r.product_id ")
 	sql.WriteString("LEFT JOIN payment p ON p.id = r.payment_id ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")

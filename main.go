@@ -120,6 +120,7 @@ var (
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
 	paymentController                 controllers.PaymentController                 = controllers.NewPaymentController(paymentService, jwtService)
+	productController                 controllers.ProductController                 = controllers.NewProductController(db, jwtService)
 	emailController                   controllers.EmailController                   = controllers.NewEmailController(emailService, jwtService)
 
 	//clientest coreapi.ClientTest = coreapi.NewClientTest()
@@ -577,11 +578,30 @@ func main() {
 		paymentApiRoutes.POST("/updateWalletPaymentStatus", paymentController.UpdateWalletPaymentStatus)
 		paymentApiRoutes.GET("/getUniqueNumber", paymentController.GetUniqueNumber)
 		paymentApiRoutes.POST("/charge", paymentController.Charge)
+		paymentApiRoutes.POST("/createTransferPayment", paymentController.CreateTransferPayment)
 		paymentApiRoutes.POST("/createEWalletPayment", paymentController.CreateEWalletPayment)
 		paymentApiRoutes.POST("/createQRCode", paymentController.CreateQRCode)
 		paymentApiRoutes.POST("/membershipPayment", paymentController.MembershipPayment)
 		paymentApiRoutes.POST("/webinarPayment", paymentController.WebinarPayment)
 		paymentApiRoutes.POST("/updatePaymentStatus", paymentController.UpdatePaymentStatus)
+	}
+
+	productApiRoutes := r.Group("api")
+	{
+		productApiAuthRoutes := productApiRoutes.Group("/product", middleware.AuthorizeJWT(jwtService))
+		{
+			productApiAuthRoutes.POST("/save", productController.Save)
+			productApiAuthRoutes.DELETE("/deleteById/:id", productController.DeleteById)
+		}
+		webinarRecordingNoAuthRoutes := webinarRecordingApiRoutes.Group("/product")
+		{
+			webinarRecordingNoAuthRoutes.POST("/getPagination", productController.GetPagination)
+			// webinarRecordingNoAuthRoutes.GET("/lookup", productController.Lookup)
+			webinarRecordingNoAuthRoutes.GET("/getById/:id", productController.GetById)
+			webinarRecordingNoAuthRoutes.GET("/getProductByRecordId/:record_id", productController.GetProductByRecordId)
+			webinarRecordingNoAuthRoutes.GET("/getByProductType/:product_type", productController.GetByProductType)
+			webinarRecordingNoAuthRoutes.GET("/getViewById/:id", productController.GetViewById)
+		}
 	}
 
 	webhookRoutes := r.Group("webhook/payment")

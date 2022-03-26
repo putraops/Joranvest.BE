@@ -37,6 +37,8 @@ type PaymentController interface {
 	WebinarPayment(context *gin.Context)
 	UpdatePaymentStatus(context *gin.Context)
 	CreateTokenIdByCard(context *gin.Context)
+
+	CreateTransferPayment(context *gin.Context)
 	CreateEWalletPayment(context *gin.Context)
 	CreateQRCode(context *gin.Context)
 	Charge(context *gin.Context)
@@ -198,6 +200,33 @@ func (c *paymentController) WebinarPayment(context *gin.Context) {
 			context.JSON(http.StatusOK, response)
 		}
 	}
+}
+
+func (c *paymentController) CreateTransferPayment(context *gin.Context) {
+	commons.Logger()
+	var recordDto dto.PaymentDto
+	errDTO := context.Bind(&recordDto)
+
+	if errDTO != nil {
+		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		log.Error("WebinarPayment: Bind Dto")
+		log.Error(fmt.Sprintf("%v,", errDTO.Error()))
+		context.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	recordDto.Context = context
+	result := c.paymentService.CreateTransferPayment(recordDto)
+
+	if !result.Status {
+		response := helper.BuildResponse(result.Status, result.Message, result.Data)
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	response := helper.BuildResponse(result.Status, result.Message, result.Data)
+	context.JSON(http.StatusOK, response)
+	return
 }
 
 func (c *paymentController) CreateQRCode(context *gin.Context) {

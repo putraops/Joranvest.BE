@@ -100,6 +100,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.ArticleTag{},
 		&models.Membership{},
 		&models.MembershipUser{},
+		&models.Product{},
 		&models.Payment{},
 		&models.Filemaster{},
 
@@ -170,6 +171,8 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_membership.TableName()] = vw_membership.Migration()
 	var vw_membership_user = entity_view_models.EntityMembershipUserView{}
 	viewList[vw_membership_user.TableName()] = vw_membership_user.Migration()
+	var vw_product = entity_view_models.EntityProductView{}
+	viewList[vw_product.TableName()] = vw_product.Migration()
 	var vw_payment = entity_view_models.EntityPaymentView{}
 	viewList[vw_payment.TableName()] = vw_payment.Migration()
 

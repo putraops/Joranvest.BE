@@ -38,9 +38,11 @@ type paymentConnection struct {
 	membershipUserRepository MembershipUserRepository
 	webinarRegistrationRepo  WebinarRegistrationRepository
 	membershipRepository     MembershipRepository
+	productRepository        ProductRepository
 	filemasterRepository     FilemasterRepository
 	tableName                string
 	viewQuery                string
+	currentTime              time.Time
 }
 
 func NewPaymentRepository(db *gorm.DB) PaymentRepository {
@@ -52,7 +54,9 @@ func NewPaymentRepository(db *gorm.DB) PaymentRepository {
 		membershipUserRepository: NewMembershipUserRepository(db),
 		webinarRegistrationRepo:  NewWebinarRegistrationRepository(db),
 		membershipRepository:     NewMembershipRepository(db),
+		productRepository:        NewProductRepository(db),
 		filemasterRepository:     NewFilemasterRepository(db),
+		currentTime:              time.Now(),
 	}
 }
 
@@ -153,11 +157,13 @@ func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Res
 
 	record.Id = uuid.New().String()
 	if record.PaymentStatus == 200 {
-		record.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+		payment_date := time.Now()
+		record.PaymentDate = &payment_date
 	} else {
-		record.PaymentDateExpired = sql.NullTime{Time: time.Now().AddDate(0, 0, 1), Valid: true}
+		payment_date_expired := time.Now().AddDate(0, 0, 1)
+		record.PaymentDateExpired = &payment_date_expired
 	}
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = &db.currentTime
 
 	if err := tx.Save(&record).Error; err != nil {
 		tx.Rollback()
@@ -177,7 +183,7 @@ func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Res
 
 		var membershipUser models.MembershipUser
 		membershipUser.Id = uuid.New().String()
-		membershipUser.MembershipId = record.RecordId
+		membershipUser.MembershipId = &record.RecordId
 		membershipUser.PaymentId = record.Id
 		if record.UpdatedBy != "" {
 			membershipUser.CreatedBy = record.UpdatedBy
@@ -188,7 +194,7 @@ func (db *paymentConnection) MembershipPayment(record models.Payment) helper.Res
 		membershipUser.ApplicationUserId = record.CreatedBy
 		membershipUser.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 		membershipUser.ExpiredDate = sql.NullTime{
-			Time:  record.PaymentDate.Time.AddDate(0, int(membershipRecord.Duration), 0),
+			Time:  record.PaymentDate.AddDate(0, int(membershipRecord.Duration), 0),
 			Valid: true,
 		}
 
@@ -227,11 +233,13 @@ func (db *paymentConnection) WebinarPayment(record models.Payment) helper.Respon
 
 	record.Id = uuid.New().String()
 	if record.PaymentStatus == 200 {
-		record.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+		payment_date := time.Now()
+		record.PaymentDate = &payment_date
 	} else {
-		record.PaymentDateExpired = sql.NullTime{Time: time.Now().AddDate(0, 0, 1), Valid: true}
+		payment_date_expired := time.Now().AddDate(0, 0, 1)
+		record.PaymentDateExpired = &payment_date_expired
 	}
-	record.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.CreatedAt = &db.currentTime
 
 	if err := tx.Save(&record).Error; err != nil {
 		tx.Rollback()
@@ -289,7 +297,7 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 	record.CreatedAt = oldRecord.CreatedAt
 	record.CreatedBy = oldRecord.CreatedBy
 	record.EntityId = oldRecord.EntityId
-	record.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	record.UpdatedAt = &db.currentTime
 	res := tx.Save(&record)
 	if res.RowsAffected == 0 {
 		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
@@ -315,14 +323,14 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 	paymentRecord.PaymentStatus = req.PaymentStatus
 	paymentRecord.UpdatedBy = req.UpdatedBy
-	paymentRecord.UpdatedAt = paymentRecord.PaymentDate
-	paymentRecord.PaymentDate = sql.NullTime{Time: time.Now(), Valid: true}
+	paymentRecord.UpdatedAt = &db.currentTime
+	paymentRecord.PaymentDate = &db.currentTime
 
 	var viewRecord entity_view_models.EntityPaymentView
 	db.connection.First(&viewRecord, "id = ?", req.Id)
 	if req.Id == "" {
-		log.Error("Record not found")
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+		log.Error("Payment Record not found")
+		res := helper.ServerResponse(false, "Payment Record not found", "Error", helper.EmptyObj{})
 		tx.Rollback()
 		return res
 	}
@@ -330,7 +338,7 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 	if paymentRecord.PaymentStatus == 200 {
 		if viewRecord.MembershipName != "" {
 			//.. Check Exist
-			curentMembershipUserResponse := db.membershipUserRepository.GetExistMembershipByUserId(paymentRecord.ApplicationUserId)
+			curentMembershipUserResponse := db.membershipUserRepository.GetExistMembershipByUserId(paymentRecord.ApplicationUserId, true)
 			if curentMembershipUserResponse.Status {
 				paymentRecord.IsExtendMembership = true
 
@@ -340,7 +348,7 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 				//-- Get Membership Record
 				membershipResponse := db.membershipRepository.GetById(paymentRecord.RecordId)
 				if membershipResponse.Status {
-					membershipUserRecord.MembershipId = membershipResponse.Data.(models.Membership).Id
+					membershipUserRecord.MembershipId = &paymentRecord.RecordId
 				} else {
 					log.Error("Membership Record Not Found")
 					tx.Rollback()
@@ -351,7 +359,6 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 					Time:  membershipUserRecord.ExpiredDate.Time.AddDate(0, int(membershipResponse.Data.(models.Membership).Duration), 1),
 					Valid: true,
 				}
-				membershipUserRecord.MembershipId = paymentRecord.RecordId
 				membershipUserRecord.PaymentId = paymentRecord.Id
 
 				//-- Update Membershipuser
@@ -363,7 +370,58 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 
 			} else {
 				//.. Insert Membership User
-				res := db.membershipUserRepository.SetMembership(viewRecord.RecordId, paymentRecord)
+				res := db.membershipUserRepository.SetMembership(viewRecord)
+				if !res.Status {
+					tx.Rollback()
+					return res
+				}
+			}
+		} else if viewRecord.ProductId != "" {
+			//.. Joranvest Chart System
+			//.. Check Exist
+			curentMembershipUserResponse := db.membershipUserRepository.GetExistMembershipByUserId(paymentRecord.ApplicationUserId, false)
+			if curentMembershipUserResponse.Status {
+
+				fmt.Println("----------------------- paymentRecord -----------------------")
+				fmt.Println(viewRecord)
+				fmt.Println(viewRecord.PaymentDate)
+				fmt.Println(viewRecord.PaymentDate)
+				fmt.Println(viewRecord.PaymentDateExpired)
+				fmt.Println(viewRecord.PaymentDateExpired)
+				fmt.Println("----------------------- paymentRecord -----------------------")
+
+				paymentRecord.IsExtendMembership = true
+
+				var membershipUserRecord models.MembershipUser
+				membershipUserRecord = curentMembershipUserResponse.Data.(models.MembershipUser)
+
+				//-- Get Product Record
+				productResponse := db.productRepository.GetById(paymentRecord.RecordId)
+				if productResponse.Status {
+					membershipUserRecord.ProductId = &paymentRecord.RecordId
+				} else {
+					log.Error("Product Record Not Found")
+					tx.Rollback()
+					return helper.ServerResponse(false, productResponse.Message, productResponse.Message, productResponse.Data)
+				}
+
+				duration := productResponse.Data.(models.Product).Duration
+				membershipUserRecord.ExpiredDate = sql.NullTime{
+					Time:  membershipUserRecord.ExpiredDate.Time.AddDate(0, *duration, 1),
+					Valid: true,
+				}
+				membershipUserRecord.PaymentId = paymentRecord.Id
+
+				//-- Update Membershipuser
+				res := tx.Save(&membershipUserRecord)
+				if res.RowsAffected == 0 {
+					tx.Rollback()
+					return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+				}
+
+			} else {
+				//.. Insert Membership User
+				res := db.membershipUserRepository.SetMembership(viewRecord)
 				if !res.Status {
 					tx.Rollback()
 					return res

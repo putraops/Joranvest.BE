@@ -15,6 +15,9 @@ type EntityApplicationUserView struct {
 	IsMembership       bool         `json:"is_membership"`
 	MembershipId       string       `json:"membership_id"`
 	MembershipName     string       `json:"membership_name"`
+	ProductId          string       `json:"product_id"`
+	ProductName        string       `json:"product_name"`
+	HasJcsAccess       bool         `json:"has_jcs_access"`
 	MembershipDuration string       `json:"membership_duration"`
 	MembershipDate     sql.NullTime `json:"membership_date"`
 	MembershipExpired  sql.NullTime `json:"membership_expired"`
@@ -63,6 +66,9 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  m.membership_id,")
 	sql.WriteString("  m.membership_name,")
 	sql.WriteString("  m.membership_duration,")
+	sql.WriteString("  m.product_id,")
+	sql.WriteString("  m.product_name,")
+	sql.WriteString("  CASE WHEN m.product_id IS NOT NULL THEN true ELSE false END AS has_jcs_access,")
 	sql.WriteString("  m.membership_date,")
 	sql.WriteString("  m.membership_expired,")
 	sql.WriteString("  false AS has_role,")
