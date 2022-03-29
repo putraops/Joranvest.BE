@@ -198,6 +198,8 @@ func (service *paymentService) CreateEWalletPayment(dto ewallet.PaymentDto) help
 	newRecord.PaymentStatus = 2
 	newRecord.Price = int(dto.Amount)
 	newRecord.UniqueNumber = 0
+
+	newRecord.PaymentDate = &currentTime
 	if dto.PaymentType == string(xendit.EWalletTypeLINKAJA) {
 		payment_date_expired := time.Now().Add(time.Minute * 5)
 		newRecord.PaymentDateExpired = &payment_date_expired
