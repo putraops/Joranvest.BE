@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mashingan/smapping"
+	"gorm.io/gorm"
 )
 
 type WebinarRegistrationController interface {
@@ -30,11 +31,13 @@ type WebinarRegistrationController interface {
 type webinarRegistrationController struct {
 	webinarRegistrationService service.WebinarRegistrationService
 	jwtService                 service.JWTService
+	DB                         *gorm.DB
 }
 
-func NewWebinarRegistrationController(webinarRegistrationService service.WebinarRegistrationService, jwtService service.JWTService) WebinarRegistrationController {
+func NewWebinarRegistrationController(db *gorm.DB, jwtService service.JWTService) WebinarRegistrationController {
 	return &webinarRegistrationController{
-		webinarRegistrationService: webinarRegistrationService,
+		DB:                         db,
+		webinarRegistrationService: service.NewWebinarRegistrationService(db),
 		jwtService:                 jwtService,
 	}
 }

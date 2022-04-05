@@ -41,7 +41,7 @@ func NewProductController(db *gorm.DB, jwtService service.JWTService) ProductCon
 }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        body body commons.Pagination2ndRequest true "body"
@@ -60,7 +60,7 @@ func (c productController) GetPagination(context *gin.Context) {
 }
 
 // // @Tags         Product
-// // @Security 	 ApiKeyAuth
+// // @Security 	 BearerAuth
 // // @Accept       json
 // // @Produce      json
 // // @Param        body body helper.ReactSelectRequest true "body"
@@ -84,7 +84,7 @@ func (c productController) GetPagination(context *gin.Context) {
 // }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        body body models.Product true "record"
@@ -109,7 +109,7 @@ func (r productController) Save(c *gin.Context) {
 }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "id"
@@ -128,7 +128,7 @@ func (c productController) GetById(context *gin.Context) {
 }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        record_id path string true "record_id"
@@ -147,7 +147,7 @@ func (c productController) GetProductByRecordId(context *gin.Context) {
 }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        product_type path string true "product_type"
@@ -166,7 +166,7 @@ func (c productController) GetByProductType(context *gin.Context) {
 }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "id"
@@ -185,7 +185,7 @@ func (c productController) GetViewById(context *gin.Context) {
 }
 
 // @Tags         Product
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "id"

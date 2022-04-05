@@ -1,10 +1,46 @@
 definitions:
+  commons.Filter:
+    properties:
+      field:
+        type: string
+      operator:
+        type: string
+      value:
+        type: string
+    type: object
+  commons.Pagination2ndRequest:
+    properties:
+      filter:
+        items:
+          $ref: '#/definitions/commons.Filter'
+        type: array
+      order:
+        additionalProperties:
+          type: string
+        type: object
+      page:
+        type: integer
+      search: {}
+      size:
+        type: integer
+    type: object
+  helper.ReactSelectRequest:
+    properties:
+      field:
+        items:
+          type: string
+        type: array
+      page:
+        type: integer
+      q:
+        type: string
+      size:
+        type: integer
+    type: object
   helper.Response:
     properties:
-      data:
-        type: object
-      errors:
-        type: object
+      data: {}
+      errors: {}
       message:
         type: string
       status:
@@ -46,6 +82,10 @@ definitions:
         $ref: '#/definitions/models.Sector'
       sector_id:
         type: string
+      submitted_at:
+        $ref: '#/definitions/sql.NullTime'
+      submitted_by:
+        type: string
       updated_at:
         $ref: '#/definitions/sql.NullTime'
       updated_by:
@@ -75,10 +115,126 @@ definitions:
         type: boolean
       name:
         type: string
+      submitted_at:
+        $ref: '#/definitions/sql.NullTime'
+      submitted_by:
+        type: string
       updated_at:
         $ref: '#/definitions/sql.NullTime'
       updated_by:
         type: string
+    type: object
+  models.Product:
+    properties:
+      approved_at:
+        $ref: '#/definitions/sql.NullTime'
+      approved_by:
+        type: string
+      created_at:
+        $ref: '#/definitions/sql.NullTime'
+      created_by:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      entity_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+      product_type:
+        type: string
+      submitted_at:
+        $ref: '#/definitions/sql.NullTime'
+      submitted_by:
+        type: string
+      updated_at:
+        $ref: '#/definitions/sql.NullTime'
+      updated_by:
+        type: string
+    type: object
+  models.Role:
+    properties:
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      description:
+        type: string
+      entity_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      name:
+        type: string
+      owner_id:
+        type: string
+      submitted_at:
+        type: string
+      submitted_by:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  models.RoleMember:
+    properties:
+      application_user_id:
+        type: string
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      entity_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      owner_id:
+        type: string
+      role_id:
+        type: string
+      submitted_at:
+        type: string
+      submitted_by:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    required:
+    - application_user_id
+    - role_id
     type: object
   models.Sector:
     properties:
@@ -104,6 +260,10 @@ definitions:
         type: boolean
       name:
         type: string
+      submitted_at:
+        $ref: '#/definitions/sql.NullTime'
+      submitted_by:
+        type: string
       updated_at:
         $ref: '#/definitions/sql.NullTime'
       updated_by:
@@ -120,19 +280,24 @@ definitions:
 info:
   contact: {}
 paths:
-  /emiten/deleteById:
-    delete:
+  /application_user/getPagination:
+    post:
+      consumes:
+      - application/json
       parameters:
-      - description: id
-        in: path
-        name: id
+      - description: body
+        in: body
+        name: body
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/commons.Pagination2ndRequest'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/helper.Response'
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -141,10 +306,11 @@ paths:
           description: Not Found
           schema:
             type: object
-      summary: Delete Emiten By Id
+      security:
+      - BearerAuth: []
       tags:
-      - Emiten
-  /emiten/getById/{id}:
+      - ApplicationUser
+  /article/getArticleCoverById/{article_id}:
     get:
       parameters:
       - description: id
@@ -156,6 +322,836 @@ paths:
         "200":
           description: OK
           schema:
+            type: obsject
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Get Article Cover by Article Id
+      tags:
+      - Article
+  /article/getPagination:
+    post:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: obsject
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Get Pagination
+      tags:
+      - Article
+  /education/getPagination:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commons.Pagination2ndRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Education
+  /emiten/deleteById/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Emiten
+  /emiten/getById/{id}:
+    get:
+      description: Get Emiten By Id
+      parameters:
+      - description: User Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Emiten'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Get Emiten by Id
+      tags:
+      - Emiten
+  /membership/lookup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/helper.ReactSelectRequest'
+      - description: q
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Membership
+  /membershipUser/getAll:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: obsject
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Get All
+      tags:
+      - MembershipUser
+  /product/deleteById/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /product/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /product/getByProductType/{product_type}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: product_type
+        in: path
+        name: product_type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /product/getPagination:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commons.Pagination2ndRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /product/getProductByRecordId/{record_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: record_id
+        in: path
+        name: record_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /product/getViewById/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /product/save:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: record
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Product'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Product
+  /role/deleteById/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Role
+  /role/getAll:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get All
+      tags:
+      - Role
+  /role/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Role
+  /role/getPagination:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commons.Pagination2ndRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Role
+  /role/getViewById/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Role
+  /role/save:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Role'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Role
+  /role_member/deleteById/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - RoleMember
+  /role_member/getAll:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: RoleId
+        in: query
+        name: role_id
+        type: string
+      - description: ApplicationUserId
+        in: query
+        name: application_user_id
+        type: string
+      - description: string
+        in: query
+        name: string
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get All
+      tags:
+      - RoleMember
+  /role_member/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - RoleMember
+  /role_member/getByRoleId/{roleId}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: roleId
+        in: path
+        name: roleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - RoleMember
+  /role_member/getPagination:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commons.Pagination2ndRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - RoleMember
+  /role_member/getViewById/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - RoleMember
+  /role_member/save:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.RoleMember'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - RoleMember
+  /webinar/submit/{id}:
+    post:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
             $ref: '#/definitions/helper.Response'
         "400":
           description: Bad Request
@@ -165,7 +1161,12 @@ paths:
           description: Not Found
           schema:
             type: object
-      summary: Delete Emiten By Id
+      summary: Submit Webinar By Id
       tags:
-      - Emiten
+      - Webinar
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

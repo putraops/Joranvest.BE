@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"joranvest/models"
 	"strings"
+	"time"
 )
 
 type EntityApplicationUserView struct {
@@ -15,12 +16,15 @@ type EntityApplicationUserView struct {
 	IsMembership       bool         `json:"is_membership"`
 	MembershipId       string       `json:"membership_id"`
 	MembershipName     string       `json:"membership_name"`
-	ProductId          string       `json:"product_id"`
-	ProductName        string       `json:"product_name"`
-	HasJcsAccess       bool         `json:"has_jcs_access"`
 	MembershipDuration string       `json:"membership_duration"`
 	MembershipDate     sql.NullTime `json:"membership_date"`
 	MembershipExpired  sql.NullTime `json:"membership_expired"`
+	ProductId          string       `json:"product_id"`
+	ProductName        string       `json:"product_name"`
+	ProductType        string       `json:"product_type"`
+	HasJcsAccess       bool         `json:"has_jcs_access"`
+	JcsStartedDate     *time.Time   `json:"jcs_started_date"`
+	JcsExpiredDate     *time.Time   `json:"jcs_expired_date"`
 	Rating             float32      `json:"rating"`
 	TotalRating        int          `json:"total_rating"`
 	UserCreate         string       `json:"user_create"`
@@ -66,11 +70,14 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  m.membership_id,")
 	sql.WriteString("  m.membership_name,")
 	sql.WriteString("  m.membership_duration,")
-	sql.WriteString("  m.product_id,")
-	sql.WriteString("  m.product_name,")
-	sql.WriteString("  CASE WHEN m.product_id IS NOT NULL THEN true ELSE false END AS has_jcs_access,")
 	sql.WriteString("  m.membership_date,")
 	sql.WriteString("  m.membership_expired,")
+	sql.WriteString("  CASE WHEN j.product_id IS NOT NULL THEN true ELSE false END AS has_jcs_access,")
+	sql.WriteString("  j.product_id,")
+	sql.WriteString("  j.product_name,")
+	sql.WriteString("  j.product_type,")
+	sql.WriteString("  j.jcs_started_date,")
+	sql.WriteString("  j.jcs_expired_date,")
 	sql.WriteString("  false AS has_role,")
 	sql.WriteString("  r.is_admin,")
 	sql.WriteString("  r.gender,")
@@ -88,6 +95,7 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  CONCAT(u2.first_name, ' ', u2.last_name) AS user_update ")
 	sql.WriteString("FROM application_user r ")
 	sql.WriteString("LEFT JOIN LATERAL get_membership_status(r.id) m ON true ")
+	sql.WriteString("LEFT JOIN LATERAL get_jcs_status(r.id::text) j ON true ")
 	sql.WriteString("LEFT JOIN LATERAL get_webinar_speaker_rating(r.id) w(rating, total_rating) ON true ")
 	//sql.WriteString("LEFT JOIN filemaster f ON f.record_id = r.id AND f.file_type = 1 ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")

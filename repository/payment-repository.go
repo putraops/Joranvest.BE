@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"joranvest/commons"
-	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
@@ -25,7 +24,7 @@ type PaymentRepository interface {
 	MembershipPayment(t models.Payment) helper.Response
 	WebinarPayment(t models.Payment) helper.Response
 	Update(record models.Payment) helper.Response
-	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
+	UpdatePaymentStatus(paymentRecord models.Payment) helper.Response
 	GetById(recordId string) helper.Response
 	GetByProviderRecordId(id string) helper.Response
 	GetByProviderReferenceId(id string) helper.Response
@@ -308,27 +307,27 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 
-func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
+func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) helper.Response {
 	commons.Logger()
 
 	tx := db.connection.Begin()
-	var paymentRecord models.Payment
-	db.connection.First(&paymentRecord, "id = ?", req.Id)
-	if req.Id == "" {
-		log.Error("Record not found")
-		log.Error("Function: UpdatePaymentStatus")
-		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
-		return res
-	}
+	// var paymentRecord models.Payment
+	// db.connection.First(&paymentRecord, "id = ?", req.Id)
+	// if req.Id == "" {
+	// 	log.Error("Record not found")
+	// 	log.Error("Function: UpdatePaymentStatus")
+	// 	res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
+	// 	return res
+	// }
 
-	paymentRecord.PaymentStatus = req.PaymentStatus
-	paymentRecord.UpdatedBy = req.UpdatedBy
-	paymentRecord.UpdatedAt = &db.currentTime
-	paymentRecord.PaymentDate = &db.currentTime
+	// paymentRecord.PaymentStatus = req.PaymentStatus
+	// paymentRecord.UpdatedBy = req.UpdatedBy
+	// paymentRecord.UpdatedAt = &db.currentTime
+	// paymentRecord.PaymentDate = &db.currentTime
 
 	var viewRecord entity_view_models.EntityPaymentView
-	db.connection.First(&viewRecord, "id = ?", req.Id)
-	if req.Id == "" {
+	db.connection.First(&viewRecord, "id = ?", paymentRecord.Id)
+	if viewRecord.Id == "" {
 		log.Error("Payment Record not found")
 		res := helper.ServerResponse(false, "Payment Record not found", "Error", helper.EmptyObj{})
 		tx.Rollback()
@@ -430,8 +429,8 @@ func (db *paymentConnection) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto)
 		} else if viewRecord.WebinarTitle != "" {
 			//.. Insert Webinar Registration
 			var webinarRegistrationRecord models.WebinarRegistration
-			webinarRegistrationRecord.CreatedBy = req.UpdatedBy
-			webinarRegistrationRecord.PaymentId = req.Id
+			webinarRegistrationRecord.CreatedBy = paymentRecord.UpdatedBy
+			webinarRegistrationRecord.PaymentId = paymentRecord.Id
 			webinarRegistrationRecord.ApplicationUserId = paymentRecord.CreatedBy
 			webinarRegistrationRecord.WebinarId = viewRecord.RecordId
 

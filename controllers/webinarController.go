@@ -51,13 +51,6 @@ func (c *webinarController) GetDatatables(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags Webinar
-// @Summary Get Pagination
-// @Param id path string true "id"
-// @Router /webinar/getPagination [post]
-// @Success 200 {obsject} object
-// @Failure 400,404 {object} object
-// @Router /webinar/getPagination [get]
 func (c *webinarController) GetPagination(context *gin.Context) {
 	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
@@ -69,13 +62,6 @@ func (c *webinarController) GetPagination(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags Webinar
-// @Summary Get Pagination
-// @Param id path string true "id"
-// @Router /webinar/getPagination [post]
-// @Success 200 {obsject} object
-// @Failure 400,404 {object} object
-// @Router /webinar/getPagination [get]
 func (c *webinarController) GetPaginationRegisteredByUser(context *gin.Context) {
 	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
@@ -150,13 +136,6 @@ func (c *webinarController) Save(context *gin.Context) {
 	}
 }
 
-// @Tags Webinar
-// @Summary Get Webinar By Id
-// @Param id path string true "id"
-// @Router /webinar/getById [delete]
-// @Success 200 {object} helper.Response
-// @Failure 400,404 {object} object
-// @Router /webinar/getById/{id} [get]
 func (c *webinarController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -200,13 +179,6 @@ func (c *webinarController) GetWebinarWithRatingByUserId(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-// @Tags Webinar
-// @Summary Delete Webinar By Id
-// @Param id path string true "id"
-// @Router /webinar/deleteById [delete]
-// @Success 200 {object} helper.Response
-// @Failure 400,404 {object} object
-// @Router /webinar/getById/{id} [get]
 func (c *webinarController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {

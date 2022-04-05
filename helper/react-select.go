@@ -14,10 +14,10 @@ type ReactSelectItemGroup struct {
 }
 
 type ReactSelectRequest struct {
-	Q     string
-	Page  int
-	Size  int
-	Field []string
+	Q     string   `json:"q" form:"q"`
+	Page  int      `json:"page" form:"page"`
+	Size  int      `json:"size" form:"size"`
+	Field []string `json:"field" form:"field"`
 }
 
 type ReactSelectResponse struct {

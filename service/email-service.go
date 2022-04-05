@@ -17,12 +17,14 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
+	"gorm.io/gorm"
 )
 
 type EmailService interface {
 	SendEmailVerification(email string, userId string) helper.Response
 	SendEmailVerified(email string) helper.Response
 	ResetPassword(user models.ApplicationUser) helper.Response
+	PaymentNotificationToTeam(to ...string) helper.Response
 	SendWebinarInformationToParticipants(dto dto.SendWebinarInformationDto, participant entity_view_models.EntityWebinarRegistrationView)
 }
 
@@ -30,18 +32,23 @@ type emailService struct {
 	emailRepository        repository.EmailRepository
 	emailLoggingRepository repository.EmailLoggingRepository
 	helper.AppSession
-	serverName   string
-	smtpHost     string
-	smtpPort     string
-	smtpUsername string
-	smtpPassword string
+	FRONTEND_URL  string
+	DASHBOARD_URL string
+	smtpHost      string
+	smtpPort      string
+	smtpUsername  string
+	smtpPassword  string
+	DB            *gorm.DB
 }
 
-func NewEmailService(emailRepository repository.EmailRepository, emailLoggingRepository repository.EmailLoggingRepository) EmailService {
+// func NewEmailService(emailRepository repository.EmailRepository, emailLoggingRepository repository.EmailLoggingRepository) EmailService {
+func NewEmailService(db *gorm.DB) EmailService {
 	return &emailService{
-		emailRepository:        emailRepository,
-		emailLoggingRepository: emailLoggingRepository,
-		serverName:             os.Getenv("FRONTEND_URL"),
+		DB:                     db,
+		emailRepository:        repository.NewEmailRepository(db),
+		emailLoggingRepository: repository.NewEmailLoggingRepository(db),
+		FRONTEND_URL:           os.Getenv("FRONTEND_URL"),
+		DASHBOARD_URL:          os.Getenv("DASHBOARD_URL"),
 		smtpHost:               os.Getenv("CONFIG_SMTP_HOST"),
 		smtpPort:               os.Getenv("CONFIG_SMTP_PORT"),
 		smtpUsername:           os.Getenv("CONFIG_SMTP_USERNAME"),
@@ -308,7 +315,7 @@ func (service *emailService) SendEmailVerification(email string, userId string) 
                                         <p class="text-center">Untuk menyelesaikan Registrasi akun Anda, Silahkan Verifikasi Email Anda dengan cara menekan tombol di bawah.</p>
 
                                         <p class="text-center">
-                                            <a class="btn btn-primary text-white" href="`+service.serverName+`/register-verification/`+userId+`" target="_blank">Verifikasi Email</a>
+                                            <a class="btn btn-primary text-white" href="`+service.FRONTEND_URL+`/register-verification/`+userId+`" target="_blank">Verifikasi Email</a>
                                         </p>
                                     
                                         <hr style="margin-top: 30px;" />
@@ -610,7 +617,7 @@ func (service *emailService) SendEmailVerified(email string) helper.Response {
                                         <p class="text-center">Tekan tombol dibawah ini untuk login ke dalam Aplikasi.</p>
 
                                         <p class="text-center">
-                                            <a class="btn btn-primary text-white" href="`+service.serverName+`/login" target="_blank">Login</a>
+                                            <a class="btn btn-primary text-white" href="`+service.FRONTEND_URL+`/login" target="_blank">Login</a>
                                         </p>
                                     
                                         <hr style="margin-top: 30px;" />
@@ -941,7 +948,7 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
                                                     <p>Kamu melakukan permintaan untuk reset password. Silahkan tekan tombol dibawah ini untuk mengubah password kamu.<p>
 
                                                     <p class="mb-2">
-                                                        <a class="btn btn-primary text-white" href="`+service.serverName+`/recover-password/`+user.Id+`/`+user.Email+`" target="_blank">Ganti Password</a>
+                                                        <a class="btn btn-primary text-white" href="`+service.FRONTEND_URL+`/recover-password/`+user.Id+`/`+user.Email+`" target="_blank">Ganti Password</a>
                                                     </p>
 
                                                     <p>Jika kamu tidak melakukan permintaan reset password. Silahkan abaikan pesan ini dan laporkan ke support@joranvest.com<p>
@@ -1005,6 +1012,358 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
 	if err != nil {
 		log.Error("Error Send Email....")
 		log.Error(user)
+		log.Error(service.getCurrentFuncName())
+		log.Error(fmt.Sprintf("%v,", errSend))
+	}
+
+	return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
+}
+
+func (service *emailService) PaymentNotificationToTeam(to ...string) helper.Response {
+
+	//--- Participants
+	// var to = []string{user.Email}
+	var subject = "Payment Received"
+
+	commons.Logger()
+	err := godotenv.Load()
+	if err != nil {
+		log.Error(service.getCurrentFuncName())
+		log.Error("Failed to get SMTP Configuration")
+	}
+
+	smtpPort, err := strconv.Atoi(service.smtpPort)
+	if err != nil {
+		log.Error(service.getCurrentFuncName())
+		log.Error("Failed to Convert Port")
+	}
+
+	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", smtpSenderName)
+	mailer.SetHeader("To", to...)
+	mailer.SetHeader("Subject", subject)
+	mailer.SetBody("text/html", `<!doctype html>
+        <html>
+            <head>
+                <meta name="viewport" content="width=device-width" />
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                <title>Joranvest - Payment </title>
+                <style>
+                    body {
+                        background-color:#f6f6f6;
+                        font-family:sans-serif;
+                        -webkit-font-smoothing:antialiased;
+                        font-size:14px;
+                        line-height:1.4;
+                        letter-spacing: 2px;
+                        margin:0;
+                        padding:0;
+                        -ms-text-size-adjust:100%;
+                        -webkit-text-size-adjust:100%;
+                    }
+                    table {
+                        border-collapse:separate;
+                        mso-table-lspace:0pt;
+                        mso-table-rspace:0pt;
+                        width:100%;
+                    }
+                    table td {
+                        font-family:sans-serif;
+                        font-size:14px;
+                        vertical-align:top; 
+                    }
+                    .body{
+                        background-color:#f6f6f6;
+                        width:100%; 
+                    }
+                    .container{
+                        display:block;
+                        margin:0 auto !important;
+                        /* makes it centered */
+                        max-width: 630px;
+                        width: 630px;
+                        padding: 10px;
+                    }
+                    .content-main{
+                        box-sizing:border-box;
+                        margin: 40px auto 0px auto;
+                        max-width: 630px;
+                        /*padding: 20px 50px 20px 50px;*/
+                        min-height: 50vh;
+                        display:flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                    .content-footer{
+                        box-sizing: border-box;
+                        margin-left: auto;
+                        margin-right: auto;
+                        max-width: 630px;
+                        margin-bottom: 50px;
+                    }
+
+                    #tbl-button {
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+
+                    .main{
+                        background:#ffffff;
+                        border-radius: 0px;
+                        width:100%;
+                        border: 1px solid #dee2e6;
+                    }
+                    .body-wrapper{
+                        box-sizing:border-box;
+                        padding: 40px 30px 20px 30px; 
+                    }
+
+                    .footer {
+                        background: #111111!important;
+                        color: white !important;
+                        border-radius: 0px;
+                        width:100%;
+                    }
+                    .footer-wrapper{
+                        box-sizing:border-box;
+                        padding: 25px 30px 25px 30px; 
+                    }
+
+                    /* Typograpghy */
+                    h1, h2, h3, h4{
+                        color: #000000;
+                        font-family: sans-serif;
+                        font-weight: 400;
+                        margin: 0;
+                        margin-bottom: 30px; 
+                    }
+                    h1 {
+                        font-size: 35px;
+                        font-weight: 300;
+                        text-align: center;
+                    }
+                    .no-reply {
+                        font-size: 13px;    
+                        color: #6c757d!important
+                    }
+                    
+                    .text-bold {
+                        font-weight: bold;
+                    }
+                    .text-center {
+                        text-align: center !important;
+                    }
+                    .text-white {
+                        color: white !important;
+                    }
+                    
+                    .mb-0 {
+                        margin-bottom: 0px !important;
+                    }
+
+                    p,ul,ol{
+                        font-family:sans-serif;
+                        font-size:14px;
+                        font-weight:normal;
+                        margin:0;
+                        margin-bottom:15px; 
+                    }
+
+                    p li,ul li,ol li{
+                        list-style-position:inside;
+                        margin-left:5px; 
+                    }
+                    a{
+                        color:#3498db;
+                        text-decoration:underline; 
+                    }
+                    
+
+                    .btn {
+                        background-color:#ffffff;
+                        border:solid 1px #3498db;
+                        border-radius:5px;
+                        box-sizing:border-box;
+                        color:#3498db;
+                        cursor:pointer;
+                        display:inline-block;
+                        font-size:14px;
+                        font-weight:bold;
+                        margin:0;
+                        padding:12px 25px;
+                        text-align:center; 
+                        text-decoration:none;
+                        text-transform:capitalize; 
+                    }
+                
+                    .btn-primary {
+                        background-color:#3498db;
+                        border-color:#3498db;
+                        color: #ffffff; 
+                    }
+                    .btn-primary:hover{
+                        background-color:#34495e !important; 
+                    }
+                    .btn-primary:hover{
+                        background-color:#34495e !important;
+                        border-color:#34495e !important; 
+                    } 
+
+                    .clear{
+                        clear:both; 
+                    }
+                    hr{
+                        border:0;
+                        border-bottom:1px solid #f6f6f6;
+                        margin:20px 0; 
+                    }
+                    .shadow{
+                        box-shadow:0 2px 4px rgba(0,0,0,.075);
+                    }
+                    .joranvest-logo {
+                        margin-right: auto;
+                        margin-left: auto;
+                        margin-bottom: 5px;
+                        width: 35%;
+                    }
+
+                    @media only screen and (max-width:620px){
+                        h1 {
+                            font-size: 20px;
+                        }
+                        .no-reply {
+                            font-size: 10px;    
+                        }
+                        .joranvest-logo {
+                            width: 70%;
+                        }
+
+                        table[class=body] p,
+                        table[class=body] ul,
+                        table[class=body] ol,
+                        table[class=body] td,
+                        table[class=body] span,
+                        table[class=body] a{
+                            font-size:16px !important; 
+                        }
+                        table[class=body] .body-wrapper,
+                        table[class=body] .article{
+                            padding:10px !important; 
+                        }
+                        table[class=body] .content{
+                            padding:0 !important; 
+                        }
+                        table[class=body] .container{
+                            padding:0 !important;
+                            width:100% !important; 
+                        }
+                        table[class=body] .main{
+                            border-left-width:0 !important;
+                            border-radius:0 !important;
+                            border-right-width:0 !important; 
+                        }
+                        table[class=body] .btn table{
+                            width:100% !important; 
+                        }
+                        table[class=body] .btn a{
+                            width:100% !important; 
+                        }
+                        table[class=body] .img-responsive{
+                            height:auto !important;
+                            max-width:100% !important;
+                            width:auto !important; 
+                        }
+                    }
+
+                </style>
+                </head>
+                <body class="">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td class="container" style="padding-bottom: 0px !important;">
+                                <div class="content-main">
+                                <table role="presentation" class="main shadow">
+                                    <tr>
+                                        <td class="body-wrapper">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                <td>
+                                                    <p class="text-center">
+                                                        <a href="https://joranvest.com">
+                                                            <img class="joranvest-logo" src="https://joranvest.com/assets/img/logo.png" alt="Joranvest"/>
+                                                        </a>
+                                                    </p>
+                                                    <hr />
+                                                    
+                                                    <p>Hi Finance Team,</p>
+                                                    
+                                                    <p>Kamu melakukan permintaan untuk reset password. Silahkan tekan tombol dibawah ini untuk mengubah password kamu.<p>
+
+                                                    <p class="mb-2">
+                                                        <a class="btn btn-primary text-white" href="`+service.DASHBOARD_URL+`/payment" target="_blank">DAFTAR PEMBAYARAN</a>
+                                                    </p>
+
+                                                    <p class="mb-0">Terima Kasih,</p>
+                                                    <span>Joranvest</span>
+                                                </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    </table>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td class="container"  style="padding-top: 0px !important;">
+                                <div class="content-footer text-white">
+                                <table role="presentation" class="footer shadow">
+                                    <tr>
+                                        <td class="footer-wrapper">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <div>
+                                                            <p class="text-center">Temukan Kami</p>
+                                                            <p class="text-center">
+                                                                <a href="facebook.com/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px;" src="https://joranvest.com/assets/icons/icon-white-facebook.png" alt="Facebook" /></a>
+                                                                <a href="instagram.com/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-instagram.png" alt="Instagram" /></a>
+                                                                <a href="twitter.com/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-twitter.png" alt="Twitter" /></a>
+                                                                <a href="api.whatsapp.com/send?phone=6281228822774"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-whatsapp.png" alt="Whatsapp Business" /></a>
+                                                                <a href="t.me/joranvest"><img style="margin-right: 2px; margin-left: 2px; width: 37px; height: 37px; border: 3px solid white; border-radius: 6px" src="https://joranvest.com/assets/icons/icon-white-telegram.png" alt="Telegram" /></a>
+                                                            </p>
+                                                            <p class="mb-0 text-center">Copyright © `+strconv.Itoa(time.Now().Year())+` Joranvest</p>
+                                                            <p class="mb-0 text-center">All rights reserved</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    </table>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </table>
+                </body>
+        </html>`)
+
+	dialer := gomail.NewDialer(
+		service.smtpHost,
+		smtpPort,
+		service.smtpUsername,
+		service.smtpPassword,
+	)
+
+	errSend := dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Error Send Email....")
 		log.Error(service.getCurrentFuncName())
 		log.Error(fmt.Sprintf("%v,", errSend))
 	}

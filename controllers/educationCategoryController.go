@@ -34,14 +34,6 @@ func NewEducationCategoryController(db *gorm.DB, jwtService service.JWTService) 
 	}
 }
 
-// @Tags         EducationCategory
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body commons.Pagination2ndRequest true "body"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /educationCategory/getPagination [post]
 func (c educationCategoryController) GetPagination(context *gin.Context) {
 	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
@@ -53,15 +45,6 @@ func (c educationCategoryController) GetPagination(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags         EducationCategory
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body helper.ReactSelectRequest true "body"
-// @Param        q query string false "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /educationCategory/lookup [post]
 func (c educationCategoryController) Lookup(context *gin.Context) {
 	var request helper.ReactSelectRequest
 
@@ -77,14 +60,6 @@ func (c educationCategoryController) Lookup(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-// @Tags         EducationCategory
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body dto.EducationCategoryDto true "dto"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /auth/educationCategory/save [post]
 func (r educationCategoryController) Save(c *gin.Context) {
 	var result helper.Result
 	var dto dto.EducationCategoryDto
@@ -102,14 +77,6 @@ func (r educationCategoryController) Save(c *gin.Context) {
 	return
 }
 
-// @Tags         EducationCategory
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /educationCategory/getById/{id} [get]
 func (c educationCategoryController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -126,14 +93,6 @@ func (c educationCategoryController) GetById(context *gin.Context) {
 	}
 }
 
-// @Tags         EducationCategory
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /educationCategory/deleteById/{id} [delete]
 func (c educationCategoryController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {

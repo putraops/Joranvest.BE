@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type AuthController interface {
@@ -26,6 +27,7 @@ type authController struct {
 	emailService service.EmailService
 	jwtService   service.JWTService
 	ginService   *gin.Context
+	db           *gorm.DB
 }
 
 var (
@@ -34,11 +36,14 @@ var (
 )
 
 //-- to create a new instance of AuthController
-func NewAuthController(authService service.AuthService, emailService service.EmailService, jwtService service.JWTService) AuthController {
+func NewAuthController(db *gorm.DB, authService service.AuthService, jwtService service.JWTService) AuthController {
 	return &authController{
+		db:           db,
+		emailService: service.NewEmailService(db),
 		authService:  authService,
-		emailService: emailService,
-		jwtService:   jwtService,
+		// emailService: emailService,
+
+		jwtService: jwtService,
 	}
 }
 

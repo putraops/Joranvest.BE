@@ -12,11 +12,13 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type ApplicationUserController interface {
 	GetPagination(context *gin.Context)
 	Lookup(context *gin.Context)
+	UserLookup(context *gin.Context)
 	UpdateProfile(context *gin.Context)
 	ChangePhone(context *gin.Context)
 	ChangePassword(context *gin.Context)
@@ -31,19 +33,21 @@ type ApplicationUserController interface {
 }
 
 type applicationUserController struct {
+	DB                     *gorm.DB
 	applicationUserService service.ApplicationUserService
 	jwtService             service.JWTService
 }
 
-func NewApplicationUserController(applicationUserService service.ApplicationUserService, jwtService service.JWTService) ApplicationUserController {
+func NewApplicationUserController(db *gorm.DB, jwtService service.JWTService) ApplicationUserController {
 	return &applicationUserController{
-		applicationUserService: applicationUserService,
+		DB:                     db,
+		applicationUserService: service.NewApplicationUserService(db),
 		jwtService:             jwtService,
 	}
 }
 
 // @Tags         ApplicationUser
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        body body commons.Pagination2ndRequest true "body"
@@ -75,6 +79,27 @@ func (c *applicationUserController) Lookup(context *gin.Context) {
 	var result = c.applicationUserService.Lookup(request)
 	response := helper.BuildResponse(true, "Ok", result.Data)
 	context.JSON(http.StatusOK, response)
+}
+
+func (c *applicationUserController) UserLookup(context *gin.Context) {
+	var request helper.ReactSelectRequest
+	//qry := context.Request.URL.Query()
+
+	// if _, found := qry["q"]; found {
+	// 	request.Q = fmt.Sprint(qry["q"][0])
+	// }
+	//request.Field = helper.StringifyToArray(fmt.Sprint(qry["field"]))
+
+	// var result = c.applicationUserService.Lookup(request)
+
+	err := context.Bind(&request)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, helper.StandartResult(false, err.Error(), nil))
+		return
+	}
+
+	var result = c.applicationUserService.UserLookup(request)
+	context.JSON(http.StatusOK, result)
 }
 
 func (c *applicationUserController) GetAll(context *gin.Context) {

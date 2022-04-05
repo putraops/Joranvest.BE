@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,6 @@ import (
 	"net/http"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 )
@@ -52,18 +51,13 @@ var (
 	technicalAnalysisRepository       repository.TechnicalAnalysisRepository       = repository.NewTechnicalAnalysisRepository(db)
 	fundamentalAnalysisRepository     repository.FundamentalAnalysisRepository     = repository.NewFundamentalAnalysisRepository(db)
 	fundamentalAnalysisTagRepository  repository.FundamentalAnalysisTagRepository  = repository.NewFundamentalAnalysisTagRepository(db)
-	roleRepository                    repository.RoleRepository                    = repository.NewRoleRepository(db)
-	roleMemberRepository              repository.RoleMemberRepository              = repository.NewRoleMemberRepository(db)
 	roleMenuRepository                repository.RoleMenuRepository                = repository.NewRoleMenuRepository(db)
 	organizationRepository            repository.OrganizationRepository            = repository.NewOrganizationRepository(db)
 	ratingMasterRepository            repository.RatingMasterRepository            = repository.NewRatingMasterRepository(db)
 	paymentRepository                 repository.PaymentRepository                 = repository.NewPaymentRepository(db)
-	emailRepository                   repository.EmailRepository                   = repository.NewEmailRepository(db)
-	emailLoggingRepository            repository.EmailLoggingRepository            = repository.NewEmailLoggingRepository(db)
 
 	jwtService                     service.JWTService                     = service.NewJWTService()
 	authService                    service.AuthService                    = service.NewAuthService(applicationUserRepository)
-	applicationUserService         service.ApplicationUserService         = service.NewApplicationUserService(applicationUserRepository, emailLoggingRepository, emailService)
 	applicationMenuCategoryService service.ApplicationMenuCategoryService = service.NewApplicationMenuCategoryService(applicationMenuCategoryRepository)
 	applicationMenuService         service.ApplicationMenuService         = service.NewApplicationMenuService(applicationMenuRepository)
 	membershipService              service.MembershipService              = service.NewMembershipService(membershipRepository)
@@ -82,16 +76,12 @@ var (
 	technicalAnalysisService       service.TechnicalAnalysisService       = service.NewTechnicalAnalysisService(technicalAnalysisRepository)
 	fundamentalAnalysisService     service.FundamentalAnalysisService     = service.NewFundamentalAnalysisService(fundamentalAnalysisRepository)
 	fundamentalAnalysisTagService  service.FundamentalAnalysisTagService  = service.NewFundamentalAnalysisTagService(fundamentalAnalysisTagRepository)
-	roleMemberService              service.RoleMemberService              = service.NewRoleMemberService(roleMemberRepository)
 	roleMenuService                service.RoleMenuService                = service.NewRoleMenuService(roleMenuRepository)
 	organizationService            service.OrganizationService            = service.NewOrganizationService(organizationRepository)
 	ratingMasterService            service.RatingMasterService            = service.NewRatingMasterService(ratingMasterRepository)
-	paymentService                 service.PaymentService                 = service.NewPaymentService(paymentRepository)
-	emailService                   service.EmailService                   = service.NewEmailService(emailRepository, emailLoggingRepository)
-	webinarRegistrationService     service.WebinarRegistrationService     = service.NewWebinarRegistrationService(webinarRegistrationRepository, emailService)
 
-	authController                    controllers.AuthController                    = controllers.NewAuthController(authService, emailService, jwtService)
-	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(applicationUserService, jwtService)
+	authController                    controllers.AuthController                    = controllers.NewAuthController(db, authService, jwtService)
+	applicationUserController         controllers.ApplicationUserController         = controllers.NewApplicationUserController(db, jwtService)
 	applicationMenuCategoryController controllers.ApplicationMenuCategoryController = controllers.NewApplicationMenuCategoryController(applicationMenuCategoryService, jwtService)
 	applicationMenuController         controllers.ApplicationMenuController         = controllers.NewApplicationMenuController(applicationMenuService, jwtService)
 	membershipController              controllers.MembershipController              = controllers.NewMembershipController(membershipService, jwtService)
@@ -107,7 +97,7 @@ var (
 	webinarCategoryController         controllers.WebinarCategoryController         = controllers.NewWebinarCategoryController(webinarCategoryService, jwtService)
 	webinarController                 controllers.WebinarController                 = controllers.NewWebinarController(webinarService, jwtService)
 	webinarSpeakerController          controllers.WebinarSpeakerController          = controllers.NewWebinarSpeakerController(webinarSpeakerService, jwtService)
-	webinarRegistrationController     controllers.WebinarRegistrationController     = controllers.NewWebinarRegistrationController(webinarRegistrationService, jwtService)
+	webinarRegistrationController     controllers.WebinarRegistrationController     = controllers.NewWebinarRegistrationController(db, jwtService)
 	webinarRecordingController        controllers.WebinarRecordingController        = controllers.NewWebinarRecordingController(db, jwtService)
 	sectorController                  controllers.SectorController                  = controllers.NewSectorController(sectorService, jwtService)
 	tagController                     controllers.TagController                     = controllers.NewTagController(tagService, jwtService)
@@ -115,83 +105,38 @@ var (
 	fundamentalAnalysisController     controllers.FundamentalAnalysisController     = controllers.NewFundamentalAnalysisController(fundamentalAnalysisService, jwtService)
 	fundamentalAnalysisTagController  controllers.FundamentalAnalysisTagController  = controllers.NewFundamentalAnalysisTagController(fundamentalAnalysisTagService, jwtService)
 	roleController                    controllers.RoleController                    = controllers.NewRoleController(db, jwtService)
-	roleMemberController              controllers.RoleMemberController              = controllers.NewRoleMemberController(roleMemberService, jwtService)
 	roleMenuController                controllers.RoleMenuController                = controllers.NewRoleMenuController(roleMenuService, jwtService)
+	roleMemberController              controllers.RoleMemberController              = controllers.NewRoleMemberController(db, jwtService)
 	organizationController            controllers.OrganizationController            = controllers.NewOrganizationController(organizationService, jwtService)
 	ratingMasterController            controllers.RatingMasterController            = controllers.NewRatingMasterController(ratingMasterService, jwtService)
-	paymentController                 controllers.PaymentController                 = controllers.NewPaymentController(paymentService, jwtService)
+	paymentController                 controllers.PaymentController                 = controllers.NewPaymentController(db, jwtService)
 	productController                 controllers.ProductController                 = controllers.NewProductController(db, jwtService)
-	emailController                   controllers.EmailController                   = controllers.NewEmailController(emailService, jwtService)
+	emailController                   controllers.EmailController                   = controllers.NewEmailController(db, jwtService)
 
 	//clientest coreapi.ClientTest = coreapi.NewClientTest()
 	// #endregion
 )
 
-func createMyRender(view_path string) multitemplate.Renderer {
-	r := multitemplate.NewRenderer()
-	// _ = []string{
-	// 	shared_path + "_header.html",
-	// 	shared_path + "_nav.html",
-	// 	shared_path + "_logout.html",
-	// 	shared_path + "_baseScript.html",
-	// 	// ...
-	// }
-
-	shared_path := view_path + "shared/"
-	// #region Template Route
-	r.AddFromFiles("index", "templates/views/index.html", shared_path+"_header.html", shared_path+"_baseScript.html")
-	// #endregion
-	return r
-}
-
-func Setup(c *gin.Context, title string, header string, subheader string, nav string, subnav string) map[string]string {
-	data := make(map[string]string)
-	session := sessions.Default(c)
-	isAdmin := fmt.Sprint(session.Get("IsAdmin"))
-	entityid := fmt.Sprint(session.Get("EntityId"))
-	data["title"] = title
-	data["header"] = header
-	data["subheader"] = subheader
-	data["nav"] = nav
-	data["subnav"] = subnav
-	data["timenow"] = time.Now().Format("2006-01-02 15:04:05.000000")
-	data["token"] = fmt.Sprint(session.Get("mytoken"))
-	if isAdmin == "true" {
-		data["isadmin"] = "1"
-	} else {
-		data["isadmin"] = "0"
-	}
-	data["entityid"] = entityid
-	data["userLoginName"] = fmt.Sprint(session.Get("userLoginName"))
-	data["userFirstName"] = fmt.Sprint(session.Get("userFirstName"))
-
-	if session.Get("userFirstName") == nil {
-		data["userFirstName"] = ""
-	}
-
-	//url := location.Get(c)
-	fmt.Println("=======================================")
-	// fmt.Println("Scheme: ", url.Scheme)
-	// fmt.Println("Host: ", url.Host)
-	// fmt.Println("Path: ", url.Path)
-	fmt.Println("=======================================")
-	//data["hostName"] = url.Scheme + "://" + url.Host
-
-	return data
-}
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	defer config.CloseDatabaseConnection(db)
+	status, SERVER_NAME, SERVER_PORT := GetServerDefinition()
+	if !status {
+		panic("Mo Server_NAME OR SERVER_PORT found on .env")
+	}
 	//getCardToken()
 
 	// r := gin.New()
 	r := gin.Default()
 
 	// programatically set swagger info
-	docs.SwaggerInfo.Title = "Swagger Example API"
-	docs.SwaggerInfo.Description = "This is a sample server Petstore server."
+	docs.SwaggerInfo.Title = "Joranvest API Documentation"
+	// docs.SwaggerInfo.Description = "This is a full API documentation of Joranvest."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "localhost:10000"
+	docs.SwaggerInfo.Host = *SERVER_NAME + ":" + *SERVER_PORT
 	docs.SwaggerInfo.BasePath = "/api"
 
 	// r.Use(location.New(location.Config{
@@ -221,18 +166,17 @@ func main() {
 	r.Static("/assets", "./assets")
 	r.Static("/upload", "./upload")
 	r.Static("/script", "./templates/js")
-	r.HTMLRender = createMyRender("templates/views/")
+	// r.HTMLRender = createMyRender("templates/views/")
 
 	// #region User Web View
 	r.GET("/", func(c *gin.Context) {
-		data := Setup(c, "Joranvest", "", "", "", "")
 		c.HTML(
 			http.StatusOK,
 			"index",
 			gin.H{
 				"title": "Joranvest",
 				"err":   "",
-				"data":  data,
+				"data":  nil,
 			},
 		)
 	})
@@ -444,20 +388,19 @@ func main() {
 	{
 		membershipWithAuthRoutes := membershipApiRoutes.Group("/membership", middleware.AuthorizeJWT(jwtService))
 		{
-			membershipWithAuthRoutes.GET("/lookup", membershipController.Lookup)
+			membershipWithAuthRoutes.POST("/save", membershipController.Save)
+			membershipWithAuthRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
 		}
 		membershipWithoutAuthRoutes := membershipApiRoutes.Group("/membership")
 		{
+			membershipWithoutAuthRoutes.GET("/lookup", membershipController.Lookup)
 			membershipWithoutAuthRoutes.POST("/getDatatables", membershipController.GetDatatables)
 			membershipWithoutAuthRoutes.POST("/getPagination", membershipController.GetPagination)
 			membershipWithoutAuthRoutes.GET("/getAll", membershipController.GetAll)
-			membershipWithoutAuthRoutes.POST("/save", membershipController.Save)
 			membershipWithoutAuthRoutes.POST("/setRecommendation", membershipController.SetRecommendation)
 			membershipWithoutAuthRoutes.GET("/getById/:id", membershipController.GetById)
 			membershipWithoutAuthRoutes.GET("/getViewById/:id", membershipController.GetViewById)
-			membershipWithoutAuthRoutes.DELETE("/deleteById/:id", membershipController.DeleteById)
 		}
-
 	}
 
 	membershipUserApiRoutes := r.Group("api/membership_user")
@@ -487,6 +430,7 @@ func main() {
 	{
 		applicationUserApiRoutes.POST("/getPagination", applicationUserController.GetPagination)
 		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
+		applicationUserApiRoutes.POST("/userLookup", applicationUserController.UserLookup)
 		applicationUserApiRoutes.POST("/changePhone", applicationUserController.ChangePhone)
 		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
 		applicationUserApiRoutes.POST("/updateProfile", applicationUserController.UpdateProfile)
@@ -522,22 +466,45 @@ func main() {
 		fundamentalAnalysisTagApiRoutes.GET("/getAll", fundamentalAnalysisTagController.GetAll)
 	}
 
-	roleApiRoutes := r.Group("api/role", middleware.DBTransactionMiddleware(db))
+	// roleApiRoutes := r.Group("api/role", middleware.DBTransactionMiddleware(db))
+	// {
+	// 	roleApiRoutes.POST("/getPagination", roleController.GetPagination)
+	// 	roleApiRoutes.POST("/save", roleController.Save)
+	// 	roleApiRoutes.GET("/getById/:id", roleController.GetById)
+	// 	roleApiRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
+	// }
+
+	roleApiRoutes := r.Group("api")
 	{
-		roleApiRoutes.POST("/getPagination", roleController.GetPagination)
-		roleApiRoutes.POST("/save", roleController.Save)
-		roleApiRoutes.GET("/getById/:id", roleController.GetById)
-		roleApiRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
+		roleAuthRoutes := roleApiRoutes.Group("/role", middleware.AuthorizeJWT(jwtService))
+		{
+			roleAuthRoutes.POST("/save", roleController.Save)
+			roleAuthRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
+		}
+		roleNoAuthRoutes := roleApiRoutes.Group("/role")
+		{
+			// roleNoAuthRoutes.GET("/lookup", roleController.Lookup)
+			roleNoAuthRoutes.POST("/getPagination", roleController.GetPagination)
+			roleNoAuthRoutes.GET("/getAll", roleController.GetAll)
+			roleNoAuthRoutes.GET("/getById/:id", roleController.GetById)
+			roleNoAuthRoutes.GET("/getViewById/:id", roleController.GetViewById)
+		}
 	}
 
-	roleMemberApiRoutes := r.Group("api/role_member")
+	roleMemberApiRoutes := r.Group("api")
 	{
-		roleMemberApiRoutes.POST("/getDatatables", roleMemberController.GetDatatables)
-		roleMemberApiRoutes.POST("/save", roleMemberController.Save)
-		roleMemberApiRoutes.GET("/getById/:id", roleMemberController.GetById)
-		roleMemberApiRoutes.DELETE("/deleteById/:id", roleMemberController.DeleteById)
-		roleMemberApiRoutes.GET("/getUsersInRole/:roleId", roleMemberController.GetUsersInRole)
-		roleMemberApiRoutes.GET("/getUsersNotInRole/:roleId/:search", roleMemberController.GetUsersNotInRole)
+		roleMemberApiAuthRoutes := roleMemberApiRoutes.Group("/role_member", middleware.AuthorizeJWT(jwtService))
+		{
+			roleMemberApiAuthRoutes.POST("/save", roleMemberController.Save)
+			roleMemberApiAuthRoutes.DELETE("/deleteById/:id", roleMemberController.DeleteById)
+		}
+		roleMemberNoAuthRoutes := roleMemberApiRoutes.Group("/role_member")
+		{
+			roleMemberNoAuthRoutes.POST("/getPagination", roleMemberController.GetPagination)
+			roleMemberNoAuthRoutes.GET("/getById/:id", roleMemberController.GetById)
+			roleMemberNoAuthRoutes.GET("/getByRoleId/:roleId", roleMemberController.GetByRoleId)
+			roleMemberNoAuthRoutes.GET("/getViewById/:id", roleMemberController.GetViewById)
+		}
 	}
 
 	roleMenuApiRoutes := r.Group("api/role_menu")
@@ -611,7 +578,16 @@ func main() {
 	// #endregion
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Run(":10000")
+	r.Run(":" + *SERVER_PORT)
+}
+
+func GetServerDefinition() (status bool, SERVER_NAME *string, SERVER_PORT *string) {
+	name := os.Getenv("SERVER_NAME")
+	port := os.Getenv("SERVER_PORT")
+	if name == "" || port == "" {
+		return false, nil, nil
+	}
+	return true, &name, &port
 }
 
 func CORSMiddleware() gin.HandlerFunc {

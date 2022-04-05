@@ -6,7 +6,7 @@ import (
 )
 
 type EntityRoleMenuView struct {
-	models.RoleMember
+	models.RoleMenu
 	RoleName            string `json:"role_name"`
 	ApplicationMenuName string `json:"application_menu_name"`
 	ParentId            string `json:"parent_id"`

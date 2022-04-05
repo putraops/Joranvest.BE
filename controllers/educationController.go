@@ -54,7 +54,7 @@ func NewEducationController(db *gorm.DB, jwtService service.JWTService) Educatio
 }
 
 // @Tags         Education
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        body body commons.Pagination2ndRequest true "body"
@@ -72,15 +72,6 @@ func (c educationController) GetPagination(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags         Product
-// @Security 	 ApiKeyAuth
-// @Summary
-// @Description
-// @Accept       json
-// @Produce      json
-// @Success      200 {array} models.EducationPlaylist
-// @Failure 	 400,404 {object} object
-// @Router       /education/getPlaylist [post]
 func (c educationController) GetPlaylist(context *gin.Context) {
 	qry := context.Request.URL.Query()
 	filter := make(map[string]interface{})
@@ -94,15 +85,6 @@ func (c educationController) GetPlaylist(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body helper.ReactSelectRequest true "body"
-// @Param        q query string false "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/lookup [post]
 func (c educationController) Lookup(context *gin.Context) {
 	var request helper.ReactSelectRequest
 
@@ -118,14 +100,6 @@ func (c educationController) Lookup(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body dto.EducationDto true "dto"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /auth/education/save [post]
 func (r educationController) Save(c *gin.Context) {
 	var result helper.Result
 	var dto dto.EducationDto
@@ -143,14 +117,6 @@ func (r educationController) Save(c *gin.Context) {
 	return
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/submit/{id} [get]
 func (c educationController) Submit(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -161,14 +127,6 @@ func (c educationController) Submit(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body dto.EducationPlaylistUserDto true "dto"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /auth/education/markVideoAsWatched [post]
 func (r educationController) MarkVideoAsWatched(c *gin.Context) {
 	var result helper.Result
 	var dto dto.EducationPlaylistUserDto
@@ -186,14 +144,6 @@ func (r educationController) MarkVideoAsWatched(c *gin.Context) {
 	return
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/getById/{id} [get]
 func (c educationController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -210,14 +160,6 @@ func (c educationController) GetById(context *gin.Context) {
 	}
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/getViewById/{id} [get]
 func (c educationController) GetViewById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -234,14 +176,6 @@ func (c educationController) GetViewById(context *gin.Context) {
 	}
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        path_url path string true "path_url"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/getByPathUrl/{path_url} [get]
 func (c educationController) GetByPathUrl(context *gin.Context) {
 	path_url := context.Param("path_url")
 	if path_url == "" {
@@ -252,14 +186,6 @@ func (c educationController) GetByPathUrl(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/getPlaylistById/{id} [get]
 func (c educationController) GetPlaylistById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -276,14 +202,6 @@ func (c educationController) GetPlaylistById(context *gin.Context) {
 	}
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /education/getPlaylistByUserId/{education_id}/{application_user_id} [get]
 func (c educationController) GetPlaylistByUserId(context *gin.Context) {
 	education_id := context.Param("education_id")
 	application_user_id := context.Param("application_user_id")
@@ -296,14 +214,6 @@ func (c educationController) GetPlaylistByUserId(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /auth/education/deleteById/{id} [delete]
 func (c educationController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
@@ -314,14 +224,6 @@ func (c educationController) DeleteById(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        body body dto.EducationDto true "dto"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /auth/education/addToPlaylist [post]
 func (r educationController) AddToPlaylist(c *gin.Context) {
 	var result helper.Result
 	var dto dto.EducationPlaylistDto
@@ -339,14 +241,6 @@ func (r educationController) AddToPlaylist(c *gin.Context) {
 	return
 }
 
-// @Tags         Education
-// @Security 	 ApiKeyAuth
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "id"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
-// @Router       /auth/education/removeFromPlaylistById/{id} [delete]
 func (c educationController) RemoveFromPlaylistById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {

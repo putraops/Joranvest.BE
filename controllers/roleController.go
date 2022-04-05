@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"joranvest/commons"
-	"joranvest/dto"
 	"joranvest/helper"
+	"joranvest/models"
+	"joranvest/repository"
 	"joranvest/service"
 
 	"github.com/gin-gonic/gin"
@@ -14,106 +14,149 @@ import (
 )
 
 type RoleController interface {
-	Save(context *gin.Context)
 	GetPagination(context *gin.Context)
+	GetAll(context *gin.Context)
+	Save(context *gin.Context)
 	GetById(context *gin.Context)
+	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
 }
 
 type roleController struct {
-	roleService service.RoleService
-	jwtService  service.JWTService
-	db          *gorm.DB
+	roleService    service.RoleService
+	roleRepository repository.RoleRepository
+	jwtService     service.JWTService
+	db             *gorm.DB
 }
 
 func NewRoleController(db *gorm.DB, jwtService service.JWTService) RoleController {
 	return &roleController{
-		db:          db,
-		jwtService:  jwtService,
-		roleService: service.NewRoleService(db, jwtService),
+		db:             db,
+		jwtService:     jwtService,
+		roleService:    service.NewRoleService(db, jwtService),
+		roleRepository: repository.NewRoleRepository(db),
 	}
 }
 
-func (c *roleController) GetPagination(context *gin.Context) {
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body commons.Pagination2ndRequest true "body"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/getPagination [post]
+func (c roleController) GetPagination(context *gin.Context) {
 	var req commons.Pagination2ndRequest
 	errDTO := context.Bind(&req)
 	if errDTO != nil {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
+		return
 	}
+
 	var result = c.roleService.GetPagination(req)
 	context.JSON(http.StatusOK, result)
 }
 
 // @Tags         Role
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
-// @Param        body body dto.RoleDto true "dto"
-// @Success      200 {object} object
-// @Failure 	 400,404 {object} object
+// @Param        body body models.Role true "request"
+// @Success      200  {object}  object
+// @Failure      400,404,500  {object}  object
 // @Router       /role/save [post]
 func (r roleController) Save(c *gin.Context) {
-	var result helper.Result
-	var dto dto.RoleDto
-	r.db = c.MustGet("db_trx").(*gorm.DB)
-	dto.Context = c
-
-	errDto := c.Bind(&dto)
-	if errDto != nil {
-		res := helper.StandartResult(false, errDto.Error(), helper.EmptyObj{})
-		c.JSON(http.StatusBadRequest, res)
+	var request models.Role
+	err := c.Bind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, helper.StandartResult(false, err.Error(), nil))
 		return
 	}
 
-	if dto.Id == "" {
-		result = r.roleService.OpenTransaction(r.db).Insert(dto)
-		if !result.Status {
-			c.JSON(http.StatusInternalServerError, helper.StandartResult(result.Status, result.Message, result.Data))
-			r.db.Rollback()
-			return
-		}
-	} else {
-		fmt.Println("Do Update")
-	}
-
-	if err := r.db.Commit().Error; err != nil {
-		c.JSON(http.StatusInternalServerError, helper.StandartResult(result.Status, result.Message, result.Data))
-		return
-	}
-
-	c.JSON(http.StatusOK, helper.StandartResult(result.Status, result.Message, result.Data))
+	result := r.roleService.Save(request, c)
+	c.JSON(http.StatusOK, result)
 	return
 }
 
-func (c *roleController) GetById(context *gin.Context) {
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Summary 	 Get All
+// @Accept       json
+// @Produce      json
+// @Param        name query string false "name"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/getAll [get]
+func (r roleController) GetAll(context *gin.Context) {
+	qry := context.Request.URL.Query()
+	filter := make(map[string]interface{})
+
+	for k, v := range qry {
+		filter[k] = v
+	}
+
+	var result = r.roleService.GetAll(filter)
+	context.JSON(http.StatusOK, helper.StandartResult(true, "Ok", result))
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "id"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/getById/{id} [get]
+func (c roleController) GetById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
+
 	result := c.roleService.GetById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
-	} else {
-		response := helper.BuildResponse(true, "Ok", result.Data)
-		context.JSON(http.StatusOK, response)
-	}
+	context.JSON(http.StatusOK, result)
 }
 
-func (c *roleController) DeleteById(context *gin.Context) {
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "id"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/getViewById/{id} [get]
+func (c roleController) GetViewById(context *gin.Context) {
+	id := context.Param("id")
+	if id == "" {
+		response := helper.BuildErrorResponse("Failed to get id", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	result := c.roleService.GetViewById(id)
+	context.JSON(http.StatusOK, result)
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "id"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/deleteById/{id} [delete]
+func (c roleController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
 		response := helper.BuildErrorResponse("Failed to get Id", "Error", helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, response)
+		return
 	}
-	var result = c.roleService.DeleteById(id)
-	if !result.Status {
-		response := helper.BuildErrorResponse("Error", result.Message, helper.EmptyObj{})
-		context.JSON(http.StatusNotFound, response)
-	} else {
-		response := helper.BuildResponse(true, "Ok", helper.EmptyObj{})
-		context.JSON(http.StatusOK, response)
-	}
+
+	result := c.roleService.DeleteById(id)
+	context.JSON(http.StatusOK, result)
 }

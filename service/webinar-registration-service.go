@@ -6,6 +6,8 @@ import (
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
+
+	"gorm.io/gorm"
 )
 
 type WebinarRegistrationService interface {
@@ -27,12 +29,14 @@ type webinarRegistrationService struct {
 	webinarRegistrationRepository repository.WebinarRegistrationRepository
 	emailService                  EmailService
 	helper.AppSession
+	DB *gorm.DB
 }
 
-func NewWebinarRegistrationService(repo repository.WebinarRegistrationRepository, emailService EmailService) WebinarRegistrationService {
+func NewWebinarRegistrationService(db *gorm.DB) WebinarRegistrationService {
 	return &webinarRegistrationService{
-		webinarRegistrationRepository: repo,
-		emailService:                  emailService,
+		DB:                            db,
+		webinarRegistrationRepository: repository.NewWebinarRegistrationRepository(db),
+		emailService:                  NewEmailService(db),
 	}
 }
 

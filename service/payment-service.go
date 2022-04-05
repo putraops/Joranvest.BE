@@ -18,7 +18,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/mashingan/smapping"
+	log "github.com/sirupsen/logrus"
 	"github.com/xendit/xendit-go"
+	"gorm.io/gorm"
 )
 
 type PaymentService interface {
@@ -26,7 +28,7 @@ type PaymentService interface {
 	GetAll(filter map[string]interface{}) []models.Payment
 	GetUniqueNumber() int
 	GetEWalletPaymentStatus(ctx *gin.Context, referenceId string) helper.Response
-	UpdateWalletPaymentStatus(dto dto.UpdatePaymentStatusDto) helper.Response
+	// UpdateWalletPaymentStatus(dto dto.UpdatePaymentStatusDto) helper.Response
 	MembershipPayment(record models.Payment) helper.Response
 	WebinarPayment(record models.Payment) helper.Response
 
@@ -43,41 +45,45 @@ type PaymentService interface {
 }
 
 type paymentService struct {
+	DB                *gorm.DB
 	paymentRepository repository.PaymentRepository
+	emailService      EmailService
 	helper.AppSession
 	jwtService JWTService
 }
 
-func NewPaymentService(repo repository.PaymentRepository) PaymentService {
+func NewPaymentService(db *gorm.DB) PaymentService {
 	return &paymentService{
-		paymentRepository: repo,
+		DB:                db,
+		paymentRepository: repository.NewPaymentRepository(db),
 		jwtService:        NewJWTService(),
+		emailService:      NewEmailService(db),
 	}
 }
 
-func (service *paymentService) GetPagination(request commons.Pagination2ndRequest) interface{} {
-	return service.paymentRepository.GetPagination(request)
+func (r *paymentService) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	return r.paymentRepository.GetPagination(request)
 }
 
-func (service *paymentService) GetAll(filter map[string]interface{}) []models.Payment {
-	return service.paymentRepository.GetAll(filter)
+func (r *paymentService) GetAll(filter map[string]interface{}) []models.Payment {
+	return r.paymentRepository.GetAll(filter)
 }
 
-func (service *paymentService) GetUniqueNumber() int {
-	return service.paymentRepository.GetUniqueNumber()
+func (r *paymentService) GetUniqueNumber() int {
+	return r.paymentRepository.GetUniqueNumber()
 }
 
-func (service *paymentService) MembershipPayment(record models.Payment) helper.Response {
-	return service.paymentRepository.MembershipPayment(record)
+func (r *paymentService) MembershipPayment(record models.Payment) helper.Response {
+	return r.paymentRepository.MembershipPayment(record)
 }
-func (service *paymentService) WebinarPayment(record models.Payment) helper.Response {
-	return service.paymentRepository.WebinarPayment(record)
+func (r *paymentService) WebinarPayment(record models.Payment) helper.Response {
+	return r.paymentRepository.WebinarPayment(record)
 }
 
-func (service *paymentService) CreateQRCode(dto qrcode.QRCodeDto) helper.Response {
+func (r *paymentService) CreateQRCode(dto qrcode.QRCodeDto) helper.Response {
 	token := dto.Context.GetHeader("Authorization")
 
-	userIdentity := service.jwtService.GetUserByToken(token)
+	userIdentity := r.jwtService.GetUserByToken(token)
 	xenditService := qrcode.NewQRCode(dto.Context)
 
 	var newRecord = models.Payment{}
@@ -113,7 +119,7 @@ func (service *paymentService) CreateQRCode(dto qrcode.QRCodeDto) helper.Respons
 	newRecord.ProviderRecordId = res.ID
 
 	var result helper.Response
-	result = service.paymentRepository.Insert(newRecord)
+	result = r.paymentRepository.Insert(newRecord)
 	if !result.Status {
 		return result
 	}
@@ -121,9 +127,9 @@ func (service *paymentService) CreateQRCode(dto qrcode.QRCodeDto) helper.Respons
 	return helper.ServerResponse(true, "Ok", "", res)
 }
 
-func (service *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.Result {
+func (r *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.Result {
 	token := dto.Context.GetHeader("Authorization")
-	userIdentity := service.jwtService.GetUserByToken(token)
+	userIdentity := r.jwtService.GetUserByToken(token)
 	// xenditService := ewallet.NewPaymentRequest(dto.Context)
 
 	var newRecord = models.Payment{}
@@ -158,18 +164,23 @@ func (service *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.
 	newRecord.PaymentDateExpired = &payment_date_expired
 
 	var result helper.Response
-	result = service.paymentRepository.Insert(newRecord)
+	result = r.paymentRepository.Insert(newRecord)
 	if !result.Status {
 		return helper.StandartResult(false, result.Message, result.Data)
 	}
 
+	// var asds =
+	args := []string{"a", "b"}
+
+	_ = r.emailService.PaymentNotificationToTeam(args...)
+
 	return helper.StandartResult(true, "Ok", result.Data)
 }
 
-func (service *paymentService) CreateEWalletPayment(dto ewallet.PaymentDto) helper.Response {
+func (r *paymentService) CreateEWalletPayment(dto ewallet.PaymentDto) helper.Response {
 	token := dto.Context.GetHeader("Authorization")
 
-	userIdentity := service.jwtService.GetUserByToken(token)
+	userIdentity := r.jwtService.GetUserByToken(token)
 	xenditService := ewallet.NewPaymentRequest(dto.Context)
 
 	var newRecord = models.Payment{}
@@ -214,7 +225,7 @@ func (service *paymentService) CreateEWalletPayment(dto ewallet.PaymentDto) help
 	// res.BusinessID
 
 	var result helper.Response
-	result = service.paymentRepository.Insert(newRecord)
+	result = r.paymentRepository.Insert(newRecord)
 	if !result.Status {
 		return result
 	}
@@ -222,10 +233,10 @@ func (service *paymentService) CreateEWalletPayment(dto ewallet.PaymentDto) help
 	return helper.ServerResponse(true, "Ok", "", res)
 }
 
-func (service *paymentService) GetEWalletPaymentStatus(ctx *gin.Context, referenceId string) helper.Response {
+func (r *paymentService) GetEWalletPaymentStatus(ctx *gin.Context, referenceId string) helper.Response {
 	xendit := ewallet.NewPaymentRequest(ctx)
 
-	res := service.paymentRepository.GetByProviderReferenceId(referenceId)
+	res := r.paymentRepository.GetByProviderReferenceId(referenceId)
 	if !res.Status {
 		return res
 	}
@@ -254,30 +265,51 @@ func (service *paymentService) GetEWalletPaymentStatus(ctx *gin.Context, referen
 	return helper.Response{Status: true, Message: "Ok", Data: mapResult}
 }
 
-func (service *paymentService) Update(record models.Payment) helper.Response {
-	return service.paymentRepository.Update(record)
+func (r *paymentService) Update(record models.Payment) helper.Response {
+	return r.paymentRepository.Update(record)
 }
 
-func (service *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
-	return service.paymentRepository.UpdatePaymentStatus(req)
+func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
+	var paymentRecord models.Payment
+	res := r.paymentRepository.GetById(req.Id)
+	if !res.Status {
+		log.Error(res.Message)
+		log.Error("Function: UpdatePaymentStatus")
+		return res
+	}
+
+	currentTime := time.Now()
+	paymentRecord.PaymentStatus = req.PaymentStatus
+	paymentRecord.UpdatedBy = req.UpdatedBy
+	paymentRecord.UpdatedAt = &currentTime
+	paymentRecord.PaymentDate = &currentTime
+
+	paymentResult := r.paymentRepository.UpdatePaymentStatus(paymentRecord)
+	if paymentResult.Status {
+		//-- send email
+		//service.emailService.SendWebinarInformationToParticipants()
+	}
+
+	return paymentResult
 }
 
-func (service *paymentService) UpdateWalletPaymentStatus(dto dto.UpdatePaymentStatusDto) helper.Response {
-	return service.paymentRepository.UpdatePaymentStatus(dto)
+// func (r *paymentService) UpdateWalletPaymentStatus(dto dto.UpdatePaymentStatusDto) helper.Response {
+
+// 	return r.paymentRepository.UpdatePaymentStatus(dto)
+// }
+
+func (r *paymentService) GetById(recordId string) helper.Response {
+	return r.paymentRepository.GetById(recordId)
 }
 
-func (service *paymentService) GetById(recordId string) helper.Response {
-	return service.paymentRepository.GetById(recordId)
+func (r *paymentService) GetByProviderRecordId(id string) helper.Response {
+	return r.paymentRepository.GetByProviderRecordId(id)
 }
 
-func (service *paymentService) GetByProviderRecordId(id string) helper.Response {
-	return service.paymentRepository.GetByProviderRecordId(id)
+func (r *paymentService) GetByProviderReferenceId(id string) helper.Response {
+	return r.paymentRepository.GetByProviderReferenceId(id)
 }
 
-func (service *paymentService) GetByProviderReferenceId(id string) helper.Response {
-	return service.paymentRepository.GetByProviderReferenceId(id)
-}
-
-func (service *paymentService) DeleteById(recordId string) helper.Response {
-	return service.paymentRepository.DeleteById(recordId)
+func (r *paymentService) DeleteById(recordId string) helper.Response {
+	return r.paymentRepository.DeleteById(recordId)
 }

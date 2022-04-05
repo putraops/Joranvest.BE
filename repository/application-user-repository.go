@@ -19,7 +19,8 @@ import (
 
 type ApplicationUserRepository interface {
 	GetPagination(request commons.Pagination2ndRequest) interface{}
-	Lookup(req map[string]interface{}) []models.ApplicationUser
+
+	UserLookup(request helper.ReactSelectRequest) []models.ApplicationUser
 	GetViewUserByEmail(username string, email string) interface{}
 	GetViewUserByUsernameOrEmail(username string, email string) interface{}
 	Insert(t models.ApplicationUser) (models.ApplicationUser, error)
@@ -36,6 +37,9 @@ type ApplicationUserRepository interface {
 	GetViewById(applicationUserId string) helper.Response
 	GetAll() []models.ApplicationUser
 	DeleteById(recordId string) helper.Response
+
+	//-- Next ini hilang
+	Lookup(req map[string]interface{}) []models.ApplicationUser
 }
 
 type applicationUserConnection struct {
@@ -118,6 +122,7 @@ func (db *applicationUserConnection) GetPagination(request commons.Pagination2nd
 	return response
 }
 
+//-- Next ini hilang
 func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models.ApplicationUser {
 	records := []models.ApplicationUser{}
 	db.connection.Order("first_name, last_name asc")
@@ -134,9 +139,9 @@ func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models
 			if v.Operator == "like" {
 				for _, valueDetail := range v.Field {
 					if totalFilter == 0 {
-						sqlQuery.WriteString(" AND (LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
+						sqlQuery.WriteString(" AND (LOWER(" + valueDetail + ") ILIKE " + fmt.Sprint("'%", v.Value, "%'"))
 					} else {
-						sqlQuery.WriteString(" OR LOWER(" + valueDetail + ") LIKE " + fmt.Sprint("'%", v.Value, "%'"))
+						sqlQuery.WriteString(" OR LOWER(" + valueDetail + ") ILIKE " + fmt.Sprint("'%", v.Value, "%'"))
 					}
 					totalFilter++
 				}
@@ -149,7 +154,35 @@ func (db *applicationUserConnection) Lookup(req map[string]interface{}) []models
 	}
 
 	fmt.Println("Query: ", sqlQuery.String())
+	fmt.Println("Query: ", sqlQuery.String())
 	db.connection.Raw(sqlQuery.String()).Scan(&records)
+	return records
+}
+
+func (db *applicationUserConnection) UserLookup(request helper.ReactSelectRequest) []models.ApplicationUser {
+	records := []models.ApplicationUser{}
+	var orders = "first_name, last_name ASC"
+	var filters = " 1 = 1 AND is_admin = false "
+
+	if request.Q != "" {
+		totalFilter := 0
+		for _, field := range request.Field {
+			if totalFilter == 0 {
+				filters += " AND ("
+			} else {
+				filters += " OR "
+			}
+
+			filters += fmt.Sprintf("%v ILIKE %v", field, fmt.Sprint("'%", request.Q, "%'"))
+			totalFilter++
+		}
+		if totalFilter > 0 {
+			filters += ")"
+		}
+	}
+
+	offset := (request.Page - 1) * request.Size
+	db.connection.Debug().Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
 	return records
 }
 

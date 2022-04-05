@@ -6,60 +6,92 @@ import (
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
 	"joranvest/repository"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type RoleMemberService interface {
-	GetDatatables(request commons.DataTableRequest) commons.DataTableResponse
-	GetAll(filter map[string]interface{}) []models.RoleMember
+	GetPagination(request commons.Pagination2ndRequest) interface{}
+	GetAll(filter map[string]interface{}) []entity_view_models.EntityRoleMemberView
+	Save(record models.RoleMember, ctx *gin.Context) helper.Result
+	GetViewById(recordId string) helper.Result
+	GetById(recordId string) helper.Result
+	GetByRoleId(roleId string) []entity_view_models.EntityRoleMemberView
+	DeleteById(recordId string) helper.Result
 	GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView
 	GetUsersNotInRole(roleId string, search string) []entity_view_models.EntityApplicationUserView
-	Insert(record models.RoleMember) helper.Response
-	Update(record models.RoleMember) helper.Response
-	GetById(recordId string) helper.Response
-	DeleteById(recordId string) helper.Response
+
+	OpenTransaction(trxHandle *gorm.DB) roleMemberService
 }
 
 type roleMemberService struct {
+	DB         *gorm.DB
+	jwtService JWTService
+	// webinarRepository    repository.WebinarRepository
 	roleMemberRepository repository.RoleMemberRepository
-	helper.AppSession
 }
 
-func NewRoleMemberService(repo repository.RoleMemberRepository) RoleMemberService {
-	return &roleMemberService{
-		roleMemberRepository: repo,
+func NewRoleMemberService(db *gorm.DB, jwtService JWTService) RoleMemberService {
+	return roleMemberService{
+		DB:         db,
+		jwtService: jwtService,
+		// webinarRepository:    repository.NewWebinarRepository(db),
+		roleMemberRepository: repository.NewRoleMemberRepository(db),
 	}
 }
 
-func (service *roleMemberService) GetDatatables(request commons.DataTableRequest) commons.DataTableResponse {
-	return service.roleMemberRepository.GetDatatables(request)
+func (r roleMemberService) GetPagination(request commons.Pagination2ndRequest) interface{} {
+	return r.roleMemberRepository.GetPagination(request)
 }
 
-func (service *roleMemberService) GetAll(filter map[string]interface{}) []models.RoleMember {
-	return service.roleMemberRepository.GetAll(filter)
+func (r roleMemberService) GetAll(filter map[string]interface{}) []entity_view_models.EntityRoleMemberView {
+	return r.roleMemberRepository.GetViewAll(filter)
 }
 
-func (service *roleMemberService) GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView {
-	result := service.roleMemberRepository.GetUsersInRole(roleId)
-	return result
+func (r roleMemberService) GetByRoleId(roleId string) []entity_view_models.EntityRoleMemberView {
+	filter := make(map[string]interface{})
+	filter["role_id"] = roleId
+
+	return r.roleMemberRepository.GetViewAll(filter)
 }
 
-func (service *roleMemberService) GetUsersNotInRole(roleId string, search string) []entity_view_models.EntityApplicationUserView {
-	result := service.roleMemberRepository.GetUsersNotInRole(roleId, search)
-	return result
+func (r roleMemberService) Save(record models.RoleMember, ctx *gin.Context) helper.Result {
+	authHeader := ctx.GetHeader("Authorization")
+	userIdentity := r.jwtService.GetUserByToken(authHeader)
+	record.EntityId = &userIdentity.EntityId
+
+	if record.Id == nil {
+		record.CreatedBy = &userIdentity.UserId
+		record.OwnerId = &userIdentity.UserId
+		return r.roleMemberRepository.Insert(record)
+	} else {
+		record.UpdatedBy = &userIdentity.UserId
+		return r.roleMemberRepository.Update(record)
+	}
 }
 
-func (service *roleMemberService) Insert(record models.RoleMember) helper.Response {
-	return service.roleMemberRepository.Insert(record)
+func (r roleMemberService) GetById(recordId string) helper.Result {
+	return r.roleMemberRepository.GetById(recordId)
 }
 
-func (service *roleMemberService) Update(record models.RoleMember) helper.Response {
-	return service.roleMemberRepository.Update(record)
+func (r roleMemberService) GetViewById(recordId string) helper.Result {
+	return r.roleMemberRepository.GetViewById(recordId)
 }
 
-func (service *roleMemberService) GetById(recordId string) helper.Response {
-	return service.roleMemberRepository.GetById(recordId)
+func (r roleMemberService) DeleteById(recordId string) helper.Result {
+	return r.roleMemberRepository.DeleteById(recordId)
 }
 
-func (service *roleMemberService) DeleteById(recordId string) helper.Response {
-	return service.roleMemberRepository.DeleteById(recordId)
+func (r roleMemberService) GetUsersInRole(roleId string) []entity_view_models.EntityRoleMemberView {
+	return r.roleMemberRepository.GetUsersInRole(roleId)
+}
+
+func (r roleMemberService) GetUsersNotInRole(roleId string, search string) []entity_view_models.EntityApplicationUserView {
+	return r.roleMemberRepository.GetUsersNotInRole(roleId, search)
+}
+
+func (r roleMemberService) OpenTransaction(trxHandle *gorm.DB) roleMemberService {
+	r.roleMemberRepository = r.roleMemberRepository.OpenTransaction(trxHandle)
+	return r
 }

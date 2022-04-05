@@ -151,13 +151,14 @@ func (c *emitenController) GetById(context *gin.Context) {
 	}
 }
 
-// @Tags Emiten
-// @Summary Delete Emiten By Id
-// @Param id path string true "id"
-// @Router /emiten/deleteById [delete]
-// @Success 200 {object} helper.Response
-// @Failure 400,404 {object} object
-// @Router /emiten/getById/{id} [get]
+// @Tags         Emiten
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "id"
+// @Success      200 {object} object
+// @Failure 	 400,404 {object} object
+// @Router       /emiten/deleteById/{id} [delete]
 func (c *emitenController) DeleteById(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {

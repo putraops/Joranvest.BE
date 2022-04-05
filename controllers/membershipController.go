@@ -40,7 +40,7 @@ func NewMembershipController(membershipService service.MembershipService, jwtSer
 }
 
 // @Tags         Membership
-// @Security 	 ApiKeyAuth
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        body body helper.ReactSelectRequest true "body"

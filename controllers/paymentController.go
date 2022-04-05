@@ -9,6 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xendit/xendit-go"
+	"gorm.io/gorm"
 
 	"joranvest/commons"
 	"joranvest/dto"
@@ -49,12 +50,14 @@ type paymentController struct {
 	paymentService service.PaymentService
 	jwtService     service.JWTService
 	helper.AppSession
+	DB *gorm.DB
 	//ewallet ewallet.Payment
 }
 
-func NewPaymentController(paymentService service.PaymentService, jwtService service.JWTService) PaymentController {
+func NewPaymentController(db *gorm.DB, jwtService service.JWTService) PaymentController {
 	return &paymentController{
-		paymentService: paymentService,
+		DB:             db,
+		paymentService: service.NewPaymentService(db),
 		jwtService:     jwtService,
 		//ewallet:        ewallet.NewPaymentRequest(&gin.Context{}),
 		// orderService: service.NewOrderService(db, jwtService),
@@ -110,7 +113,7 @@ func (c *paymentController) HookForXendit(context *gin.Context) {
 			paymentStatus = commons.PaidPaymentStatus
 		}
 
-		c.paymentService.UpdateWalletPaymentStatus(dto.UpdatePaymentStatusDto{
+		c.paymentService.UpdatePaymentStatus(dto.UpdatePaymentStatusDto{
 			Id:            paymentRecordId,
 			PaymentStatus: paymentStatus,
 			UpdatedBy:     xenditCharge.Metadata["user_id"].(string),
@@ -284,7 +287,7 @@ func (c *paymentController) UpdateWalletPaymentStatus(context *gin.Context) {
 	}
 
 	dto.Context = context
-	response := c.paymentService.UpdateWalletPaymentStatus(dto)
+	response := c.paymentService.UpdatePaymentStatus(dto)
 	context.JSON(http.StatusOK, response)
 	return
 }

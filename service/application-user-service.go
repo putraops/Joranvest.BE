@@ -11,12 +11,14 @@ import (
 	"log"
 
 	"github.com/mashingan/smapping"
+	"gorm.io/gorm"
 )
 
 //-- This is user contract
 type ApplicationUserService interface {
 	GetPagination(request commons.Pagination2ndRequest) interface{}
 	Lookup(request helper.ReactSelectRequest) helper.Response
+	UserLookup(r helper.ReactSelectRequest) helper.Result
 	Update(user dto.ApplicationUserUpdateDto) models.ApplicationUser
 	UserProfile(recordId string) models.ApplicationUser
 	UpdateProfile(dtoRecord dto.ApplicationUserDescriptionDto) helper.Response
@@ -32,16 +34,19 @@ type ApplicationUserService interface {
 }
 
 type applicationUserService struct {
+	DB                        *gorm.DB
 	applicationUserRepository repository.ApplicationUserRepository
 	emailLoggingRepository    repository.EmailLoggingRepository
 	emailService              EmailService
 }
 
-func NewApplicationUserService(repo repository.ApplicationUserRepository, emailLoggingRepo repository.EmailLoggingRepository, emailService EmailService) ApplicationUserService {
+// func NewApplicationUserService(db *gorm.DB, repo repository.ApplicationUserRepository, emailLoggingRepo repository.EmailLoggingRepository, emailService EmailService) ApplicationUserService {
+func NewApplicationUserService(db *gorm.DB) ApplicationUserService {
 	return &applicationUserService{
-		applicationUserRepository: repo,
-		emailLoggingRepository:    emailLoggingRepo,
-		emailService:              emailService,
+		DB:                        db,
+		applicationUserRepository: repository.NewApplicationUserRepository(db),
+		emailLoggingRepository:    repository.NewEmailLoggingRepository(db),
+		emailService:              NewEmailService(db),
 	}
 }
 
@@ -77,6 +82,24 @@ func (service *applicationUserService) Lookup(r helper.ReactSelectRequest) helpe
 	}
 	ary.Count = len(result)
 	return helper.ServerResponse(true, "Ok", "", ary)
+}
+
+func (service *applicationUserService) UserLookup(r helper.ReactSelectRequest) helper.Result {
+	var ary helper.ReactSelectResponse
+
+	result := service.applicationUserRepository.UserLookup(r)
+	if len(result) > 0 {
+		for _, record := range result {
+			var p = helper.ReactSelectItem{
+				Value:    record.Id,
+				Label:    record.FirstName + " " + record.LastName,
+				ParentId: "",
+			}
+			ary.Results = append(ary.Results, p)
+		}
+	}
+	ary.Count = len(result)
+	return helper.StandartResult(true, "Ok", ary)
 }
 
 func (service *applicationUserService) Update(record dto.ApplicationUserUpdateDto) models.ApplicationUser {
