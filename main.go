@@ -479,6 +479,8 @@ func main() {
 		roleAuthRoutes := roleApiRoutes.Group("/role", middleware.AuthorizeJWT(jwtService))
 		{
 			roleAuthRoutes.POST("/save", roleController.Save)
+			roleAuthRoutes.POST("/notification/set", roleController.SetNotification)
+			roleAuthRoutes.GET("/notification/getByRoleId/:roleId", roleController.GetNotificationByRoleId)
 			roleAuthRoutes.DELETE("/deleteById/:id", roleController.DeleteById)
 		}
 		roleNoAuthRoutes := roleApiRoutes.Group("/role")

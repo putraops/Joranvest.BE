@@ -83,6 +83,7 @@ func SetupDatabaseConnection() *gorm.DB {
 		&models.ApplicationUser{},
 		&models.Team{},
 		&models.Role{},
+		&models.RoleNotification{},
 		&models.TeamRole{},
 		&models.TeamMember{},
 		&models.RoleMember{},
@@ -138,6 +139,8 @@ func SetupDatabaseConnection() *gorm.DB {
 	viewList[vw_team_member.TableName()] = vw_team_member.Migration()
 	var vw_role = entity_view_models.EntityRoleView{}
 	viewList[vw_role.TableName()] = vw_role.Migration()
+	var vw_role_notification = entity_view_models.EntityRoleNotificationView{}
+	viewList[vw_role_notification.TableName()] = vw_role_notification.Migration()
 	var vw_team_role = entity_view_models.EntityTeamRoleView{}
 	viewList[vw_team_role.TableName()] = vw_team_role.Migration()
 

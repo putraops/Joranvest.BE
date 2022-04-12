@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"joranvest/commons"
+	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
 	"joranvest/repository"
@@ -20,6 +21,10 @@ type RoleController interface {
 	GetById(context *gin.Context)
 	GetViewById(context *gin.Context)
 	DeleteById(context *gin.Context)
+
+	//-- Notification
+	SetNotification(c *gin.Context)
+	GetNotificationByRoleId(context *gin.Context)
 }
 
 type roleController struct {
@@ -78,6 +83,48 @@ func (r roleController) Save(c *gin.Context) {
 	result := r.roleService.Save(request, c)
 	c.JSON(http.StatusOK, result)
 	return
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body dto.RoleNotificationDto true "request"
+// @Success      200  {object}  object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/set/notification [post]
+func (r roleController) SetNotification(c *gin.Context) {
+	var request *dto.RoleNotificationDto
+
+	err := c.Bind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, helper.StandartResult(false, err.Error(), nil))
+		return
+	}
+
+	result := r.roleService.SetNotification(request, c)
+	c.JSON(http.StatusOK, result)
+	return
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        roleId path string true "roleId"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/notification/getByRoleId/{roleId} [get]
+func (c roleController) GetNotificationByRoleId(context *gin.Context) {
+	roleId := context.Param("roleId")
+	if roleId == "" {
+		response := helper.BuildErrorResponse("Failed to get roleId", "Error", helper.EmptyObj{})
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	result := c.roleService.GetNotificationConfigurationByRoleId(roleId)
+	context.JSON(http.StatusOK, result)
 }
 
 // @Tags         Role

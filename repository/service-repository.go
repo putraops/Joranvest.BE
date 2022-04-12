@@ -13,7 +13,6 @@ import (
 
 type ServiceRepository interface {
 	GetAll(filter map[string]interface{}) interface{}
-	Lookup(req map[string]interface{}, r helper.Select2Request) []models.ApplicationUser
 	ConvertViewQueryIntoViewCount(param string) string
 	ConvertViewQueryIntoViewCountByPublic(param string, tableName string) string
 	getCurrentFuncName() string

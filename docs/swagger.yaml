@@ -236,6 +236,43 @@ definitions:
     - application_user_id
     - role_id
     type: object
+  models.RoleNotification:
+    properties:
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      entity_id:
+        type: string
+      has_payment_notification:
+        type: boolean
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_locked:
+        type: boolean
+      owner_id:
+        type: string
+      payment_notification_type:
+        type: string
+      role_id:
+        type: string
+      submitted_at:
+        type: string
+      submitted_by:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
   models.Sector:
     properties:
       approved_at:
@@ -865,6 +902,40 @@ paths:
       - BearerAuth: []
       tags:
       - Role
+  /role/notification/configuration:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.RoleNotification'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - Role
   /role/save:
     post:
       consumes:
@@ -944,10 +1015,6 @@ paths:
       - description: ApplicationUserId
         in: query
         name: application_user_id
-        type: string
-      - description: string
-        in: query
-        name: string
         type: string
       produces:
       - application/json
