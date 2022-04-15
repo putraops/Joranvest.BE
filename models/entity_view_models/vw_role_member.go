@@ -7,16 +7,17 @@ import (
 
 type EntityRoleMemberView struct {
 	models.RoleMember
-	ApplicationUserFirstName   string `json:"application_user_first_name"`
-	ApplicationUserLastName    string `json:"application_user_last_name"`
-	ApplicationUserFullname    string `json:"application_user_fullname"`
-	ApplicationUserInitialName string `json:"application_user_initial_name"`
-	RoleName                   string `json:"role_name"`
-
-	CreatedUserFullname   *string `json:"created_by_fullname"`
-	UpdatedUserFullname   *string `json:"updated_by_fullname"`
-	SubmittedUserFullname *string `json:"submitted_by_fullname"`
-	ApprovedUserFullname  *string `json:"approved_by_fullname"`
+	ApplicationUserFirstName   string  `json:"application_user_first_name"`
+	ApplicationUserLastName    string  `json:"application_user_last_name"`
+	ApplicationUserFullname    string  `json:"application_user_fullname"`
+	ApplicationUserInitialName string  `json:"application_user_initial_name"`
+	RoleName                   string  `json:"role_name"`
+	HasDashboardAccess         bool    `json:"has_dashboard_access"`
+	HasFullAccess              bool    `json:"has_full_access"`
+	CreatedUserFullname        *string `json:"created_by_fullname"`
+	UpdatedUserFullname        *string `json:"updated_by_fullname"`
+	SubmittedUserFullname      *string `json:"submitted_by_fullname"`
+	ApprovedUserFullname       *string `json:"approved_by_fullname"`
 }
 
 func (EntityRoleMemberView) TableName() string {
@@ -47,6 +48,8 @@ func (EntityRoleMemberView) ViewModel() string {
 	sql.WriteString("  CONCAT(UPPER(LEFT(u5.first_name, 1)), '', UPPER(LEFT(u5.last_name, 1))) AS application_user_initial_name,")
 	sql.WriteString("  r.role_id,")
 	sql.WriteString("  rl.name AS role_name,")
+	sql.WriteString("  rl.has_dashboard_access,")
+	sql.WriteString("  rl.has_full_access,")
 	sql.WriteString("  CASE WHEN u1.first_name IS NULL OR u1.first_name = '' THEN u1.username ELSE concat(u1.first_name, ' ', u1.last_name) END AS created_by_fullname,")
 	sql.WriteString("  CASE WHEN u2.first_name IS NULL OR u2.first_name = '' THEN u2.username ELSE concat(u2.first_name, ' ', u2.last_name) END AS updated_by_fullname,")
 	sql.WriteString("  CASE WHEN u3.first_name IS NULL OR u3.first_name = '' THEN u3.username ELSE concat(u3.first_name, ' ', u3.last_name) END AS submitted_by_fullname,")
