@@ -101,7 +101,7 @@ func (r webinarRecordingRepository) GetPagination(request commons.Pagination2ndR
 	// #endregion
 
 	offset := (page - 1) * pageSize
-	r.DB.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	r.DB.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	// #region Get Total Data for Pagination
 	result := r.DB.Where(filters).Find(&recordsUnfilter)
@@ -175,7 +175,7 @@ func (r webinarRecordingRepository) Update(record models.WebinarRecording) helpe
 	}
 	json.Unmarshal(mapResult.Data.([]byte), &oldRecord)
 
-	if err := r.DB.Debug().Save(&oldRecord).Error; err != nil {
+	if err := r.DB.Save(&oldRecord).Error; err != nil {
 		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
 	}
 	return helper.StandartResult(true, "Webinar Recording Data has been updated.", oldRecord)

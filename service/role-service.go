@@ -20,7 +20,9 @@ type RoleService interface {
 	DeleteById(recordId string) helper.Result
 
 	//-- Configuration
-	SetNotification(dto *dto.RoleNotificationDto, ctx *gin.Context) helper.Result
+	SetDashboardAccess(dto dto.RoleAccessDto, ctx *gin.Context) helper.Result
+	SetFullAccess(dto dto.RoleAccessDto, ctx *gin.Context) helper.Result
+	SetPaymentNotification(dto dto.PaymentNotificationDto, ctx *gin.Context) helper.Result
 	GetNotificationConfigurationByRoleId(roleId string) helper.Result
 
 	OpenTransaction(trxHandle *gorm.DB) roleService
@@ -67,29 +69,63 @@ func (r roleService) Save(record models.Role, ctx *gin.Context) helper.Result {
 	}
 }
 
-func (r roleService) SetNotification(dto *dto.RoleNotificationDto, ctx *gin.Context) helper.Result {
+func (r roleService) SetFullAccess(dto dto.RoleAccessDto, ctx *gin.Context) helper.Result {
+	authHeader := ctx.GetHeader("Authorization")
+	userIdentity := r.jwtService.GetUserByToken(authHeader)
+
+	var record models.Role
+	result := r.roleRepository.GetById(dto.RoleId)
+	if !result.Status {
+		return result
+	}
+
+	record = result.Data.(models.Role)
+	record.UpdatedBy = &userIdentity.UserId
+	record.HasFullAccess = &dto.IsChecked
+	return r.roleRepository.Update(record)
+}
+
+func (r roleService) SetDashboardAccess(dto dto.RoleAccessDto, ctx *gin.Context) helper.Result {
+	authHeader := ctx.GetHeader("Authorization")
+	userIdentity := r.jwtService.GetUserByToken(authHeader)
+
+	var record models.Role
+	result := r.roleRepository.GetById(dto.RoleId)
+	if !result.Status {
+		return result
+	}
+
+	record = result.Data.(models.Role)
+	record.UpdatedBy = &userIdentity.UserId
+	record.HasDashboardAccess = &dto.IsChecked
+	return r.roleRepository.Update(record)
+}
+
+func (r roleService) SetPaymentNotification(dto dto.PaymentNotificationDto, ctx *gin.Context) helper.Result {
+	notificationType := "Email"
 	authHeader := ctx.GetHeader("Authorization")
 	userIdentity := r.jwtService.GetUserByToken(authHeader)
 
 	var record models.RoleNotification
-	record.CreatedBy = &userIdentity.UserId
-	record.RoleId = &dto.RoleId
-
-	if len(*dto.NotificationName) > 0 {
-		for _, value := range *dto.NotificationName {
-			for _, service := range commons.JoranvestNotificationServices {
-				//-- Email Notificaiton
-				if value == service.Name && service.Name == commons.PaymentNotification {
-					hasPaymentNotification := true
-					record.HasPaymentNotification = &hasPaymentNotification
-					record.PaymentNotificationType = &service.Type
-				}
-			}
-		}
-		return r.roleNotificationRepository.SetNotification(record)
-	} else {
-		return r.roleNotificationRepository.DeleteByRoleId(dto.RoleId)
+	result := r.roleNotificationRepository.GetRoleById(dto.RoleId)
+	if result.Status {
+		record = result.Data.(models.RoleNotification)
 	}
+
+	if record.Id == nil {
+		record.CreatedBy = &userIdentity.UserId
+	} else {
+		record.UpdatedBy = &userIdentity.UserId
+	}
+
+	record.RoleId = &dto.RoleId
+	record.PaymentNotificationType = &notificationType
+	if !dto.IsChecked {
+		record.PaymentNotificationType = nil
+	}
+	record.HasPaymentNotification = &dto.IsChecked
+
+	return r.roleNotificationRepository.SetNotification(record)
 }
 
 func (r roleService) GetNotificationConfigurationByRoleId(roleId string) helper.Result {

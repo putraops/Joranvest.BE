@@ -344,7 +344,7 @@ func (db *membershipUserConnection) GetById(recordId string) helper.Response {
 
 func (db *membershipUserConnection) GetByUserId(userId string) helper.Response {
 	var record models.MembershipUser
-	db.connection.Debug().First(&record, "application_user_id = ?", userId)
+	db.connection.First(&record, "application_user_id = ?", userId)
 	if record.Id == "" {
 		res := helper.ServerResponse(false, "Record not found", "Error", helper.EmptyObj{})
 		return res

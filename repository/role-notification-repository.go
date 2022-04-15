@@ -41,24 +41,25 @@ func NewRoleNotificationRepository(db *gorm.DB) RoleNotificationRepository {
 func (r roleNotificationRepository) SetNotification(record models.RoleNotification) helper.Result {
 	tx := r.DB.Begin()
 
-	if err := r.DB.Where("role_id = ?", record.RoleId).Delete(&record).Error; err != nil {
-		log.Error(r.serviceRepository.getCurrentFuncName())
-		log.Error(fmt.Sprintf("%v,", err.Error()))
-		tx.Rollback()
-		return helper.StandartResult(false, fmt.Sprintf("%v", err.Error()), nil)
+	if record.Id == nil {
+		newId := uuid.New().String()
+		record.Id = &newId
+		record.CreatedAt = &r.currentTime
+		if err := r.DB.Create(&record).Error; err != nil {
+			log.Error(r.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", err.Error()))
+			tx.Rollback()
+			return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), nil)
+		}
+	} else {
+		record.UpdatedAt = &r.currentTime
+		if err := r.DB.Save(&record).Error; err != nil {
+			log.Error(r.serviceRepository.getCurrentFuncName())
+			log.Error(fmt.Sprintf("%v,", err.Error()))
+			tx.Rollback()
+			return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), nil)
+		}
 	}
-
-	newId := uuid.New().String()
-	record.Id = &newId
-	record.CreatedAt = &r.currentTime
-
-	if err := r.DB.Create(&record).Error; err != nil {
-		log.Error(r.serviceRepository.getCurrentFuncName())
-		log.Error(fmt.Sprintf("%v,", err.Error()))
-		tx.Rollback()
-		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), nil)
-	}
-
 	tx.Commit()
 	return helper.StandartResult(true, "Ok", record)
 }

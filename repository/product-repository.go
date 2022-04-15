@@ -98,7 +98,7 @@ func (r productRepository) GetPagination(request commons.Pagination2ndRequest) i
 	// #endregion
 
 	offset := (page - 1) * pageSize
-	r.DB.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	r.DB.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	// #region Get Total Data for Pagination
 	result := r.DB.Where(filters).Find(&recordsUnfilter)
@@ -147,7 +147,7 @@ func (r productRepository) Update(record models.Product) helper.Result {
 	}
 	json.Unmarshal(mapResult.Data.([]byte), &oldRecord)
 
-	if err := r.DB.Debug().Save(&oldRecord).Error; err != nil {
+	if err := r.DB.Save(&oldRecord).Error; err != nil {
 		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
 	}
 	return helper.StandartResult(true, "Product has been updated.", oldRecord)

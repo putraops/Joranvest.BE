@@ -99,7 +99,7 @@ func (r educationRepository) GetPagination(request commons.Pagination2ndRequest)
 	// #endregion
 
 	offset := (page - 1) * pageSize
-	r.DB.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	r.DB.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	// #region Get Total Data for Pagination
 	result := r.DB.Where(filters).Find(&recordsUnfilter)

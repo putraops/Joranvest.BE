@@ -7,7 +7,6 @@ import (
 
 type EntityRoleView struct {
 	models.Role
-
 	CreatedUserFullname   *string `json:"created_by_fullname"`
 	UpdatedUserFullname   *string `json:"updated_by_fullname"`
 	SubmittedUserFullname *string `json:"submitted_by_fullname"`
@@ -36,6 +35,8 @@ func (EntityRoleView) ViewModel() string {
 	sql.WriteString("  r.owner_id,")
 	sql.WriteString("  r.entity_id,")
 	sql.WriteString("  r.name,")
+	sql.WriteString("  r.has_dashboard_access,")
+	sql.WriteString("  r.has_full_access,")
 	sql.WriteString("  r.description,")
 	sql.WriteString("  CASE WHEN u1.first_name IS NULL OR u1.first_name = '' THEN u1.username ELSE concat(u1.first_name, ' ', u1.last_name) END AS created_by_fullname,")
 	sql.WriteString("  CASE WHEN u2.first_name IS NULL OR u2.first_name = '' THEN u2.username ELSE concat(u2.first_name, ' ', u2.last_name) END AS updated_by_fullname,")

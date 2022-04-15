@@ -963,8 +963,8 @@ var doc = `{
                 }
             }
         },
-        "/role/notification/configuration": {
-            "post": {
+        "/role/notification/getByRoleId/{roleId}": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -981,13 +981,11 @@ var doc = `{
                 ],
                 "parameters": [
                     {
-                        "description": "request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.RoleNotification"
-                        }
+                        "type": "string",
+                        "description": "roleId",
+                        "name": "roleId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1042,6 +1040,171 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.Role"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/role/set/dashboardAccess": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RoleAccessDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/role/set/fullAccess": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RoleAccessDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/role/set/paymentNotification": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PaymentNotificationDto"
                         }
                     }
                 ],
@@ -1531,6 +1694,34 @@ var doc = `{
                 }
             }
         },
+        "dto.PaymentNotificationDto": {
+            "type": "object",
+            "required": [
+                "role_id"
+            ],
+            "properties": {
+                "is_checked": {
+                    "type": "boolean"
+                },
+                "role_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RoleAccessDto": {
+            "type": "object",
+            "required": [
+                "role_id"
+            ],
+            "properties": {
+                "is_checked": {
+                    "type": "boolean"
+                },
+                "role_id": {
+                    "type": "string"
+                }
+            }
+        },
         "helper.ReactSelectRequest": {
             "type": "object",
             "properties": {
@@ -1762,6 +1953,12 @@ var doc = `{
                 "entity_id": {
                     "type": "string"
                 },
+                "has_dashboard_access": {
+                    "type": "boolean"
+                },
+                "has_full_access": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -1832,62 +2029,6 @@ var doc = `{
                     "type": "boolean"
                 },
                 "owner_id": {
-                    "type": "string"
-                },
-                "role_id": {
-                    "type": "string"
-                },
-                "submitted_at": {
-                    "type": "string"
-                },
-                "submitted_by": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "updated_by": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.RoleNotification": {
-            "type": "object",
-            "properties": {
-                "approved_at": {
-                    "type": "string"
-                },
-                "approved_by": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "created_by": {
-                    "type": "string"
-                },
-                "entity_id": {
-                    "type": "string"
-                },
-                "has_payment_notification": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "is_default": {
-                    "type": "boolean"
-                },
-                "is_locked": {
-                    "type": "boolean"
-                },
-                "owner_id": {
-                    "type": "string"
-                },
-                "payment_notification_type": {
                     "type": "string"
                 },
                 "role_id": {

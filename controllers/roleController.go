@@ -23,7 +23,9 @@ type RoleController interface {
 	DeleteById(context *gin.Context)
 
 	//-- Notification
-	SetNotification(c *gin.Context)
+	SetDashboardAccess(c *gin.Context)
+	SetFullAccess(c *gin.Context)
+	SetPaymentNotification(c *gin.Context)
 	GetNotificationByRoleId(context *gin.Context)
 }
 
@@ -89,12 +91,12 @@ func (r roleController) Save(c *gin.Context) {
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
-// @Param        body body dto.RoleNotificationDto true "request"
+// @Param        body body dto.PaymentNotificationDto true "request"
 // @Success      200  {object}  object
 // @Failure      400,404,500  {object}  object
-// @Router       /role/set/notification [post]
-func (r roleController) SetNotification(c *gin.Context) {
-	var request *dto.RoleNotificationDto
+// @Router       /role/set/paymentNotification [post]
+func (r roleController) SetPaymentNotification(c *gin.Context) {
+	var request dto.PaymentNotificationDto
 
 	err := c.Bind(&request)
 	if err != nil {
@@ -102,7 +104,51 @@ func (r roleController) SetNotification(c *gin.Context) {
 		return
 	}
 
-	result := r.roleService.SetNotification(request, c)
+	result := r.roleService.SetPaymentNotification(request, c)
+	c.JSON(http.StatusOK, result)
+	return
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body dto.RoleAccessDto true "request"
+// @Success      200  {object}  object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/set/dashboardAccess [post]
+func (r roleController) SetDashboardAccess(c *gin.Context) {
+	var request dto.RoleAccessDto
+
+	err := c.Bind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, helper.StandartResult(false, err.Error(), nil))
+		return
+	}
+
+	result := r.roleService.SetDashboardAccess(request, c)
+	c.JSON(http.StatusOK, result)
+	return
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body body dto.RoleAccessDto true "request"
+// @Success      200  {object}  object
+// @Failure      400,404,500  {object}  object
+// @Router       /role/set/fullAccess [post]
+func (r roleController) SetFullAccess(c *gin.Context) {
+	var request dto.RoleAccessDto
+
+	err := c.Bind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, helper.StandartResult(false, err.Error(), nil))
+		return
+	}
+
+	result := r.roleService.SetFullAccess(request, c)
 	c.JSON(http.StatusOK, result)
 	return
 }

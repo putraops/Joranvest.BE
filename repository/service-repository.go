@@ -130,7 +130,7 @@ func (db *serviceConnection) Lookup(req map[string]interface{}, r helper.Select2
 	// }
 
 	//fmt.Println("Get Query: ")
-	//db.connection.Debug().Where("name = ?", "jinzhu").Scan(&records)
+	//db.connection.Where("name = ?", "jinzhu").Scan(&records)
 	//fmt.Println("End")
 	//db.connection.Raw("SELECT id, first_name, last_name, phone FROM customers").Scan(&records)
 	//db.connection.Where(req["condition"])

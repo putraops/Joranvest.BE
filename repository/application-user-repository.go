@@ -182,7 +182,7 @@ func (db *applicationUserConnection) UserLookup(request helper.ReactSelectReques
 	}
 
 	offset := (request.Page - 1) * request.Size
-	db.connection.Debug().Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(request.Size).Find(&records)
 	return records
 }
 

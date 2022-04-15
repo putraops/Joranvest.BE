@@ -166,7 +166,7 @@ func (db *webinarRegistrationConnection) GetPagination(request commons.Paginatio
 
 	offset := (page - 1) * pageSize
 	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
-	db.connection.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	db.connection.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	var count int64
 	db.connection.Model(&entity_view_models.EntityWebinarRegistrationView{}).Where(filters).Count(&count)
@@ -194,7 +194,7 @@ func (db *webinarRegistrationConnection) GetParticipantsByWebinarId(webinarId st
 
 func (db *webinarRegistrationConnection) GetParticipantsByIds(ids []string) []entity_view_models.EntityWebinarRegistrationView {
 	var records []entity_view_models.EntityWebinarRegistrationView
-	db.connection.Debug().Where("id IN ?", ids).Find(&records)
+	db.connection.Where("id IN ?", ids).Find(&records)
 	return records
 }
 

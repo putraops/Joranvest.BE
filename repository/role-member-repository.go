@@ -103,7 +103,7 @@ func (r roleMemberRepository) GetPagination(request commons.Pagination2ndRequest
 	// #endregion
 
 	offset := (page - 1) * pageSize
-	r.DB.Debug().Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
+	r.DB.Where(filters).Order(orders).Offset(offset).Limit(pageSize).Find(&records)
 
 	// #region Get Total Data for Pagination
 	result := r.DB.Where(filters).Find(&recordsUnfilter)
@@ -191,7 +191,7 @@ func (r roleMemberRepository) Update(record models.RoleMember) helper.Result {
 	}
 	json.Unmarshal(mapResult.Data.([]byte), &oldRecord)
 
-	if err := r.DB.Debug().Save(&oldRecord).Error; err != nil {
+	if err := r.DB.Save(&oldRecord).Error; err != nil {
 		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
 	}
 	return helper.StandartResult(true, "Data has been updated.", oldRecord)
@@ -251,7 +251,7 @@ func (r roleMemberRepository) GetUsersNotInRole(roleId string, search string) []
 	r.DB.
 		Where("is_admin <> true AND (first_name LIKE ? OR last_name LIKE ?) AND id NOT IN (?)", search, search, r.DB.Where("role_id = ? ", roleId).Table("role_member").Select("application_user_id")).
 		Find(&records)
-	r.DB.Debug().
+	r.DB.
 		Where("is_admin <> true AND (LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?) AND id NOT IN (?)",
 			"%"+strings.ToLower(search)+"%",
 			"%"+strings.ToLower(search)+"%",

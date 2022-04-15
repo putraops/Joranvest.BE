@@ -115,7 +115,7 @@ func (db *emailLoggingConnection) GetLastIntervalLogging(email string, mailType 
 	lastInterval := sql.NullTime{Time: time.Now().Add(time.Minute * (-1 * time.Duration(intervalMinutes))), Valid: true}
 
 	var total int64
-	db.connection.Debug().Model(&models.EmailLogging{}).
+	db.connection.Model(&models.EmailLogging{}).
 		Where("email = ? AND (last_sent BETWEEN ? AND ?)", email, lastInterval, nowTime).
 		Count(&total)
 	return total
