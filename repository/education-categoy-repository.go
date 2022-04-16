@@ -7,7 +7,6 @@ import (
 	"joranvest/helper"
 	"joranvest/models"
 	entity_view_models "joranvest/models/entity_view_models"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -125,19 +124,23 @@ func (r educationCategoryRepository) Lookup(request helper.ReactSelectRequest) [
 	r.DB.Order("name asc")
 
 	var orders = "name ASC"
-	var filters = ""
-	totalFilter := 0
-	for _, field := range request.Field {
-		if totalFilter == 0 {
-			filters += " (LOWER(" + field + ") LIKE " + fmt.Sprint("'%", strings.ToLower(request.Q), "%'")
-		} else {
-			filters += " OR LOWER(" + field + ") LIKE " + fmt.Sprint("'%", strings.ToLower(request.Q), "%'")
-		}
-		totalFilter++
-	}
+	var filters = " 1 = 1  "
 
-	if totalFilter > 0 {
-		filters += ")"
+	if request.Q != "" {
+		totalFilter := 0
+		for _, field := range request.Field {
+			if totalFilter == 0 {
+				filters += " AND ("
+			} else {
+				filters += " OR "
+			}
+
+			filters += fmt.Sprintf("%v ILIKE %v", field, fmt.Sprint("'%", request.Q, "%'"))
+			totalFilter++
+		}
+		if totalFilter > 0 {
+			filters += ")"
+		}
 	}
 
 	offset := (request.Page - 1) * request.Size
