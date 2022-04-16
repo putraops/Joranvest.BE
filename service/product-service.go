@@ -50,11 +50,11 @@ func (r productService) Save(record models.Product, context *gin.Context) helper
 	authHeader := context.GetHeader("Authorization")
 	userIdentity := r.jwtService.GetUserByToken(authHeader)
 
-	if record.Id == "" {
-		record.CreatedBy = userIdentity.UserId
+	if record.Id == nil {
+		record.CreatedBy = &userIdentity.UserId
 		return r.productRepository.Insert(record)
 	} else {
-		record.UpdatedBy = userIdentity.UserId
+		record.UpdatedBy = &userIdentity.UserId
 		return r.productRepository.Update(record)
 	}
 }

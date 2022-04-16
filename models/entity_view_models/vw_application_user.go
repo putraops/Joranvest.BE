@@ -23,6 +23,8 @@ type EntityApplicationUserView struct {
 	ProductName        string       `json:"product_name"`
 	ProductType        string       `json:"product_type"`
 	HasJcsAccess       bool         `json:"has_jcs_access"`
+	HasDashboardAccess bool         `json:"has_dashboard_access"`
+	HasFullAccess      bool         `json:"has_full_access"`
 	JcsStartedDate     *time.Time   `json:"jcs_started_date"`
 	JcsExpiredDate     *time.Time   `json:"jcs_expired_date"`
 	Rating             float32      `json:"rating"`
@@ -73,6 +75,8 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("  m.membership_date,")
 	sql.WriteString("  m.membership_expired,")
 	sql.WriteString("  CASE WHEN j.product_id IS NOT NULL THEN true ELSE false END AS has_jcs_access,")
+	sql.WriteString("  ac.has_full_access,")
+	sql.WriteString("  ac.has_dashboard_access,")
 	sql.WriteString("  j.product_id,")
 	sql.WriteString("  j.product_name,")
 	sql.WriteString("  j.product_type,")
@@ -97,6 +101,7 @@ func (EntityApplicationUserView) ViewModel() string {
 	sql.WriteString("LEFT JOIN LATERAL get_membership_status(r.id) m ON true ")
 	sql.WriteString("LEFT JOIN LATERAL get_jcs_status(r.id::text) j ON true ")
 	sql.WriteString("LEFT JOIN LATERAL get_webinar_speaker_rating(r.id) w(rating, total_rating) ON true ")
+	sql.WriteString("LEFT JOIN LATERAL get_user_access(r.id::text) ac(has_dashboard_access, has_full_access) ON true ")
 	//sql.WriteString("LEFT JOIN filemaster f ON f.record_id = r.id AND f.file_type = 1 ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
 	sql.WriteString("LEFT JOIN application_user u2 ON u2.id = r.updated_by ")

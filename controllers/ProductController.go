@@ -16,6 +16,7 @@ import (
 type ProductController interface {
 	GetPagination(context *gin.Context)
 	// Lookup(context *gin.Context)
+	GetAll(context *gin.Context)
 	Save(context *gin.Context)
 	GetById(context *gin.Context)
 	GetProductByRecordId(context *gin.Context)
@@ -106,6 +107,27 @@ func (r productController) Save(c *gin.Context) {
 	result = r.productService.Save(record, c)
 	c.JSON(http.StatusOK, helper.StandartResult(result.Status, result.Message, result.Data))
 	return
+}
+
+// @Tags         Role
+// @Security 	 BearerAuth
+// @Summary 	 Get All
+// @Accept       json
+// @Produce      json
+// @Param        name query string false "name"
+// @Success      200 {object} object
+// @Failure      400,404,500  {object}  object
+// @Router       /product/getAll [get]
+func (r productController) GetAll(context *gin.Context) {
+	qry := context.Request.URL.Query()
+	filter := make(map[string]interface{})
+
+	for k, v := range qry {
+		filter[k] = v
+	}
+
+	var result = r.productService.GetAll(filter)
+	context.JSON(http.StatusOK, helper.StandartResult(true, "Ok", result))
 }
 
 // @Tags         Product

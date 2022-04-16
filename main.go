@@ -564,14 +564,15 @@ func main() {
 			productApiAuthRoutes.POST("/save", productController.Save)
 			productApiAuthRoutes.DELETE("/deleteById/:id", productController.DeleteById)
 		}
-		webinarRecordingNoAuthRoutes := webinarRecordingApiRoutes.Group("/product")
+		productApiNoAuthRoutes := productApiRoutes.Group("/product")
 		{
-			webinarRecordingNoAuthRoutes.POST("/getPagination", productController.GetPagination)
+			productApiNoAuthRoutes.GET("/getAll", productController.GetAll)
+			productApiNoAuthRoutes.POST("/getPagination", productController.GetPagination)
 			// webinarRecordingNoAuthRoutes.GET("/lookup", productController.Lookup)
-			webinarRecordingNoAuthRoutes.GET("/getById/:id", productController.GetById)
-			webinarRecordingNoAuthRoutes.GET("/getProductByRecordId/:record_id", productController.GetProductByRecordId)
-			webinarRecordingNoAuthRoutes.GET("/getByProductType/:product_type", productController.GetByProductType)
-			webinarRecordingNoAuthRoutes.GET("/getViewById/:id", productController.GetViewById)
+			productApiNoAuthRoutes.GET("/getById/:id", productController.GetById)
+			productApiNoAuthRoutes.GET("/getProductByRecordId/:record_id", productController.GetProductByRecordId)
+			productApiNoAuthRoutes.GET("/getByProductType/:product_type", productController.GetByProductType)
+			productApiNoAuthRoutes.GET("/getViewById/:id", productController.GetViewById)
 		}
 	}
 

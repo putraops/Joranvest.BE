@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"joranvest/commons"
@@ -35,12 +34,14 @@ type productRepository struct {
 	serviceRepository ServiceRepository
 	tableName         string
 	viewQuery         string
+	currentTime       time.Time
 }
 
 func NewProductRepository(db *gorm.DB) ProductRepository {
 	return productRepository{
 		DB:                db,
 		serviceRepository: NewServiceRepository(db),
+		currentTime:       time.Now(),
 	}
 }
 
@@ -113,19 +114,21 @@ func (r productRepository) GetPagination(request commons.Pagination2ndRequest) i
 }
 
 func (r productRepository) GetAll(filter map[string]interface{}) []models.Product {
+	var orders = "duration ASC"
 	var records []models.Product
 	if len(filter) == 0 {
-		r.DB.Find(&records)
+		r.DB.Find(&records).Order(orders)
 	} else if len(filter) != 0 {
-		r.DB.Where(filter).Find(&records)
+		r.DB.Where(filter).Find(&records).Order(orders)
 	}
 	return records
 }
 
 func (r productRepository) Insert(record models.Product) helper.Result {
-	record.Id = uuid.New().String()
-	record.CreatedAt = &sql.NullTime{Time: time.Now(), Valid: true}
-	record.UpdatedAt = &sql.NullTime{Time: time.Now(), Valid: true}
+	newId := uuid.New().String()
+	record.Id = &newId
+
+	record.CreatedAt = &r.currentTime
 
 	if err := r.DB.Create(&record).Error; err != nil {
 		return helper.StandartResult(false, fmt.Sprintf("%v,", err.Error()), helper.EmptyObj{})
@@ -137,7 +140,7 @@ func (r productRepository) Insert(record models.Product) helper.Result {
 func (r productRepository) Update(record models.Product) helper.Result {
 	var oldRecord models.Product
 	r.DB.First(&oldRecord, "id = ?", record.Id)
-	if record.Id == "" {
+	if record.Id == nil {
 		return helper.StandartResult(false, "Record not found", helper.EmptyObj{})
 	}
 
@@ -156,7 +159,7 @@ func (r productRepository) Update(record models.Product) helper.Result {
 func (r productRepository) GetById(recordId string) helper.Result {
 	var record models.Product
 	r.DB.First(&record, "id = ?", recordId)
-	if record.Id == "" {
+	if record.Id == nil {
 		res := helper.StandartResult(false, "Record not found", helper.EmptyObj{})
 		return res
 	}
@@ -179,7 +182,7 @@ func (r productRepository) GetProductByRecordId(recordId string) helper.Result {
 
 	var productRecord models.Product
 	r.DB.First(&productRecord, "id = ?", recordId)
-	if productRecord.Id != "" {
+	if productRecord.Id != nil {
 		return helper.StandartResult(true, "Ok", productRecord)
 	}
 
@@ -189,7 +192,7 @@ func (r productRepository) GetProductByRecordId(recordId string) helper.Result {
 func (r productRepository) GetByProductType(product_type string) helper.Result {
 	var record models.Product
 	r.DB.First(&record, "product_type = ?", product_type)
-	if record.Id == "" {
+	if record.Id == nil {
 		res := helper.StandartResult(false, "Record not found", helper.EmptyObj{})
 		return res
 	}
@@ -214,7 +217,7 @@ func (r productRepository) DeleteById(recordId string) helper.Result {
 	var record models.Product
 	r.DB.First(&record, "id = ?", recordId)
 
-	if record.Id == "" {
+	if record.Id == nil {
 		return helper.StandartResult(false, "Record not found", helper.EmptyObj{})
 	} else {
 		if err := r.DB.Where("id = ?", recordId).Delete(&record).Error; err != nil {

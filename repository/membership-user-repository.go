@@ -208,7 +208,7 @@ func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_mode
 	} else if paymentRecord.ProductId != "" {
 		// -- Get Product Record
 		var productRecord models.Product
-		if err := tx.First(&productRecord, "id = ?", paymentRecord.ProductId).Error; err != nil || productRecord.Id == "" {
+		if err := tx.First(&productRecord, "id = ?", paymentRecord.ProductId).Error; err != nil || productRecord.Id == nil {
 			return helper.ServerResponse(false, "Product Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
 		}
 
