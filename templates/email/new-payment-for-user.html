@@ -488,7 +488,7 @@
             }
 
             /* Label */
-            .payment-success {
+            .label {
                 display: inline-block;
                 padding: 0.35em 0.65em;
                 font-size: 0.85em;
@@ -499,7 +499,15 @@
                 white-space: nowrap;
                 vertical-align: baseline;
                 border-radius: 0.5rem;
+            }
+            .label-primary {
+                background-color: #3792cb;
+            }
+            .label-success {
                 background-color: green;
+            }
+            .label-danger {
+                background-color: #c40404;
             }
 
             /* External */
@@ -589,8 +597,8 @@
                                                 
                                                 <p>Hi {{.Recipient}},</p>
                                                 
-                                                <p class="mb-2">Pembayaran kamu telah kami terima.<p>
-                                                <p>Terima kasih sudah mempercayakan Joranvest media Edukasi untuk Investasimu. Berikut detail transaksi kamu: <p>
+                                                <p class="mb-2">{{.MailContent.Title}}<p>
+                                                <p>{{.MailContent.Subtitle}}<p>
 
                                                 <table class="payment mb-5" border="0" cellpadding="0" cellspacing="0">
                                                     <tbody>
@@ -608,11 +616,13 @@
                                                         </tr>
                                                         <tr>
                                                             <td>Metode Pembayaran</td>
-                                                            <td class="text-bold">: {{.MailProduct.PaymentMethod}}</td>
+                                                            <td>: {{.MailProduct.PaymentMethod}}</td>
                                                         </tr>
                                                         <tr>
                                                             <td>Status</td>
-                                                            <td class="text-bold">: <span class="payment-success">{{.MailProduct.PaymentStatus}}</span></td>
+                                                            <td class="text-bold">:
+                                                                <span class="label label-primary">{{.MailProduct.PaymentStatus}}</span>
+                                                            </td>
                                                         </tr>
                                                     </tbody>
                                                 </table>

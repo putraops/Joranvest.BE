@@ -58,12 +58,30 @@ func NewEmailService(db *gorm.DB) EmailService {
 }
 
 type MailInfo struct {
-	Title       *string
-	Recipient   *string
-	ActionUrl   *string
+	Title     string
+	Recipient string
+	ActionUrl *string
+	// MailStatus  *MailStatus
+	MailContent *MailContent
 	MailProduct *MailProduct
 	MailFooter  MailFooter
 }
+
+type MailContent struct {
+	Title     string
+	Subtitle  string
+	Paragraph string
+	Children  *MailContent
+}
+
+type MailClass struct {
+	Label *string
+}
+
+// type MailStatus struct {
+// 	PaymentStatus     int
+// 	DisplayStatusName string
+// }
 
 type MailProduct struct {
 	ProductLabel     *string
@@ -691,8 +709,6 @@ func (service *emailService) SendEmailVerified(email string) helper.Response {
 }
 
 func (service *emailService) ResetPassword(user models.ApplicationUser) helper.Response {
-	title := "Reset Password"
-	userFullname := fmt.Sprintf("%v %v", user.FirstName, user.LastName)
 	actionUrl := fmt.Sprintf("%v/recover-password/%v/%v", service.FRONTEND_URL, user.Id, user.Email)
 
 	err := SendEmail(
@@ -702,8 +718,8 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
 		nil,
 		nil,
 		MailInfo{
-			Title:     &title,
-			Recipient: &userFullname,
+			Title:     "Reset Password",
+			Recipient: fmt.Sprintf("%v %v", user.FirstName, user.LastName),
 			ActionUrl: &actionUrl,
 			MailFooter: MailFooter{
 				Year: time.Now().Year(),
@@ -726,13 +742,29 @@ func (service *emailService) NewPayment(product MailProduct, paymentStatus int, 
 	var template string
 	var bcc *AddressHeader
 
+	var body *MailContent
+
 	if isUser {
 		actionUrl = "https://discord.com/invite/85rXZWbJa5"
 		if paymentStatus == commons.PaidPaymentStatus {
 			title = "Pembayaran Diterima"
+			// statusLabel = "telah kami terima"
+			body = &MailContent{
+				Title:     "Pembayaran kamu telah kami terima.",
+				Subtitle:  "Terima kasih sudah mempercayakan Joranvest sebagai media Edukasi untuk Investasimu. Berikut adalah detail transaksi kamu:",
+				Paragraph: "<span class=\"label label-success\">Pembayaran Diterima</span>",
+				Children:  nil,
+			}
 		} else if paymentStatus == commons.RejectedPaymentStatus {
 			title = "Pembayaran Ditolak"
+			body = &MailContent{
+				Title:     "Maaf kami belum terima pembayaran dari kamu. Silahkan ulangi Pembelian kembali.",
+				Subtitle:  "Berikut adalah detail transaksi kamu:",
+				Paragraph: "<span class=\"label label-danger\">Pembayaran Ditolak</span>",
+				Children:  nil,
+			}
 		}
+
 		recipient = fmt.Sprintf("%v %v", userRecord.FirstName, userRecord.LastName)
 		template = "new-payment-for-user.html"
 
@@ -772,10 +804,14 @@ func (service *emailService) NewPayment(product MailProduct, paymentStatus int, 
 		nil,
 		bcc,
 		MailInfo{
-			Title:       &title,
-			Recipient:   &recipient,
+			Title:       title,
+			Recipient:   recipient,
 			ActionUrl:   &actionUrl,
 			MailProduct: &product,
+			// MailStatus: &MailStatus{
+			// 	PaymentStatus: paymentStatus,
+			// },
+			MailContent: body,
 			MailFooter: MailFooter{
 				Year: time.Now().Year(),
 			},
@@ -1191,6 +1227,7 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	if err != nil {
 		log.Error("SendEmail:ParseGlob")
 		log.Error(fmt.Sprintf("%v,", err))
+		fmt.Println(fmt.Sprintf("%v,", err))
 		return err
 	}
 
@@ -1199,6 +1236,7 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	if err != nil {
 		log.Error("SendEmail:ExecuteTemplate")
 		log.Error(fmt.Sprintf("%v,", err))
+		fmt.Println(fmt.Sprintf("%v,", err))
 		return err
 	}
 	result := tpl.String()
@@ -1227,6 +1265,7 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	if err != nil {
 		log.Error("SendEmail:DialAndSend")
 		log.Error(fmt.Sprintf("%v,", err))
+		fmt.Println(fmt.Sprintf("%v,", err))
 		return err
 	}
 	fmt.Println("Sent")
