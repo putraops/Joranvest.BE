@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"joranvest/models/entity_view_models"
 	"joranvest/repository"
 	"joranvest/service"
 	"net/http"
@@ -31,11 +30,11 @@ func NewEmailController(db *gorm.DB, jwtService service.JWTService) EmailControl
 }
 
 func (c emailController) TestEmail(context *gin.Context) {
-	res := c.paymentRepository.GetViewById("11cfda96-fed7-42e1-bddd-367b369bd6ac")
+	//res := c.paymentRepository.GetViewById("11cfda96-fed7-42e1-bddd-367b369bd6ac")
 
-	temp := res.Data.(entity_view_models.EntityPaymentView)
+	// temp := res.Data.(entity_view_models.EntityPaymentView)
 
-	response := c.emailService.NewPayment(temp)
-	context.JSON(http.StatusOK, response)
+	// response := c.emailService.NewPayment(temp)
+	context.JSON(http.StatusOK, nil)
 	return
 }

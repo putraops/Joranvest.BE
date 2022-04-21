@@ -7,6 +7,7 @@ import (
 	"joranvest/dto"
 	"joranvest/helper"
 	"joranvest/models"
+	"joranvest/models/entity_view_models"
 	payment_gateway_providers "joranvest/payment_gateway"
 	"joranvest/payment_gateway/xendit/ewallet"
 	"joranvest/payment_gateway/xendit/qrcode"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/leekchan/accounting"
 	"github.com/mashingan/smapping"
 	log "github.com/sirupsen/logrus"
 	"github.com/xendit/xendit-go"
@@ -37,7 +39,7 @@ type PaymentService interface {
 	CreateQRCode(dto qrcode.QRCodeDto) helper.Response
 
 	Update(record models.Payment) helper.Response
-	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response
+	UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Result
 	GetById(recordId string) helper.Response
 	GetByProviderRecordId(id string) helper.Response
 	GetByProviderReferenceId(id string) helper.Response
@@ -47,6 +49,7 @@ type PaymentService interface {
 type paymentService struct {
 	DB                *gorm.DB
 	paymentRepository repository.PaymentRepository
+	userRepository    repository.ApplicationUserRepository
 	emailService      EmailService
 	helper.AppSession
 	jwtService JWTService
@@ -56,6 +59,7 @@ func NewPaymentService(db *gorm.DB) PaymentService {
 	return &paymentService{
 		DB:                db,
 		paymentRepository: repository.NewPaymentRepository(db),
+		userRepository:    repository.NewApplicationUserRepository(db),
 		jwtService:        NewJWTService(),
 		emailService:      NewEmailService(db),
 	}
@@ -161,9 +165,53 @@ func (r *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.Result
 		return helper.StandartResult(false, result.Message, result.Data)
 	}
 
-	// var asds =
-	// args := []string{"a", "b"}
-	// _ = r.emailService.PaymentNotificationToTeam(args...)
+	//-- Send Email to Finance / Has Payment Notification
+	res := r.paymentRepository.GetViewById(newRecord.Id)
+	if !res.Status {
+		log.Error(res.Message)
+		log.Error("Function: UpdatePaymentStatus")
+		return helper.StandartResult(res.Status, res.Message, nil)
+	}
+
+	currencyFormat := accounting.Accounting{Symbol: "Rp ", Precision: 2}
+	var tempRecord = res.Data.(entity_view_models.EntityPaymentView)
+	var productTypeLabel string
+	var productTypeName string
+	var productName string
+	var paymentMethod string
+	var paymentStatus string
+	var totalPrice string = currencyFormat.FormatMoney((float64(tempRecord.Price) + float64(tempRecord.UniqueNumber)))
+
+	if strings.ToLower(tempRecord.PaymentType) == "transfer_bca" {
+		paymentMethod = "Transfer BCA"
+	} else {
+		paymentMethod = tempRecord.PaymentType
+	}
+
+	paymentStatus = "Pembayaran Baru"
+	if tempRecord.WebinarId != "" {
+		productName = "Webinar"
+		productTypeLabel = "Judul"
+		productTypeName = tempRecord.WebinarTitle
+	} else if tempRecord.MembershipId != "" {
+		productName = "Membership"
+		productTypeLabel = "Tipe"
+		productTypeName = fmt.Sprintf("%v (%v Bulan)", tempRecord.MembershipName, fmt.Sprintf("%v", *tempRecord.MembershipDuration))
+	} else if tempRecord.ProductId != "" {
+		productName = "Joranvest Chart System"
+		productTypeName = fmt.Sprintf("%v (%v Bulan)", "JCS", fmt.Sprintf("%v", *tempRecord.ProductDuration))
+		productTypeLabel = "Tipe"
+	}
+
+	var temp MailProduct
+	temp.ProductName = &productName
+	temp.ProductTypeLabel = &productTypeLabel
+	temp.ProductTypeName = &productTypeName
+	temp.TotalPrice = &totalPrice
+	temp.PaymentStatus = &paymentStatus
+	temp.PaymentMethod = &paymentMethod
+
+	go r.emailService.NewPayment(temp, false, models.ApplicationUser{})
 
 	return helper.StandartResult(true, "Ok", result.Data)
 }
@@ -260,28 +308,86 @@ func (r *paymentService) Update(record models.Payment) helper.Response {
 	return r.paymentRepository.Update(record)
 }
 
-func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
+func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Result {
 	result := r.paymentRepository.GetById(req.Id)
 	if !result.Status {
 		log.Error(result.Message)
 		log.Error("Function: UpdatePaymentStatus")
-		return result
+		return helper.StandartResult(result.Status, result.Message, nil)
 	}
 
-	var paymentRecord models.Payment
-	paymentRecord = result.Data.(models.Payment)
+	var record models.Payment
+	record = result.Data.(models.Payment)
 	currentTime := time.Now()
-	paymentRecord.PaymentStatus = req.PaymentStatus
-	paymentRecord.UpdatedBy = req.UpdatedBy
-	paymentRecord.UpdatedAt = &currentTime
-	paymentRecord.PaymentDate = &currentTime
+	record.PaymentStatus = req.PaymentStatus
+	record.UpdatedBy = req.UpdatedBy
+	record.UpdatedAt = &currentTime
+	record.PaymentDate = &currentTime
 
-	paymentResult := r.paymentRepository.UpdatePaymentStatus(paymentRecord)
+	paymentResult := r.paymentRepository.UpdatePaymentStatus(record)
 	if paymentResult.Status {
-		//-- send email
-		//service.emailService.SendWebinarInformationToParticipants()
-	}
+		// r.SendPaymentNotificationByEmail(paymentResult.Data.(entity_view_models.EntityPaymentView))
+		currencyFormat := accounting.Accounting{Symbol: "Rp ", Precision: 2}
+		var tempRecord = paymentResult.Data.(entity_view_models.EntityPaymentView)
 
+		var productTypeLabel string
+		var productTypeName string
+		var productName string
+		var paymentMethod string
+		var paymentStatus string
+		var totalPrice string = currencyFormat.FormatMoney((float64(record.Price) + float64(record.UniqueNumber)))
+
+		if strings.ToLower(record.PaymentType) == "transfer_bca" {
+			paymentMethod = "Transfer BCA"
+		} else {
+			paymentMethod = record.PaymentType
+		}
+
+		if record.PaymentStatus == commons.PaidPaymentStatus {
+			paymentStatus = "Pembayaran Diterima"
+		} else if record.PaymentStatus == commons.RejectedPaymentStatus {
+			paymentStatus = "Pembayaran Ditolak"
+		}
+
+		if tempRecord.WebinarId != "" {
+			productName = "Webinar"
+			productTypeLabel = "Judul"
+			productTypeName = tempRecord.WebinarTitle
+		} else if tempRecord.MembershipId != "" {
+			productName = "Membership"
+			productTypeLabel = "Tipe"
+			productTypeName = fmt.Sprintf("%v (%v Bulan)", tempRecord.MembershipName, fmt.Sprintf("%v", *tempRecord.MembershipDuration))
+		} else if tempRecord.ProductId != "" {
+			productName = "Joranvest Chart System"
+			productTypeName = fmt.Sprintf("%v (%v Bulan)", "JCS", fmt.Sprintf("%v", *tempRecord.ProductDuration))
+			productTypeLabel = "Tipe"
+		}
+
+		var temp MailProduct
+		temp.ProductName = &productName
+		temp.ProductTypeLabel = &productTypeLabel
+		temp.ProductTypeName = &productTypeName
+		temp.TotalPrice = &totalPrice
+		temp.PaymentStatus = &paymentStatus
+		temp.PaymentMethod = &paymentMethod
+
+		// EWallet Payment For Finance
+		if (req.PaymentStatus == commons.PaidPaymentStatus) &&
+			(record.PaymentType == string(xendit.EWalletTypeOVO) ||
+				record.PaymentType == string(xendit.EWalletTypeLINKAJA) ||
+				record.PaymentType == string(xendit.EWalletTypeDANA)) {
+			go r.emailService.NewPayment(temp, false, models.ApplicationUser{})
+		}
+
+		// EWallet Payment For User
+		if record.PaymentStatus == commons.PaidPaymentStatus || record.PaymentStatus == commons.RejectedPaymentStatus {
+			userRes := r.userRepository.GetById(record.ApplicationUserId)
+			if userRes.Status {
+				// to := userRes.Data.(models.ApplicationUser).Email
+				go r.emailService.NewPayment(temp, true, userRes.Data.(models.ApplicationUser))
+			}
+		}
+	}
 	return paymentResult
 }
 
@@ -300,3 +406,8 @@ func (r *paymentService) GetByProviderReferenceId(id string) helper.Response {
 func (r *paymentService) DeleteById(recordId string) helper.Response {
 	return r.paymentRepository.DeleteById(recordId)
 }
+
+// func (r *paymentService) SendPaymentNotificationByEmail(record entity_view_models.EntityPaymentView) error {
+
+// 	return nil
+// }

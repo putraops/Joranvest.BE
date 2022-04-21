@@ -24,7 +24,7 @@ type PaymentRepository interface {
 	MembershipPayment(t models.Payment) helper.Response
 	WebinarPayment(t models.Payment) helper.Response
 	Update(record models.Payment) helper.Response
-	UpdatePaymentStatus(paymentRecord models.Payment) helper.Response
+	UpdatePaymentStatus(paymentRecord models.Payment) helper.Result
 	GetById(recordId string) helper.Response
 	GetViewById(recordId string) helper.Result
 	GetByProviderRecordId(id string) helper.Response
@@ -308,7 +308,7 @@ func (db *paymentConnection) Update(record models.Payment) helper.Response {
 	return helper.ServerResponse(true, "Ok", "", record)
 }
 
-func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) helper.Response {
+func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) helper.Result {
 	commons.Logger()
 
 	tx := db.connection.Begin()
@@ -330,7 +330,7 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 	db.connection.First(&viewRecord, "id = ?", paymentRecord.Id)
 	if viewRecord.Id == "" {
 		log.Error("Payment Record not found")
-		res := helper.ServerResponse(false, "Payment Record not found", "Error", helper.EmptyObj{})
+		res := helper.StandartResult(false, "Payment Record not found", helper.EmptyObj{})
 		tx.Rollback()
 		return res
 	}
@@ -352,7 +352,7 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 				} else {
 					log.Error("Membership Record Not Found")
 					tx.Rollback()
-					return membershipResponse
+					return helper.Result{Status: membershipResponse.Status, Message: membershipResponse.Message, Data: nil}
 				}
 
 				membershipUserRecord.ExpiredDate = sql.NullTime{
@@ -365,7 +365,7 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 				res := tx.Save(&membershipUserRecord)
 				if res.RowsAffected == 0 {
 					tx.Rollback()
-					return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+					return helper.Result{Status: false, Message: fmt.Sprintf("%v,", res.Error), Data: nil}
 				}
 
 			} else {
@@ -383,11 +383,11 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 			if curentMembershipUserResponse.Status {
 
 				fmt.Println("----------------------- paymentRecord -----------------------")
-				fmt.Println(viewRecord)
-				fmt.Println(viewRecord.PaymentDate)
-				fmt.Println(viewRecord.PaymentDate)
-				fmt.Println(viewRecord.PaymentDateExpired)
-				fmt.Println(viewRecord.PaymentDateExpired)
+				fmt.Println(paymentRecord)
+				fmt.Println(paymentRecord.PaymentDate)
+				fmt.Println(paymentRecord.PaymentDate)
+				fmt.Println(paymentRecord.PaymentDateExpired)
+				fmt.Println(paymentRecord.PaymentDateExpired)
 				fmt.Println("----------------------- paymentRecord -----------------------")
 
 				paymentRecord.IsExtendMembership = true
@@ -397,14 +397,13 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 
 				//-- Get Product Record
 				productResponse := db.productRepository.GetById(paymentRecord.RecordId)
-				if productResponse.Status {
-					membershipUserRecord.ProductId = &paymentRecord.RecordId
-				} else {
-					log.Error("Product Record Not Found")
+				if !productResponse.Status {
+					log.Error(productResponse.Message)
 					tx.Rollback()
-					return helper.ServerResponse(false, productResponse.Message, productResponse.Message, productResponse.Data)
+					return productResponse
 				}
 
+				membershipUserRecord.ProductId = &paymentRecord.RecordId
 				duration := productResponse.Data.(models.Product).Duration
 				membershipUserRecord.ExpiredDate = sql.NullTime{
 					Time:  membershipUserRecord.ExpiredDate.Time.AddDate(0, *duration, 1),
@@ -416,7 +415,7 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 				res := tx.Save(&membershipUserRecord)
 				if res.RowsAffected == 0 {
 					tx.Rollback()
-					return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+					return helper.Result{Status: false, Message: fmt.Sprintf("%v,", res.Error), Data: nil}
 				}
 
 			} else {
@@ -433,24 +432,34 @@ func (db *paymentConnection) UpdatePaymentStatus(paymentRecord models.Payment) h
 			webinarRegistrationRecord.CreatedBy = paymentRecord.UpdatedBy
 			webinarRegistrationRecord.PaymentId = paymentRecord.Id
 			webinarRegistrationRecord.ApplicationUserId = paymentRecord.CreatedBy
-			webinarRegistrationRecord.WebinarId = viewRecord.RecordId
+			webinarRegistrationRecord.WebinarId = paymentRecord.RecordId
 
 			res := db.webinarRegistrationRepo.Insert(webinarRegistrationRecord)
 			if !res.Status {
 				tx.Rollback()
-				return res
+				return helper.Result{Status: res.Status, Message: res.Message, Data: res.Data}
 			}
 		}
 	}
 
+	// updatedRecord := models.Payment{}
+	// err := smapping.FillStruct(&updatedRecord, smapping.MapFields(&paymentRecord))
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	return helper.Result{Status: false, Message: "Failed to convert Record", Data: nil}
+	// }
+
+	// fmt.Println(paymentRecord)
+	// fmt.Println(updatedRecord)
+
 	res := tx.Save(&paymentRecord)
 	if res.RowsAffected == 0 {
 		tx.Rollback()
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", res.Error), fmt.Sprintf("%v,", res.Error), helper.EmptyObj{})
+		return helper.Result{Status: false, Message: fmt.Sprintf("%v,", res.Error), Data: nil}
 	}
 
 	tx.Commit()
-	return helper.ServerResponse(true, "Ok", "", paymentRecord)
+	return helper.StandartResult(true, "Ok", viewRecord)
 }
 
 func (db *paymentConnection) GetById(recordId string) helper.Response {

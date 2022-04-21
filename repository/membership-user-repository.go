@@ -24,7 +24,7 @@ type MembershipUserRepository interface {
 	GetAll(filter map[string]interface{}) []models.MembershipUser
 	Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response
 	Update(record models.MembershipUser) helper.Response
-	SetMembership(paymentRecord entity_view_models.EntityPaymentView) helper.Response
+	SetMembership(paymentRecord entity_view_models.EntityPaymentView) helper.Result
 	GetById(recordId string) helper.Response
 	GetByUserId(userId string) helper.Response
 	GetExistMembershipByUserId(userId string, isMembership bool) helper.Response
@@ -190,7 +190,7 @@ func (db *membershipUserConnection) GetAll(filter map[string]interface{}) []mode
 	return records
 }
 
-func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_models.EntityPaymentView) helper.Response {
+func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_models.EntityPaymentView) helper.Result {
 	commons.Logger()
 	tx := db.connection.Begin()
 
@@ -200,7 +200,7 @@ func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_mode
 		// -- Get Membership Record
 		var membershipRecord models.Membership
 		if err := tx.First(&membershipRecord, "id = ?", paymentRecord.MembershipId).Error; err != nil || membershipRecord.Id == "" {
-			return helper.ServerResponse(false, "Membership Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+			return helper.Result{Status: false, Message: "Membership Record not found", Data: nil}
 		}
 
 		membershipUser.MembershipId = &paymentRecord.RecordId
@@ -209,13 +209,13 @@ func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_mode
 		// -- Get Product Record
 		var productRecord models.Product
 		if err := tx.First(&productRecord, "id = ?", paymentRecord.ProductId).Error; err != nil || productRecord.Id == nil {
-			return helper.ServerResponse(false, "Product Record not found", fmt.Sprintf("%v,", err), helper.EmptyObj{})
+			return helper.Result{Status: false, Message: "Product Record not found", Data: nil}
 		}
 
 		membershipUser.ProductId = &paymentRecord.RecordId
 		duration = int(*productRecord.Duration)
 	} else {
-		return helper.ServerResponse(false, "SetMembership is not recognized", "SetMembership is not recognized", helper.EmptyObj{})
+		return helper.Result{Status: false, Message: "SetMembership is not recognized", Data: nil}
 	}
 
 	membershipUser.Id = uuid.New().String()
@@ -248,10 +248,11 @@ func (db *membershipUserConnection) SetMembership(paymentRecord entity_view_mode
 		tx.Rollback()
 		log.Error(db.serviceRepository.getCurrentFuncName())
 		log.Error(fmt.Sprintf("%v,", err))
-		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), helper.EmptyObj{})
+		return helper.Result{Status: false, Message: fmt.Sprintf("%v,", err), Data: nil}
+
 	}
 	tx.Commit()
-	return helper.ServerResponse(true, "Ok", "", membershipUser.Id)
+	return helper.Result{Status: true, Message: "Ok", Data: membershipUser.Id}
 }
 
 func (db *membershipUserConnection) Insert(membershipUser models.MembershipUser, payment models.Payment) helper.Response {

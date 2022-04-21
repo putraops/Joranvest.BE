@@ -23,7 +23,7 @@ import (
 )
 
 type EmailService interface {
-	NewPayment(record entity_view_models.EntityPaymentView) helper.Result
+	NewPayment(product MailProduct, isUser bool, userRecord models.ApplicationUser)
 	SendEmailVerification(email string, userId string) helper.Response
 	SendEmailVerified(email string) helper.Response
 	ResetPassword(user models.ApplicationUser) helper.Response
@@ -58,19 +58,21 @@ func NewEmailService(db *gorm.DB) EmailService {
 }
 
 type MailInfo struct {
-	Title      *string
-	Recipient  *string
-	ActionUrl  *string
-	Product    *Product
-	MailFooter MailFooter
+	Title       *string
+	Recipient   *string
+	ActionUrl   *string
+	MailProduct *MailProduct
+	MailFooter  MailFooter
 }
 
-type Product struct {
-	ProductType *string
-	ProductName *string
-	TotalPrice  *float64
-	Duration    *float64
-	Status      *int
+type MailProduct struct {
+	ProductLabel     *string
+	ProductName      *string
+	ProductTypeLabel *string
+	ProductTypeName  *string
+	TotalPrice       *string
+	PaymentMethod    *string
+	PaymentStatus    *string
 }
 
 type MailFooter struct {
@@ -693,7 +695,7 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
 	userFullname := fmt.Sprintf("%v %v", user.FirstName, user.LastName)
 	actionUrl := fmt.Sprintf("%v/recover-password/%v/%v", service.FRONTEND_URL, user.Id, user.Email)
 
-	result := SendEmail(
+	err := SendEmail(
 		"reset-password.html",
 		"Reset Password",
 		[]string{user.Email},
@@ -709,78 +711,72 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
 		},
 	)
 
-	if result.Status {
+	if err == nil {
 		return helper.ServerResponse(true, "Email Sent", "", helper.EmptyObj{})
 	} else {
-		return helper.ServerResponse(false, result.Message, result.Message, nil)
+		return helper.ServerResponse(false, fmt.Sprintf("%v,", err), fmt.Sprintf("%v,", err), nil)
 	}
 }
 
-func (service *emailService) NewPayment(record entity_view_models.EntityPaymentView) helper.Result {
-	title := "Pembayaran Baru"
-	recipient := "Finance Team"
-	actionUrl := fmt.Sprintf("%v/payment", service.DASHBOARD_URL)
-	totalPrice := float64(record.Price) + float64(record.UniqueNumber)
-	var duration *float64
-	productType := ""
-	productName := ""
-	if record.WebinarId != "" {
-		productType = "Webinar"
-		productName = record.WebinarTitle
-		duration = nil
-	} else if record.MembershipId != "" {
-		productType = "Membership"
-		productName = record.MembershipName
-		duration = record.MembershipDuration
-	} else if record.ProductId != "" {
-		productType = "JCS"
-		productName = "JCS"
-		duration = record.ProductDuration
-	}
-
+func (service *emailService) NewPayment(product MailProduct, isUser bool, userRecord models.ApplicationUser) {
+	var actionUrl string
+	var title string
+	var recipient string
 	var to []string
+	var template string
+	var bcc *AddressHeader
 
-	// func (r roleMemberRepository) GetViewById(recordId string) helper.Result {
-	var roleNotifications []entity_view_models.EntityRoleNotificationView
-	service.DB.Find(&roleNotifications, "has_payment_notification = ?", true)
+	if isUser {
+		actionUrl = "https://discord.com/invite/85rXZWbJa5"
+		title = "Pembayaran Diterima"
+		recipient = fmt.Sprintf("%v %v", userRecord.FirstName, userRecord.LastName)
+		template = "new-payment-for-user.html"
 
-	if len(roleNotifications) > 0 {
-		for _, item := range roleNotifications {
-			var roleMembers []entity_view_models.EntityRoleMemberView
-			service.DB.Find(&roleMembers, "role_id = ?", item.RoleId)
+		to = append(to, userRecord.Email)
+		bcc = nil
+	} else {
+		actionUrl = fmt.Sprintf("%v/payment", service.DASHBOARD_URL)
+		title = "Pembayaran Baru"
+		recipient = "Finance Team"
+		template = "new-payment-for-finance.html"
 
-			if len(roleMembers) > 0 {
-				for _, member := range roleMembers {
-					to = append(to, member.ApplicationUserEmail)
+		var roleNotifications []entity_view_models.EntityRoleNotificationView
+		service.DB.Find(&roleNotifications, "has_payment_notification = ?", true)
+
+		if len(roleNotifications) > 0 {
+			for _, item := range roleNotifications {
+				var roleMembers []entity_view_models.EntityRoleMemberView
+				service.DB.Find(&roleMembers, "role_id = ?", item.RoleId)
+
+				if len(roleMembers) > 0 {
+					for _, member := range roleMembers {
+						to = append(to, member.ApplicationUserEmail)
+					}
 				}
 			}
 		}
+		bcc = &AddressHeader{
+			Email: "putraops@gmail.com",
+			Name:  "Putra Ompusunggu",
+		}
 	}
-	to = append(to, "putraops@gmail.com")
 
-	res := SendEmail(
-		"new-payment.html",
+	go SendEmail(
+		template,
 		title,
 		to,
 		nil,
-		nil,
+		bcc,
 		MailInfo{
-			Title:     &title,
-			Recipient: &recipient,
-			ActionUrl: &actionUrl,
-			Product: &Product{
-				ProductType: &productType,
-				ProductName: &productName,
-				TotalPrice:  &totalPrice,
-				Duration:    duration,
-			},
+			Title:       &title,
+			Recipient:   &recipient,
+			ActionUrl:   &actionUrl,
+			MailProduct: &product,
 			MailFooter: MailFooter{
 				Year: time.Now().Year(),
 			},
 		},
 	)
-
-	return res
 }
 
 func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWebinarInformationDto, participant entity_view_models.EntityWebinarRegistrationView) {
@@ -1171,7 +1167,7 @@ func (service *emailService) SendWebinarInformationToParticipants(dto dto.SendWe
 	}
 }
 
-func SendEmail(templateName string, subject string, to []string, cc *AddressHeader, bcc *AddressHeader, data interface{}) helper.Result {
+func SendEmail(templateName string, subject string, to []string, cc *AddressHeader, bcc *AddressHeader, data interface{}) error {
 	fmt.Println("Sending....")
 
 	commons.Logger()
@@ -1181,7 +1177,7 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	smtpPort, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
 	if err != nil {
 		log.Error("Failed to Convert Port")
-		return helper.StandartResult(false, "Failed to Convert Port", nil)
+		return err
 	}
 	smtpSenderName := os.Getenv("CONFIG_SENDER_NAME_NO_REPLY")
 	smtpUsername := os.Getenv("CONFIG_SMTP_USERNAME")
@@ -1191,7 +1187,7 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	if err != nil {
 		log.Error("SendEmail:ParseGlob")
 		log.Error(fmt.Sprintf("%v,", err))
-		return helper.StandartResult(false, fmt.Sprintf("%v,", err), nil)
+		return err
 	}
 
 	var tpl bytes.Buffer
@@ -1199,7 +1195,7 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	if err != nil {
 		log.Error("SendEmail:ExecuteTemplate")
 		log.Error(fmt.Sprintf("%v,", err))
-		return helper.StandartResult(false, fmt.Sprintf("%v,", err), nil)
+		return err
 	}
 	result := tpl.String()
 
@@ -1227,11 +1223,10 @@ func SendEmail(templateName string, subject string, to []string, cc *AddressHead
 	if err != nil {
 		log.Error("SendEmail:DialAndSend")
 		log.Error(fmt.Sprintf("%v,", err))
-		return helper.StandartResult(false, fmt.Sprintf("%v,", err), nil)
+		return err
 	}
-
 	fmt.Println("Sent")
-	return helper.StandartResult(true, "Ok", nil)
+	return nil
 }
 
 func (service *emailService) getCurrentFuncName() string {

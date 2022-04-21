@@ -17,6 +17,7 @@ require (
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/json-iterator/go v1.1.11 // indirect
+	github.com/leekchan/accounting v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mashingan/smapping v0.1.6
 	github.com/mattn/go-isatty v0.0.13 // indirect

@@ -487,6 +487,21 @@
             padding-left: 3rem !important;
             }
 
+            /* Label */
+            .payment-success {
+                display: inline-block;
+                padding: 0.35em 0.65em;
+                font-size: 0.85em;
+                font-weight: 700;
+                line-height: 1;
+                color: #fff;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: baseline;
+                border-radius: 0.5rem;
+                background-color: green;
+            }
+
             /* External */
             table.payment {
                 width: 80% !important
@@ -579,20 +594,24 @@
                                                 <table class="payment mb-5" border="0" cellpadding="0" cellspacing="0">
                                                     <tbody>
                                                         <tr>
-                                                            <td class="left">Pembayaran</td>
-                                                            <td>: {{.Product.ProductType}}</td>
+                                                            <td class="left">Pembelian</td>
+                                                            <td>: {{.MailProduct.ProductName}}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td>Pembayaran</td>
-                                                            <td>: {{.Product.ProductName}}</td>
+                                                            <td>{{.MailProduct.ProductTypeLabel}}</td>
+                                                            <td>: {{.MailProduct.ProductTypeName}}</td>
                                                         </tr>
                                                         <tr>
                                                             <td>Nominal</td>
-                                                            <td class="text-bold">: {{.Product.TotalPrice}}</td>
+                                                            <td class="text-bold">: {{.MailProduct.TotalPrice}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Metode Pembayaran</td>
+                                                            <td class="text-bold">: {{.MailProduct.PaymentMethod}}</td>
                                                         </tr>
                                                         <tr>
                                                             <td>Status</td>
-                                                            <td class="text-bold">: Lunas</td>
+                                                            <td class="text-bold">: <span class="payment-success">{{.MailProduct.PaymentStatus}}</span></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
