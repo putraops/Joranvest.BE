@@ -23,7 +23,7 @@ import (
 )
 
 type EmailService interface {
-	NewPayment(product MailProduct, isUser bool, userRecord models.ApplicationUser)
+	NewPayment(product MailProduct, paymentStatus int, isUser bool, userRecord models.ApplicationUser)
 	SendEmailVerification(email string, userId string) helper.Response
 	SendEmailVerified(email string) helper.Response
 	ResetPassword(user models.ApplicationUser) helper.Response
@@ -718,7 +718,7 @@ func (service *emailService) ResetPassword(user models.ApplicationUser) helper.R
 	}
 }
 
-func (service *emailService) NewPayment(product MailProduct, isUser bool, userRecord models.ApplicationUser) {
+func (service *emailService) NewPayment(product MailProduct, paymentStatus int, isUser bool, userRecord models.ApplicationUser) {
 	var actionUrl string
 	var title string
 	var recipient string
@@ -728,7 +728,11 @@ func (service *emailService) NewPayment(product MailProduct, isUser bool, userRe
 
 	if isUser {
 		actionUrl = "https://discord.com/invite/85rXZWbJa5"
-		title = "Pembayaran Diterima"
+		if paymentStatus == commons.PaidPaymentStatus {
+			title = "Pembayaran Diterima"
+		} else if paymentStatus == commons.RejectedPaymentStatus {
+			title = "Pembayaran Ditolak"
+		}
 		recipient = fmt.Sprintf("%v %v", userRecord.FirstName, userRecord.LastName)
 		template = "new-payment-for-user.html"
 

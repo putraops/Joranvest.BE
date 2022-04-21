@@ -211,7 +211,7 @@ func (r *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.Result
 	temp.PaymentStatus = &paymentStatus
 	temp.PaymentMethod = &paymentMethod
 
-	go r.emailService.NewPayment(temp, false, models.ApplicationUser{})
+	go r.emailService.NewPayment(temp, commons.PendingPaymentStatus, false, models.ApplicationUser{})
 
 	return helper.StandartResult(true, "Ok", result.Data)
 }
@@ -376,7 +376,7 @@ func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) hel
 			(record.PaymentType == string(xendit.EWalletTypeOVO) ||
 				record.PaymentType == string(xendit.EWalletTypeLINKAJA) ||
 				record.PaymentType == string(xendit.EWalletTypeDANA)) {
-			go r.emailService.NewPayment(temp, false, models.ApplicationUser{})
+			go r.emailService.NewPayment(temp, req.PaymentStatus, false, models.ApplicationUser{})
 		}
 
 		// EWallet Payment For User
@@ -384,7 +384,7 @@ func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) hel
 			userRes := r.userRepository.GetById(record.ApplicationUserId)
 			if userRes.Status {
 				// to := userRes.Data.(models.ApplicationUser).Email
-				go r.emailService.NewPayment(temp, true, userRes.Data.(models.ApplicationUser))
+				go r.emailService.NewPayment(temp, req.PaymentStatus, true, userRes.Data.(models.ApplicationUser))
 			}
 		}
 	}
