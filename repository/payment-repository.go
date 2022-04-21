@@ -26,6 +26,7 @@ type PaymentRepository interface {
 	Update(record models.Payment) helper.Response
 	UpdatePaymentStatus(paymentRecord models.Payment) helper.Response
 	GetById(recordId string) helper.Response
+	GetViewById(recordId string) helper.Result
 	GetByProviderRecordId(id string) helper.Response
 	GetByProviderReferenceId(id string) helper.Response
 	DeleteById(recordId string) helper.Response
@@ -461,6 +462,19 @@ func (db *paymentConnection) GetById(recordId string) helper.Response {
 	}
 	res := helper.ServerResponse(true, "Ok", "", record)
 	return res
+}
+
+func (db *paymentConnection) GetViewById(recordId string) helper.Result {
+	var result helper.Result
+
+	var record entity_view_models.EntityPaymentView
+	db.connection.First(&record, "id = ?", recordId)
+	if record.Id == "" {
+		result = helper.StandartResult(false, "Record not found", nil)
+	}
+	result = helper.StandartResult(true, "Ok", record)
+
+	return result
 }
 
 func (db *paymentConnection) GetByProviderRecordId(id string) helper.Response {

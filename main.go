@@ -166,6 +166,7 @@ func main() {
 	r.Static("/assets", "./assets")
 	r.Static("/upload", "./upload")
 	r.Static("/script", "./templates/js")
+	r.Static("/email", "./templates/email")
 	// r.HTMLRender = createMyRender("templates/views/")
 
 	// #region User Web View
@@ -573,6 +574,14 @@ func main() {
 			productApiNoAuthRoutes.GET("/getProductByRecordId/:record_id", productController.GetProductByRecordId)
 			productApiNoAuthRoutes.GET("/getByProductType/:product_type", productController.GetByProductType)
 			productApiNoAuthRoutes.GET("/getViewById/:id", productController.GetViewById)
+		}
+	}
+
+	emailApiRoutes := r.Group("api")
+	{
+		emailApiNoAuthRoutes := emailApiRoutes.Group("/email")
+		{
+			emailApiNoAuthRoutes.GET("/testEmail", emailController.TestEmail)
 		}
 	}
 

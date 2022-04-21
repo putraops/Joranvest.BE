@@ -135,14 +135,6 @@ func (r *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.Result
 	var newRecord = models.Payment{}
 	smapping.FillStruct(&newRecord, smapping.MapFields(&dto))
 
-	//dto.RecordId = newRecord.Id //-- RecordId replace by NewPaymentId
-	//dto.ApplicationUserId = userIdentity.UserId
-
-	// res, err := xenditService.CreateEWalletCharge(dto)
-	// if err != nil {
-	// 	return helper.ServerResponse(false, fmt.Sprintf("%v", err.Message), "", helper.EmptyObj{})
-	// }
-
 	currentTime := time.Now()
 	newRecord.Id = uuid.New().String()
 	// newRecord.RecordId = dto.RecordId //-- WebinarId or MembershipId
@@ -170,9 +162,8 @@ func (r *paymentService) CreateTransferPayment(dto dto.PaymentDto) helper.Result
 	}
 
 	// var asds =
-	args := []string{"a", "b"}
-
-	_ = r.emailService.PaymentNotificationToTeam(args...)
+	// args := []string{"a", "b"}
+	// _ = r.emailService.PaymentNotificationToTeam(args...)
 
 	return helper.StandartResult(true, "Ok", result.Data)
 }
@@ -270,14 +261,15 @@ func (r *paymentService) Update(record models.Payment) helper.Response {
 }
 
 func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) helper.Response {
-	var paymentRecord models.Payment
-	res := r.paymentRepository.GetById(req.Id)
-	if !res.Status {
-		log.Error(res.Message)
+	result := r.paymentRepository.GetById(req.Id)
+	if !result.Status {
+		log.Error(result.Message)
 		log.Error("Function: UpdatePaymentStatus")
-		return res
+		return result
 	}
 
+	var paymentRecord models.Payment
+	paymentRecord = result.Data.(models.Payment)
 	currentTime := time.Now()
 	paymentRecord.PaymentStatus = req.PaymentStatus
 	paymentRecord.UpdatedBy = req.UpdatedBy
@@ -292,11 +284,6 @@ func (r *paymentService) UpdatePaymentStatus(req dto.UpdatePaymentStatusDto) hel
 
 	return paymentResult
 }
-
-// func (r *paymentService) UpdateWalletPaymentStatus(dto dto.UpdatePaymentStatusDto) helper.Response {
-
-// 	return r.paymentRepository.UpdatePaymentStatus(dto)
-// }
 
 func (r *paymentService) GetById(recordId string) helper.Response {
 	return r.paymentRepository.GetById(recordId)

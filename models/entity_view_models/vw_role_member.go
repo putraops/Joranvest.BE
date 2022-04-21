@@ -11,6 +11,7 @@ type EntityRoleMemberView struct {
 	ApplicationUserLastName    string  `json:"application_user_last_name"`
 	ApplicationUserFullname    string  `json:"application_user_fullname"`
 	ApplicationUserInitialName string  `json:"application_user_initial_name"`
+	ApplicationUserEmail       string  `json:"application_user_email"`
 	RoleName                   string  `json:"role_name"`
 	HasDashboardAccess         bool    `json:"has_dashboard_access"`
 	HasFullAccess              bool    `json:"has_full_access"`
@@ -41,8 +42,9 @@ func (EntityRoleMemberView) ViewModel() string {
 	sql.WriteString("  r.application_user_id,")
 	sql.WriteString("  u5.last_name AS application_user_last_name,")
 	sql.WriteString("  u5.first_name AS application_user_first_name,")
-	sql.WriteString("  CASE WHEN u5.first_name IS NULL OR u5.first_name = '' THEN u1.username ELSE concat(u5.first_name, ' ', u5.last_name) END AS application_user_fullname,")
+	sql.WriteString("  CASE WHEN u5.first_name IS NULL OR u5.first_name = '' THEN u5.username ELSE concat(u5.first_name, ' ', u5.last_name) END AS application_user_fullname,")
 	sql.WriteString("  CONCAT(UPPER(LEFT(u5.first_name, 1)), '', UPPER(LEFT(u5.last_name, 1))) AS application_user_initial_name,")
+	sql.WriteString("  u5.email AS application_user_email,")
 	sql.WriteString("  r.role_id,")
 	sql.WriteString("  rl.name AS role_name,")
 	sql.WriteString("  rl.has_dashboard_access,")
@@ -50,8 +52,8 @@ func (EntityRoleMemberView) ViewModel() string {
 	sql.WriteString("  CASE WHEN u1.first_name IS NULL OR u1.first_name = '' THEN u1.username ELSE concat(u1.first_name, ' ', u1.last_name) END AS created_by_fullname ")
 	sql.WriteString("FROM role_member r ")
 	sql.WriteString("LEFT JOIN role rl ON rl.id = r.role_id ")
-	sql.WriteString("LEFT JOIN application_user u5 ON u5.id = r.application_user_id ")
 	sql.WriteString("LEFT JOIN application_user u1 ON u1.id = r.created_by ")
+	sql.WriteString("LEFT JOIN application_user u5 ON u5.id = r.application_user_id ")
 	return sql.String()
 }
 func (EntityRoleMemberView) Migration() map[string]string {
