@@ -427,19 +427,25 @@ func main() {
 		filemasterApiRoutes.DELETE("/deleteByRecordId/:recordId", filemasterController.DeleteByRecordId)
 	}
 
-	applicationUserApiRoutes := r.Group("api/application_user")
+	applicationUserApiRoutes := r.Group("api")
 	{
-		applicationUserApiRoutes.POST("/getPagination", applicationUserController.GetPagination)
-		applicationUserApiRoutes.GET("/lookup", applicationUserController.Lookup)
-		applicationUserApiRoutes.POST("/userLookup", applicationUserController.UserLookup)
-		applicationUserApiRoutes.POST("/changePhone", applicationUserController.ChangePhone)
-		applicationUserApiRoutes.POST("/changePassword", applicationUserController.ChangePassword)
-		applicationUserApiRoutes.POST("/updateProfile", applicationUserController.UpdateProfile)
-		applicationUserApiRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
-		applicationUserApiRoutes.POST("/resetPassword", applicationUserController.ResetPassword)
-		applicationUserApiRoutes.POST("/register", authController.Register)
-		applicationUserApiRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
-		applicationUserApiRoutes.PATCH("/emailVerificationById/:id", applicationUserController.EmailVerificationById)
+		applicationUserAuthRoutes := applicationUserApiRoutes.Group("/application_user", middleware.AuthorizeJWT(jwtService))
+		{
+			applicationUserAuthRoutes.POST("/updateProfile", applicationUserController.UpdateProfile)
+			applicationUserAuthRoutes.POST("/changePhone", applicationUserController.ChangePhone)
+			applicationUserAuthRoutes.POST("/changePassword", applicationUserController.ChangePassword)
+		}
+		applicationUserNoAuthRoutes := applicationUserApiRoutes.Group("/application_user")
+		{
+			applicationUserNoAuthRoutes.POST("/getPagination", applicationUserController.GetPagination)
+			applicationUserNoAuthRoutes.GET("/lookup", applicationUserController.Lookup)
+			applicationUserNoAuthRoutes.POST("/userLookup", applicationUserController.UserLookup)
+			applicationUserNoAuthRoutes.POST("/recoverPassword", applicationUserController.RecoverPassword)
+			applicationUserNoAuthRoutes.POST("/resetPassword", applicationUserController.ResetPassword)
+			applicationUserNoAuthRoutes.POST("/register", authController.Register)
+			applicationUserNoAuthRoutes.GET("/getViewById/:id", applicationUserController.GetViewById)
+			applicationUserNoAuthRoutes.PATCH("/emailVerificationById/:id", applicationUserController.EmailVerificationById)
+		}
 	}
 
 	technicalAnalysisApiRoutes := r.Group("api/technical_analysis")
